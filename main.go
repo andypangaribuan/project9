@@ -15,7 +15,8 @@ import (
 
 //goland:noinspection ALL
 func Initialize() {
-	p9.Init().
+	p9.
+		Init().
 		Conv(conv.Create()).
 		Db(db.Create()).
 		Json(json.Create()).

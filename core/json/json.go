@@ -5,11 +5,7 @@
 
 package json
 
-import "github.com/andypangaribuan/project9/abs"
-
-type srJson struct {
-	abs.Json
-}
+type srJson struct{}
 
 func Create() *srJson {
 	return &srJson{}

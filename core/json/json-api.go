@@ -13,16 +13,16 @@ import (
 var api jsoniter.API
 
 func init() {
-	api = ConfigWithCustomTimeFormat
+	api = configWithCustomTimeFormat
 
-	SetDefaultTimeFormat("2006-01-02 15:04:05.000000", nil)
-	AddLocaleAlias("-", nil)
+	setDefaultTimeFormat("2006-01-02 15:04:05.000000", nil)
+	addLocaleAlias("-", nil)
 
-	AddTimeFormatAlias("date", "2006-01-02")
-	AddTimeFormatAlias("time", "15:04:05")
-	AddTimeFormatAlias("full", "2006-01-02 15:04:05")
-	AddTimeFormatAlias("full-millis", "2006-01-02 15:04:05.000")
-	AddTimeFormatAlias("full-micros", "2006-01-02 15:04:05.000000")
+	addTimeFormatAlias("date", "2006-01-02")
+	addTimeFormatAlias("time", "15:04:05")
+	addTimeFormatAlias("full", "2006-01-02 15:04:05")
+	addTimeFormatAlias("full-millis", "2006-01-02 15:04:05.000")
+	addTimeFormatAlias("full-micros", "2006-01-02 15:04:05.000000")
 }
 
 func (*srJson) Marshal(obj interface{}) ([]byte, error) {

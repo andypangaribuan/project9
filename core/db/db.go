@@ -8,20 +8,16 @@ package db
 import (
 	"time"
 
-	"github.com/andypangaribuan/project9/abs"
 	"github.com/jmoiron/sqlx"
 )
 
-type srDb struct {
-	abs.Db
-}
+type srDb struct{}
 
 func Create() *srDb {
 	return &srDb{}
 }
 
 type postgresInstance struct {
-	abs.DbPostgresInstance
 	data *connModel
 }
 

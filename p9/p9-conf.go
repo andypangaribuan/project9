@@ -3,14 +3,10 @@
  * All Rights Reserved.
  */
 
-package conf
+package p9
 
-var (
+type srConf struct {
+	NanoIdLength int
 	HashIdSalt   string
 	HashIdLength int
-)
-
-func init() {
-	HashIdSalt = "Project9"
-	HashIdLength = 20
 }

@@ -6,21 +6,22 @@
 package util
 
 import (
-	"github.com/andypangaribuan/project9/abs"
+	"github.com/andypangaribuan/project9/p9"
 	"github.com/speps/go-hashids/v2"
 )
 
-type srEnv struct {
-	abs.UtilEnv
-}
+type srUtil struct{}
+
+type srEnv struct{}
 
 type srHashId struct {
-	abs.UtilHashId
 	instance *hashids.HashIDData
+	slfMap   map[string]*srHashId
 }
 
-func Create() (*srEnv, *srHashId) {
-	return &srEnv{}, &srHashId{
-		instance: getHashIdInstance(),
+func Create() (*srUtil, *srEnv, *srHashId) {
+	return &srUtil{}, &srEnv{}, &srHashId{
+		instance: getHashIdInstance(p9.Conf.HashIdSalt, p9.Conf.HashIdLength),
+		slfMap:   make(map[string]*srHashId, 0),
 	}
 }

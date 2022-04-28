@@ -13,21 +13,21 @@ import (
 )
 
 const (
-	ANSIC       = "ANSIC"
-	UnixDate    = "UnixDate"
-	RubyDate    = "RubyDate"
-	RFC822      = "RFC822"
-	RFC822Z     = "RFC822Z"
-	RFC850      = "RFC850"
-	RFC1123     = "RFC1123"
-	RFC1123Z    = "RFC1123Z"
-	RFC3339     = "RFC3339"
-	RFC3339Nano = "RFC3339Nano"
-	Kitchen     = "Kitchen"
-	Stamp       = "Stamp"
-	StampMilli  = "StampMilli"
-	StampMicro  = "StampMicro"
-	StampNano   = "StampNano"
+	ansic       = "ANSIC"
+	unixDate    = "UnixDate"
+	rubyDate    = "RubyDate"
+	rfc822      = "RFC822"
+	rfc822Z     = "RFC822Z"
+	rfc850      = "RFC850"
+	rfc1123     = "RFC1123"
+	rfc1123Z    = "RFC1123Z"
+	rfc3339     = "RFC3339"
+	rfc3339Nano = "RFC3339Nano"
+	kitchen     = "Kitchen"
+	stamp       = "Stamp"
+	stampMilli  = "StampMilli"
+	stampMicro  = "StampMicro"
+	stampNano   = "StampNano"
 )
 
 // time zone alias
@@ -41,24 +41,24 @@ const (
 	tagNameTimeLocation = "jdt_location" // ori: time_location
 )
 
-var ConfigWithCustomTimeFormat = jsoniter.ConfigCompatibleWithStandardLibrary
+var configWithCustomTimeFormat = jsoniter.ConfigCompatibleWithStandardLibrary
 
 var formatAlias = map[string]string{
-	ANSIC:       time.ANSIC,
-	UnixDate:    time.UnixDate,
-	RubyDate:    time.RubyDate,
-	RFC822:      time.RFC822,
-	RFC822Z:     time.RFC822Z,
-	RFC850:      time.RFC850,
-	RFC1123:     time.RFC1123,
-	RFC1123Z:    time.RFC1123Z,
-	RFC3339:     time.RFC3339,
-	RFC3339Nano: time.RFC3339Nano,
-	Kitchen:     time.Kitchen,
-	Stamp:       time.Stamp,
-	StampMilli:  time.StampMilli,
-	StampMicro:  time.StampMicro,
-	StampNano:   time.StampNano,
+	ansic:       time.ANSIC,
+	unixDate:    time.UnixDate,
+	rubyDate:    time.RubyDate,
+	rfc822:      time.RFC822,
+	rfc822Z:     time.RFC822Z,
+	rfc850:      time.RFC850,
+	rfc1123:     time.RFC1123,
+	rfc1123Z:    time.RFC1123Z,
+	rfc3339:     time.RFC3339,
+	rfc3339Nano: time.RFC3339Nano,
+	kitchen:     time.Kitchen,
+	stamp:       time.Stamp,
+	stampMilli:  time.StampMilli,
+	stampMicro:  time.StampMicro,
+	stampNano:   time.StampNano,
 }
 
 var localeAlias = map[string]*time.Location{
@@ -72,27 +72,27 @@ var (
 )
 
 func init() {
-	ConfigWithCustomTimeFormat.RegisterExtension(&CustomTimeExtension{})
+	configWithCustomTimeFormat.RegisterExtension(&customTimeExtension{})
 }
 
-func AddTimeFormatAlias(alias, format string) {
+func addTimeFormatAlias(alias, format string) {
 	formatAlias[alias] = format
 }
 
-func AddLocaleAlias(alias string, locale *time.Location) {
+func addLocaleAlias(alias string, locale *time.Location) {
 	localeAlias[alias] = locale
 }
 
-func SetDefaultTimeFormat(timeFormat string, timeLocation *time.Location) {
+func setDefaultTimeFormat(timeFormat string, timeLocation *time.Location) {
 	defaultFormat = timeFormat
 	defaultLocale = timeLocation
 }
 
-type CustomTimeExtension struct {
+type customTimeExtension struct {
 	jsoniter.DummyExtension
 }
 
-func (extension *CustomTimeExtension) UpdateStructDescriptor(structDescriptor *jsoniter.StructDescriptor) {
+func (extension *customTimeExtension) UpdateStructDescriptor(structDescriptor *jsoniter.StructDescriptor) {
 	for _, binding := range structDescriptor.Fields {
 		var typeErr error
 		var isPtr bool

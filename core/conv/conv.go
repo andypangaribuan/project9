@@ -5,11 +5,7 @@
 
 package conv
 
-import "github.com/andypangaribuan/project9/abs"
-
-type srTime struct {
-	abs.ConvTime
-}
+type srTime struct{}
 
 func Create() *srTime {
 	return &srTime{}
