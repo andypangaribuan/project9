@@ -11,11 +11,12 @@ type srInit struct{}
 
 //goland:noinspection ALL
 var (
-	Conf *srConf
-	Conv *srConv
-	Db   *srDb
-	Json *srJson
-	Util *srUtil
+	Check *srCheck
+	Conf  *srConf
+	Conv  *srConv
+	Db    *srDb
+	Json  *srJson
+	Util  *srUtil
 )
 
 func init() {
@@ -30,28 +31,35 @@ func Init() *srInit {
 	return nil
 }
 
+func (slf *srInit) Check(fnStr abs.CheckStr) *srInit {
+	Check = &srCheck{
+		Str: &srCheckStr{fnStr},
+	}
+	return slf
+}
+
 func (slf *srInit) Conv(fnTime abs.ConvTime) *srInit {
 	Conv = &srConv{
-		Time: &srConvTime{ConvTime: fnTime},
+		Time: &srConvTime{fnTime},
 	}
 	return slf
 }
 
 func (slf *srInit) Db(fnDb abs.Db) *srInit {
-	Db = &srDb{Db: fnDb}
+	Db = &srDb{fnDb}
 	return slf
 }
 
 func (slf *srInit) Json(fnJson abs.Json) *srInit {
-	Json = &srJson{Json: fnJson}
+	Json = &srJson{fnJson}
 	return slf
 }
 
 func (slf *srInit) Util(fnUtil abs.Util, fnEnv abs.UtilEnv, fnHashId abs.UtilHashId) *srInit {
 	Util = &srUtil{
-		Util:   fnUtil,
-		Env:    &srUtilEnv{UtilEnv: fnEnv},
-		HashId: &srUtilHashId{UtilHashId: fnHashId},
+		absUtil: fnUtil,
+		Env:     &srUtilEnv{fnEnv},
+		HashId:  &srUtilHashId{fnHashId},
 	}
 	return slf
 }

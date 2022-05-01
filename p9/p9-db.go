@@ -9,6 +9,10 @@ import (
 	"github.com/andypangaribuan/project9/abs"
 )
 
-type srDb struct {
+type absDb interface {
 	abs.Db
+}
+
+type srDb struct {
+	absDb
 }

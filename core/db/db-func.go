@@ -6,6 +6,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -23,8 +24,8 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 		connStr = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s search_path=%s application_name=%s sslmode=disable", host, port, username, password, dbName, *schema, applicationName)
 	}
 
-	instance := &postgresInstance{
-		data: &connModel{
+	instance := &pqInstance{
+		conn: &srConnection{
 			connStr:               connStr,
 			driverName:            "postgres",
 			maxLifeTimeConnection: time.Minute * 5,
@@ -36,20 +37,20 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 	}
 
 	if config != nil {
-		instance.data.maxLifeTimeConnection = config.MaxLifeTimeConnection
-		instance.data.maxIdleConnection = config.MaxIdleConnection
-		instance.data.maxOpenConnection = config.MaxOpenConnection
+		instance.conn.maxLifeTimeConnection = config.MaxLifeTimeConnection
+		instance.conn.maxIdleConnection = config.MaxIdleConnection
+		instance.conn.maxOpenConnection = config.MaxOpenConnection
 	}
 
 	return instance
 }
 
-func connect(data *connModel) (*sqlx.DB, error) {
-	instance, err := sqlx.Connect(data.driverName, data.connStr)
+func getConnection(conn *srConnection) (*sqlx.DB, error) {
+	instance, err := sqlx.Connect(conn.driverName, conn.connStr)
 	if err == nil {
-		instance.SetConnMaxLifetime(data.maxLifeTimeConnection)
-		instance.SetMaxIdleConns(data.maxIdleConnection)
-		instance.SetMaxOpenConns(data.maxOpenConnection)
+		instance.SetConnMaxLifetime(conn.maxLifeTimeConnection)
+		instance.SetMaxIdleConns(conn.maxIdleConnection)
+		instance.SetMaxOpenConns(conn.maxOpenConnection)
 		err = instance.Ping()
 	}
 	if err != nil {
@@ -58,7 +59,7 @@ func connect(data *connModel) (*sqlx.DB, error) {
 	return instance, err
 }
 
-func normalizeSqlQueryParams(data *connModel, sqlQuery string, sqlPars []interface{}) (string, []interface{}) {
+func normalizeSqlQueryParams(conn *srConnection, sqlQuery string, sqlPars []interface{}) (string, []interface{}) {
 	query := sqlQuery
 	pars := sqlPars
 
@@ -69,8 +70,27 @@ func normalizeSqlQueryParams(data *connModel, sqlQuery string, sqlPars []interfa
 		}
 	}
 
-	if data.driverName == "postgres" && data.autoRebind && len(pars) > 0 {
+	if conn.driverName == "postgres" && conn.autoRebind && len(pars) > 0 {
 		query = sqlx.Rebind(sqlx.DOLLAR, sqlQuery)
 	}
 	return query, pars
+}
+
+func execute(conn *srConnection, sqlQuery string, sqlPars ...interface{}) (sql.Result, error) {
+	if conn.driverName == "postgres" && conn.autoRebind && len(sqlPars) > 0 {
+		sqlQuery = sqlx.Rebind(sqlx.DOLLAR, sqlQuery)
+	}
+
+	stmt, err := conn.instance.Prepare(sqlQuery)
+	if err != nil {
+		err = errors.WithStack(err)
+		return nil, err
+	}
+	defer func() { _ = stmt.Close() }()
+
+	res, err := stmt.Exec(sqlPars...)
+	if err != nil {
+		err = errors.WithStack(err)
+	}
+	return res, err
 }

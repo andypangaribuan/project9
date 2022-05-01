@@ -7,16 +7,28 @@ package p9
 
 import "github.com/andypangaribuan/project9/abs"
 
-type srUtil struct {
+type absUtil interface {
 	abs.Util
+}
+
+type absUtilEnv interface {
+	abs.UtilEnv
+}
+
+type absUtilHashId interface {
+	abs.UtilHashId
+}
+
+type srUtil struct {
+	absUtil
 	Env    *srUtilEnv
 	HashId *srUtilHashId
 }
 
 type srUtilEnv struct {
-	abs.UtilEnv
+	absUtilEnv
 }
 
 type srUtilHashId struct {
-	abs.UtilHashId
+	absUtilHashId
 }

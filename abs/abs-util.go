@@ -5,8 +5,11 @@
 
 package abs
 
+import "time"
+
 type Util interface {
 	GetNanoID(length ...int) (string, error)
+	TimeNow() time.Time
 }
 
 type UtilEnv interface {

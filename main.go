@@ -6,6 +6,7 @@
 package project9
 
 import (
+	"github.com/andypangaribuan/project9/core/check"
 	"github.com/andypangaribuan/project9/core/conv"
 	"github.com/andypangaribuan/project9/core/db"
 	"github.com/andypangaribuan/project9/core/json"
@@ -15,8 +16,8 @@ import (
 
 //goland:noinspection ALL
 func Initialize() {
-	p9.
-		Init().
+	p9.Init().
+		Check(check.Create()).
 		Conv(conv.Create()).
 		Db(db.Create()).
 		Json(json.Create()).

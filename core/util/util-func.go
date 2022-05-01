@@ -6,6 +6,8 @@
 package util
 
 import (
+	"time"
+
 	"github.com/andypangaribuan/project9/p9"
 	"github.com/matoous/go-nanoid/v2"
 )
@@ -18,4 +20,10 @@ func (*srUtil) GetNanoID(length ...int) (string, error) {
 	}
 
 	return gonanoid.Generate(alphabet, size)
+}
+
+func (*srUtil) TimeNow() time.Time {
+	dtNowStr := p9.Conv.Time.ToStr(time.Now(), "yyyy-MM-dd HH:mm:ss.SSSSSS") //p9.Conv.Time.ToStrFull(time.Now())
+	dtNow, _ := p9.Conv.Time.ToTime("yyyy-MM-dd HH:mm:ss.SSSSSS", dtNowStr)
+	return dtNow
 }

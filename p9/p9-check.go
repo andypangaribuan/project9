@@ -7,10 +7,14 @@ package p9
 
 import "github.com/andypangaribuan/project9/abs"
 
-type absJson interface {
-	abs.Json
+type absCheckStr interface {
+	abs.CheckStr
 }
 
-type srJson struct {
-	absJson
+type srCheck struct {
+	Str *srCheckStr
+}
+
+type srCheckStr struct {
+	absCheckStr
 }

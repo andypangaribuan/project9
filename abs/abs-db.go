@@ -11,7 +11,12 @@ type Db interface {
 	NewPostgresInstance(host string, port int, dbName, username, password string, schema *string, config *model.DbConfig, autoRebind, unsafeCompatibility bool, applicationName string) DbPostgresInstance
 }
 
-type DbPostgresInstance interface {
+type DbInstance interface {
 	Ping() error
+	Execute(sqlQuery string, sqlPars ...interface{}) error
 	Select(out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error)
+}
+
+type DbPostgresInstance interface {
+	DbInstance
 }

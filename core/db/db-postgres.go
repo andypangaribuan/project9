@@ -16,24 +16,24 @@ import (
 
 var locking sync.Mutex
 
-func (slf *postgresInstance) connect() (*sqlx.DB, error) {
+func (slf *pqInstance) getInstance() (*sqlx.DB, error) {
 	locking.Lock()
 	defer locking.Unlock()
 
-	if slf.data.instance != nil {
-		return slf.data.instance, nil
+	if slf.conn.instance != nil {
+		return slf.conn.instance, nil
 	}
 
-	instance, err := connect(slf.data)
+	instance, err := getConnection(slf.conn)
 	if err == nil {
-		slf.data.instance = instance
+		slf.conn.instance = instance
 	}
 
 	return instance, err
 }
 
-func (slf *postgresInstance) Ping() error {
-	instance, err := slf.connect()
+func (slf *pqInstance) Ping() error {
+	instance, err := slf.getInstance()
 	if err == nil {
 		err = instance.Ping()
 		if err != nil {
@@ -43,16 +43,27 @@ func (slf *postgresInstance) Ping() error {
 	return err
 }
 
-func (slf *postgresInstance) Select(out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error) {
-	instance, err := slf.connect()
+func (slf *pqInstance) Execute(sqlQuery string, sqlPars ...interface{}) error {
+	_, err := slf.getInstance()
+	if err != nil {
+		return err
+	}
+
+	query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
+	_, err = execute(slf.conn, query, pars...)
+	return err
+}
+
+func (slf *pqInstance) Select(out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error) {
+	instance, err := slf.getInstance()
 	if err != nil {
 		return nil, err
 	}
 
-	query, pars := normalizeSqlQueryParams(slf.data, sqlQuery, sqlPars)
+	query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
 	err = instance.Select(out, query, pars...)
 	if err != nil {
-		if slf.data.unsafeCompatibility {
+		if slf.conn.unsafeCompatibility {
 			msg := err.Error()
 			// TODO: implement LogTrace
 			unsafe := model.DbUnsafeSelectError{

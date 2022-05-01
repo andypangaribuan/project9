@@ -17,11 +17,11 @@ func Create() *srDb {
 	return &srDb{}
 }
 
-type postgresInstance struct {
-	data *connModel
+type pqInstance struct {
+	conn *srConnection
 }
 
-type connModel struct {
+type srConnection struct {
 	connStr               string
 	driverName            string
 	instance              *sqlx.DB

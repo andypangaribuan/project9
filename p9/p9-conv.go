@@ -9,10 +9,14 @@ import (
 	"github.com/andypangaribuan/project9/abs"
 )
 
+type absConvTime interface {
+	abs.ConvTime
+}
+
 type srConv struct {
 	Time *srConvTime
 }
 
 type srConvTime struct {
-	abs.ConvTime
+	absConvTime
 }
