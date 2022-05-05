@@ -28,6 +28,12 @@ func (slf *srHashId) Encode(numbers ...int) string {
 	return hashed
 }
 
+func (slf *srHashId) Encode64(numbers ...int64) string {
+	hid, _ := hashids.NewWithData(slf.instance)
+	hashed, _ := hid.EncodeInt64(numbers)
+	return hashed
+}
+
 func (slf *srHashId) Add(key, salt string, length int) {
 	sr := &srHashId{
 		instance: getHashIdInstance(salt, length),

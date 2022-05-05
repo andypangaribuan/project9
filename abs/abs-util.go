@@ -5,11 +5,8 @@
 
 package abs
 
-import "time"
-
 type Util interface {
 	GetNanoID(length ...int) (string, error)
-	TimeNow() time.Time
 }
 
 type UtilEnv interface {
@@ -21,6 +18,7 @@ type UtilEnv interface {
 type UtilHashId interface {
 	Reload()
 	Encode(numbers ...int) string
+	Encode64(numbers ...int64) string
 	Add(key, salt string, length int)
 	Get(key string) UtilHashId
 }

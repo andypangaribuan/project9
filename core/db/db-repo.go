@@ -24,10 +24,9 @@ type Repo[T any] struct {
 	ParamSigns        string
 	InsertParamSign   string // if empty then use paramSigns
 	PrintUnsafeErr    bool
-	OnUnsafe          func(unsafe *model.DbUnsafeSelectError)
 }
 
-func (slf *Repo[T]) onUnsafe(unsafe *model.DbUnsafeSelectError) {
+func (slf *Repo[T]) OnUnsafe(unsafe *model.DbUnsafeSelectError) {
 	if unsafe != nil && slf.PrintUnsafeErr {
 		fmt.Printf("[%v] db.unsafe.select.error:\nerror: %v\nsql-query: %v\nsql-pars: %v\ntrace: %v\n",
 			p9.Conv.Time.ToStrFull(time.Now()), unsafe.LogMessage, unsafe.SqlQuery, unsafe.SqlPars, unsafe.LogTrace)
@@ -94,21 +93,30 @@ func (slf *Repo[T]) Update(keyVals map[string]interface{}, whereQuery string, wh
 	return slf.DbInstance.Execute(sql.query, sql.pars)
 }
 
-func (slf *Repo[T]) GetDatas(whereQuery string, wherePars ...interface{}) ([]T, error) {
+func (slf *Repo[T]) GetDatas(whereQuery string, endQuery string, wherePars ...interface{}) ([]T, error) {
 	var models []T
 	sql := srRepoSql[T]{}.new(`SELECT * FROM ::tableName`)
 
-	whereQuery = strings.TrimSpace(whereQuery)
-	wq := strings.ToLower(whereQuery)
-	if (len(wq) <= 6) || (len(wq) > 6 && wq[:6] != "where ") {
-		whereQuery = fmt.Sprintf("WHERE %v", whereQuery)
+	query := strings.TrimSpace(whereQuery)
+	if query != "" {
+		wq := strings.ToLower(query)
+		if (len(wq) <= 6) || (len(wq) > 6 && wq[:6] != "where ") {
+			query = fmt.Sprintf("WHERE %v", query)
+		}
 	}
 
-	sql.query += fmt.Sprintf(" %v", whereQuery)
-	sql.transform(slf)
+	endQuery = strings.TrimSpace(endQuery)
+	if endQuery != "" {
+		query += " " + endQuery
+		query = strings.TrimSpace(query)
+	}
 
-	unsafe, err := slf.DbInstance.Select(&models, sql.query, wherePars)
-	slf.onUnsafe(unsafe)
+	sql.query += " " + query
+	sql.transform(slf)
+	sql.pars = wherePars
+
+	unsafe, err := slf.DbInstance.Select(&models, sql.query, sql.pars)
+	slf.OnUnsafe(unsafe)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -116,7 +124,7 @@ func (slf *Repo[T]) GetDatas(whereQuery string, wherePars ...interface{}) ([]T, 
 	return models, nil
 }
 
-func (slf *Repo[T]) GetData(whereQuery string, wherePars ...interface{}) (*T, error) {
-	models, err := slf.GetDatas(whereQuery, wherePars...)
+func (slf *Repo[T]) GetData(whereQuery string, endQuery string, wherePars ...interface{}) (*T, error) {
+	models, err := slf.GetDatas(whereQuery, endQuery, wherePars...)
 	return slf.first(models), err
 }
