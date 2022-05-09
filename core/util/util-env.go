@@ -32,6 +32,15 @@ func (slf *srEnv) GetInt(key string) int {
 	return value
 }
 
+func (slf *srEnv) GetInt32(key string) int32 {
+	value, err := strconv.ParseInt(slf.GetStr(key), 10, 32)
+	if err != nil {
+		err = errors.WithStack(err)
+		log.Fatalf("env key \"%v\" is not int value\nerror:\n%+v", key, err)
+	}
+	return int32(value)
+}
+
 func (slf *srEnv) GetBool(key string) bool {
 	value := strings.ToLower(slf.GetStr(key))
 	if value == "1" || value == "true" {

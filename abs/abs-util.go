@@ -12,6 +12,7 @@ type Util interface {
 type UtilEnv interface {
 	GetStr(key string) string
 	GetInt(key string) int
+	GetInt32(key string) int32
 	GetBool(key string) bool
 }
 
