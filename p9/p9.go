@@ -16,6 +16,7 @@ var (
 	Conv  *srConv
 	Db    *srDb
 	Json  *srJson
+	Log   *srLog
 	Util  *srUtil
 )
 
@@ -52,6 +53,11 @@ func (slf *srInit) Db(fnDb abs.Db) *srInit {
 
 func (slf *srInit) Json(fnJson abs.Json) *srInit {
 	Json = &srJson{fnJson}
+	return slf
+}
+
+func (slf *srInit) Log(fnLog abs.Log) *srInit {
+	Log = &srLog{fnLog}
 	return slf
 }
 
