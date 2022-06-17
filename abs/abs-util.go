@@ -14,6 +14,12 @@ type UtilEnv interface {
 	GetInt(key string) int
 	GetInt32(key string) int32
 	GetBool(key string) bool
+	GetBase64(key string) UtilEnvBase64
+}
+
+type UtilEnvBase64 interface {
+	Key() string
+	Data() []byte
 }
 
 type UtilHashId interface {

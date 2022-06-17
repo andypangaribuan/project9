@@ -14,6 +14,11 @@ type srUtil struct{}
 
 type srEnv struct{}
 
+type srEnvBase64 struct {
+	key  string
+	data []byte
+}
+
 type srHashId struct {
 	instance *hashids.HashIDData
 	slfMap   map[string]*srHashId
