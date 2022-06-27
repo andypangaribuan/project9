@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/andypangaribuan/project9/abs"
+	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/model"
 	"github.com/andypangaribuan/project9/p9"
 	"github.com/pkg/errors"
@@ -26,10 +27,23 @@ type Repo[T any] struct {
 	PrintUnsafeErr    bool
 }
 
+func (slf *Repo[T]) SetColumnNames(names string) {
+	slf.ColumnNames = strings.TrimSpace(names)
+}
+
+func (slf *Repo[T]) SetInsertColumnNames(names string) {
+	slf.InsertColumnNames = strings.TrimSpace(names)
+}
+
 func (slf *Repo[T]) OnUnsafe(unsafe *model.DbUnsafeSelectError) {
 	if unsafe != nil && slf.PrintUnsafeErr {
 		fmt.Printf("[%v] db.unsafe.select.error:\nerror: %v\nsql-query: %v\nsql-pars: %v\ntrace: %v\n",
-			p9.Conv.Time.ToStrFull(time.Now()), unsafe.LogMessage, unsafe.SqlQuery, unsafe.SqlPars, unsafe.LogTrace)
+			p9.Conv.Time.ToStrFull(time.Now()),
+			f9.TernaryFnB(unsafe.LogMessage == nil, "nil", func() string { return *unsafe.LogMessage }),
+			unsafe.SqlQuery,
+			unsafe.SqlPars,
+			f9.TernaryFnB(unsafe.LogTrace == nil, "nil", func() string { return *unsafe.LogTrace }),
+		)
 	}
 }
 
@@ -40,18 +54,21 @@ func (slf *Repo[T]) first(ls []T) *T {
 	return &ls[0]
 }
 
-func (slf *Repo[T]) GenerateParamSigns(columnNames string) string {
+func (slf *Repo[T]) GenerateParamSigns(columnNames string) (paramSign string) {
 	cn := strings.TrimSpace(columnNames)
 	cn = strings.ReplaceAll(cn, " ", "")
-	ls := strings.Split(cn, ",")
-	paramSign := ""
-	for i := range ls {
-		if i > 0 {
-			paramSign += ","
+	if cn != "" {
+		ls := strings.Split(cn, ",")
+		for i := range ls {
+			if i > 0 {
+				paramSign += ","
+			}
+			paramSign += " ?"
 		}
-		paramSign += " ?"
+
+		paramSign = strings.TrimSpace(paramSign)
 	}
-	return paramSign
+	return
 }
 
 func (slf *Repo[T]) Save(sqlPars ...interface{}) error {
