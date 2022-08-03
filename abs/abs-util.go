@@ -5,8 +5,16 @@
 
 package abs
 
+import (
+	"time"
+
+	"github.com/golang-jwt/jwt"
+)
+
 type Util interface {
 	GetNanoID(length ...int) (string, error)
+	CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, pemKey []byte) (string, error)
+	GetJwtClaims(token string, publicKey []byte) (*jwt.StandardClaims, bool, error)
 }
 
 type UtilEnv interface {

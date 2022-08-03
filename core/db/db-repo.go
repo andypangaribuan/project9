@@ -14,7 +14,7 @@ import (
 	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/model"
 	"github.com/andypangaribuan/project9/p9"
-	"github.com/pkg/errors"
+	"github.com/lib/pq"
 )
 
 type Repo[T any] struct {
@@ -135,7 +135,16 @@ func (slf *Repo[T]) GetDatas(whereQuery string, endQuery string, wherePars ...in
 	unsafe, err := slf.DbInstance.Select(&models, sql.query, sql.pars)
 	slf.OnUnsafe(unsafe)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		if e, ok := err.(*pq.Error); ok {
+			msg := strings.TrimSpace(e.Message)
+			if msg != "" {
+				msg += "\n"
+			}
+			msg += fmt.Sprintf("sql: %v\npars: %v", sql.query, sql.pars)
+			e.Message = msg
+			err = e
+		}
+		return nil, err
 	}
 
 	return models, nil
@@ -144,4 +153,55 @@ func (slf *Repo[T]) GetDatas(whereQuery string, endQuery string, wherePars ...in
 func (slf *Repo[T]) GetData(whereQuery string, endQuery string, wherePars ...interface{}) (*T, error) {
 	models, err := slf.GetDatas(whereQuery, endQuery, wherePars...)
 	return slf.first(models), err
+}
+
+func (slf *Repo[T]) Count(whereQuery, endQuery string, wherePars ...interface{}) (int, error) {
+	sql := srRepoSql[T]{}.new(`SELECT COUNT(*) FROM ::tableName`)
+
+	query := strings.TrimSpace(whereQuery)
+	if query != "" {
+		wq := strings.ToLower(query)
+		if (len(wq) <= 6) || (len(wq) > 6 && wq[:6] != "where ") {
+			query = fmt.Sprintf("WHERE %v", query)
+		}
+	}
+
+	endQuery = strings.TrimSpace(endQuery)
+	if endQuery != "" {
+		query += " " + endQuery
+		query = strings.TrimSpace(query)
+	}
+
+	sql.query += " " + query
+	sql.transform(slf)
+	sql.pars = wherePars
+
+	var count int
+	err := slf.DbInstance.Get(&count, sql.query, sql.pars)
+	return count, err
+}
+
+func (slf *Repo[T]) Delete(whereQuery string, wherePars ...interface{}) error {
+	sql := srRepoSql[T]{}.new(`DELETE FROM ::tableName`)
+
+	query := strings.TrimSpace(whereQuery)
+	if query != "" {
+		wq := strings.ToLower(query)
+		if (len(wq) <= 6) || (len(wq) > 6 && wq[:6] != "where ") {
+			query = fmt.Sprintf("WHERE %v", query)
+		}
+	}
+
+	sql.query += " " + query
+	sql.transform(slf)
+	sql.pars = wherePars
+
+	return slf.DbInstance.Execute(sql.query, sql.pars)
+}
+
+func (slf *Repo[T]) Execute(sqlQuery string, sqlPars ...interface{}) error {
+	sql := srRepoSql[T]{}.new(sqlQuery)
+	sql.transform(slf)
+	sql.pars = sqlPars
+	return slf.DbInstance.Execute(sql.query, sql.pars)
 }

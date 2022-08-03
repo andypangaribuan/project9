@@ -15,6 +15,7 @@ type DbInstance interface {
 	Ping() error
 	Execute(sqlQuery string, sqlPars ...interface{}) error
 	Select(out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error)
+	Get(out interface{}, sqlQuery string, sqlPars ...interface{}) error
 }
 
 type DbPostgresInstance interface {

@@ -11,8 +11,31 @@ import (
 	"github.com/andypangaribuan/project9/p9"
 )
 
-func TimeNow() time.Time {
-	dtNowStr := p9.Conv.Time.ToStr(time.Now(), "yyyy-MM-dd HH:mm:ss.SSSSSS") //p9.Conv.Time.ToStrFull(time.Now())
-	dtNow, _ := p9.Conv.Time.ToTime("yyyy-MM-dd HH:mm:ss.SSSSSS", dtNowStr)
-	return dtNow
+var TimeZone string
+var timeZones map[string]*time.Location
+
+func init() {
+	timeZones = make(map[string]*time.Location, 0)
+}
+
+func TimeNow(zone string) time.Time {
+	if zone == "" {
+		if TimeZone == "" {
+			timeNowStr := p9.Conv.Time.ToStr(time.Now(), "yyyy-MM-dd HH:mm:ss.SSSSSS")
+			timeNow, _ := p9.Conv.Time.ToTime("yyyy-MM-dd HH:mm:ss.SSSSSS", timeNowStr)
+			return timeNow
+		}
+		zone = TimeZone
+	}
+
+	var location *time.Location
+	if loc, ok := timeZones[zone]; !ok {
+		_loc, _ := time.LoadLocation(zone)
+		location = _loc
+		timeZones[zone] = _loc
+	} else {
+		location = loc
+	}
+
+	return time.Now().In(location)
 }

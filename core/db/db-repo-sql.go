@@ -19,15 +19,18 @@ func (slf srRepoSql[T]) new(query string) *srRepoSql[T] {
 }
 
 func (slf *srRepoSql[T]) transform(base *Repo[T]) {
+	insertColumnNames := ""
+
 	if strings.Contains(slf.query, "::tableName") {
 		slf.query = strings.ReplaceAll(slf.query, "::tableName", base.TableName)
 	}
 
 	if strings.Contains(slf.query, "::insertColumnNames") {
-		insertColumnNames := base.InsertColumnNames
+		insertColumnNames = base.InsertColumnNames
 		if insertColumnNames == "" {
 			insertColumnNames = base.ColumnNames
 		}
+		insertColumnNames = strings.TrimSpace(insertColumnNames)
 		slf.query = strings.ReplaceAll(slf.query, "::insertColumnNames", insertColumnNames)
 	}
 
@@ -36,6 +39,17 @@ func (slf *srRepoSql[T]) transform(base *Repo[T]) {
 		if insertParamSign == "" {
 			insertParamSign = base.ParamSigns
 		}
+		if insertParamSign == "" && insertColumnNames != "" {
+			icn := strings.ReplaceAll(insertColumnNames, " ", "")
+			arr := strings.Split(icn, ",")
+			for i := range arr {
+				if i > 0 {
+					insertParamSign += ", "
+				}
+				insertParamSign += "?"
+			}
+		}
+		insertParamSign = strings.TrimSpace(insertParamSign)
 		slf.query = strings.ReplaceAll(slf.query, "::insertParamSign", insertParamSign)
 	}
 

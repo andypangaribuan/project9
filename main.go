@@ -8,6 +8,7 @@ package project9
 import (
 	"github.com/andypangaribuan/project9/core/check"
 	"github.com/andypangaribuan/project9/core/conv"
+	"github.com/andypangaribuan/project9/core/crypto"
 	"github.com/andypangaribuan/project9/core/db"
 	"github.com/andypangaribuan/project9/core/json"
 	"github.com/andypangaribuan/project9/core/log"
@@ -20,6 +21,7 @@ func Initialize() {
 	p9.Init().
 		Check(check.Create()).
 		Conv(conv.Create()).
+		Crypto(crypto.Create()).
 		Db(db.Create()).
 		Json(json.Create()).
 		Log(log.Create()).

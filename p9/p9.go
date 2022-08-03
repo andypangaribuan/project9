@@ -11,13 +11,14 @@ type srInit struct{}
 
 //goland:noinspection ALL
 var (
-	Check *srCheck
-	Conf  *srConf
-	Conv  *srConv
-	Db    *srDb
-	Json  *srJson
-	Log   *srLog
-	Util  *srUtil
+	Check  *srCheck
+	Conf   *srConf
+	Conv   *srConv
+	Crypto *srCrypto
+	Db     *srDb
+	Json   *srJson
+	Log    *srLog
+	Util   *srUtil
 )
 
 func init() {
@@ -42,6 +43,13 @@ func (slf *srInit) Check(fnStr abs.CheckStr) *srInit {
 func (slf *srInit) Conv(fnTime abs.ConvTime) *srInit {
 	Conv = &srConv{
 		Time: &srConvTime{fnTime},
+	}
+	return slf
+}
+
+func (slf *srInit) Crypto(fnCrypto abs.CryptoMD5) *srInit {
+	Crypto = &srCrypto{
+		MD5: &srCryptoMD5{fnCrypto},
 	}
 	return slf
 }

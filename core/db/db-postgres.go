@@ -81,3 +81,13 @@ func (slf *pqInstance) Select(out interface{}, sqlQuery string, sqlPars ...inter
 
 	return nil, err
 }
+
+func (slf *pqInstance) Get(out interface{}, sqlQuery string, sqlPars ...interface{}) error {
+	instance, err := slf.getInstance()
+	if err != nil {
+		return err
+	}
+
+	query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
+	return instance.Get(out, query, pars...)
+}
