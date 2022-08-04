@@ -1,3 +1,22 @@
+<!-- 
+Find errors not caught by the compilers.
+This command vets the package in the current directory.
+  $ go vet
+Download all dependencies
+  $ go mod download
+Remove unused dependencies
+  $ go mod tidy
+
+IntelliJ Shortcuts
+✦ opt + (↑ OR ↓)    ︎〉extend selection
+✦ ctrl + opt + I    ︎〉auto-indent lines
+✦ ctrl + shift + E  ︎〉next highlighted error (custom)
+✦ ctrl + tab        ︎〉switcher
+✦ cmd + .  ︎         〉collapse or expand block
+✦ ctrl + shift + -  ︎〉collapse all
+✦ ctrl + shift + +  ︎〉expand all
+-->
+
 # Project 9
 ## _One-stop Solution For All Your GO Project_
 
@@ -19,18 +38,16 @@ project9.Initialize()
 
 ## Interfaces
 
-| Code    | Description |
-|---------|-------------|
-| p9.Conv | Converter   |
-| p9.Db   | Database    |
-| p9.Json | Json        |
-| p9.Util | Utilities   |
+| Code      | Description      |
+|-----------|------------------|
+| p9.Check  | Value checker    |
+| p9.Conf   | P9 Configuration |
+| p9.Conv   | Converter        |
+| p9.Crypto | Cryptography     |
+| p9.Db     | Database         |
+| p9.Http   | API Caller       |
+| p9.Json   | Json             |
+| p9.Log    | Logging          |
+| p9.Util   | Utilities        |
 
-
-
-[//]: # ( COMMANDS )
-
-[//]: # ( Find errors not caught by the compilers.  
-This command vets the package in the current directory.
-  $ go vet
-)
+> f9 : access direct function

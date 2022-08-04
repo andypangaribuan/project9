@@ -5,8 +5,12 @@
 
 package p9
 
+import "time"
+
 type srConf struct {
 	NanoIdLength int
 	HashIdSalt   string
 	HashIdLength int
+
+	DefaultHttpRequestTimeout *time.Duration
 }

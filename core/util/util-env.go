@@ -13,8 +13,15 @@ import (
 	"strings"
 
 	"github.com/andypangaribuan/project9/abs"
+	"github.com/andypangaribuan/project9/act/actenv"
 	"github.com/pkg/errors"
 )
+
+func (slf *srEnv) GetAppEnv(key string) actenv.AppEnv {
+	return &srAppEnv{
+		Value: slf.GetStr(key),
+	}
+}
 
 func (*srEnv) GetStr(key string) string {
 	value := os.Getenv(key)
@@ -79,4 +86,28 @@ func (slf *srEnvBase64) Data() []byte {
 
 func (slf *srEnvBase64) String() string {
 	return string(slf.data)
+}
+
+func (slf *srAppEnv) value() string {
+	return strings.ToLower(slf.Value)
+}
+
+func (slf *srAppEnv) IsProd() bool {
+	val := slf.value()
+	return val == "prod" || val == "production"
+}
+
+func (slf *srAppEnv) IsStg() bool {
+	val := slf.value()
+	return val == "stg" || val == "staging"
+}
+
+func (slf *srAppEnv) IsDev() bool {
+	val := slf.value()
+	return val == "dev" || val == "development"
+}
+
+func (slf *srAppEnv) IsSandbox() bool {
+	val := slf.value()
+	return val == "sbx" || val == "sandbox"
 }

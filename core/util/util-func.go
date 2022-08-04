@@ -23,6 +23,10 @@ func (*srUtil) GetNanoID(length ...int) (string, error) {
 	return gonanoid.Generate(alphabet, size)
 }
 
+func (*srUtil) GetRandom(length int, value string) (string, error) {
+	return gonanoid.Generate(value, length)
+}
+
 func (*srUtil) CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte) (string, error) {
 	key, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
 	if err != nil {

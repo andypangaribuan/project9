@@ -10,6 +10,7 @@ import (
 	"github.com/andypangaribuan/project9/core/conv"
 	"github.com/andypangaribuan/project9/core/crypto"
 	"github.com/andypangaribuan/project9/core/db"
+	"github.com/andypangaribuan/project9/core/http"
 	"github.com/andypangaribuan/project9/core/json"
 	"github.com/andypangaribuan/project9/core/log"
 	"github.com/andypangaribuan/project9/core/util"
@@ -23,6 +24,7 @@ func Initialize() {
 		Conv(conv.Create()).
 		Crypto(crypto.Create()).
 		Db(db.Create()).
+		Http(http.Create()).
 		Json(json.Create()).
 		Log(log.Create()).
 		Util(util.Create())

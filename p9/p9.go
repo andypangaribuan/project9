@@ -5,7 +5,11 @@
 
 package p9
 
-import "github.com/andypangaribuan/project9/abs"
+import (
+	"time"
+
+	"github.com/andypangaribuan/project9/abs"
+)
 
 type srInit struct{}
 
@@ -16,16 +20,19 @@ var (
 	Conv   *srConv
 	Crypto *srCrypto
 	Db     *srDb
+	Http   *srHttp
 	Json   *srJson
 	Log    *srLog
 	Util   *srUtil
 )
 
 func init() {
+	defaultHttpRequestTimeout := 2 * time.Minute
 	Conf = &srConf{
-		NanoIdLength: 60,
-		HashIdSalt:   "Project9",
-		HashIdLength: 60,
+		NanoIdLength:              60,
+		HashIdSalt:                "Project9",
+		HashIdLength:              60,
+		DefaultHttpRequestTimeout: &defaultHttpRequestTimeout,
 	}
 }
 
@@ -56,6 +63,11 @@ func (slf *srInit) Crypto(fnCrypto abs.CryptoMD5) *srInit {
 
 func (slf *srInit) Db(fnDb abs.Db) *srInit {
 	Db = &srDb{fnDb}
+	return slf
+}
+
+func (slf *srInit) Http(fnHttp abs.Http) *srInit {
+	Http = &srHttp{fnHttp}
 	return slf
 }
 

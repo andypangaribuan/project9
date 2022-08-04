@@ -18,7 +18,12 @@ func init() {
 	timeZones = make(map[string]*time.Location, 0)
 }
 
-func TimeNow(zone string) time.Time {
+func TimeNow(timezone ...string) time.Time {
+	zone := ""
+	if len(timezone) > 0 {
+		zone = timezone[0]
+	}
+
 	if zone == "" {
 		if TimeZone == "" {
 			timeNowStr := p9.Conv.Time.ToStr(time.Now(), "yyyy-MM-dd HH:mm:ss.SSSSSS")
