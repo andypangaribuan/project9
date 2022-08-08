@@ -18,12 +18,12 @@ IntelliJ Shortcuts
 -->
 
 # Project 9
+
 ## _One-stop Solution For All Your GO Project_
 
 Project 9 is a small and light but powerful go framework.
 Also, it has proven to be saving a lot of development hours.
 If you need performance and good productivity, you will love Project 9.
-
 
 ## Installation
 
@@ -35,7 +35,6 @@ Then do initialization before using the p9.
 project9.Initialize()
 ```
 
-
 ## Interfaces
 
 | Code      | Description      |
@@ -45,6 +44,7 @@ project9.Initialize()
 | p9.Conv   | Converter        |
 | p9.Crypto | Cryptography     |
 | p9.Db     | Database         |
+| p9.Err    | Error wrap       |
 | p9.Http   | API Caller       |
 | p9.Json   | Json             |
 | p9.Log    | Logging          |
