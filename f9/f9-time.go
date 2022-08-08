@@ -20,7 +20,7 @@ func init() {
 
 func TimeNow(timezone ...string) time.Time {
 	zone := ""
-	if len(timezone) > 0 {
+	if len(timezone) > 0 && timezone[0] != "" {
 		zone = timezone[0]
 	}
 
@@ -40,6 +40,14 @@ func TimeNow(timezone ...string) time.Time {
 		timeZones[zone] = _loc
 	} else {
 		location = loc
+	}
+
+	if len(timezone) > 0 && timezone[0] == "" {
+		format := "yyyy-MM-dd HH:mm:ss.SSSSSS"
+		tm := time.Now().In(location)
+		tmStr := p9.Conv.Time.ToStr(tm, format)
+		tmUtc, _ := p9.Conv.Time.ToTime(format, tmStr)
+		return tmUtc
 	}
 
 	return time.Now().In(location)

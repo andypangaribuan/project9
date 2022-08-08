@@ -71,7 +71,7 @@ func (slf *Repo[T]) GenerateParamSigns(columnNames string) (paramSign string) {
 	return
 }
 
-func (slf *Repo[T]) Save(sqlPars ...interface{}) error {
+func (slf *Repo[T]) Insert(sqlPars ...interface{}) error {
 	sql := srRepoSql[T]{}.new(`
 INSERT INTO ::tableName (
 	::insertColumnNames

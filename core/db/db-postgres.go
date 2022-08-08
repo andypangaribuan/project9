@@ -11,7 +11,6 @@ import (
 	"github.com/andypangaribuan/project9/model"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/pkg/errors"
 )
 
 var locking sync.Mutex
@@ -36,9 +35,6 @@ func (slf *pqInstance) Ping() error {
 	instance, err := slf.getInstance()
 	if err == nil {
 		err = instance.Ping()
-		if err != nil {
-			err = errors.WithStack(err)
-		}
 	}
 	return err
 }

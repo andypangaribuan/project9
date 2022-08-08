@@ -20,6 +20,7 @@ var (
 	Conv   *srConv
 	Crypto *srCrypto
 	Db     *srDb
+	Err    *srErr
 	Http   *srHttp
 	Json   *srJson
 	Log    *srLog
@@ -63,6 +64,11 @@ func (slf *srInit) Crypto(fnCrypto abs.CryptoMD5) *srInit {
 
 func (slf *srInit) Db(fnDb abs.Db) *srInit {
 	Db = &srDb{fnDb}
+	return slf
+}
+
+func (slf *srInit) Err(fnErr abs.Err) *srInit {
+	Err = &srErr{fnErr}
 	return slf
 }
 

@@ -13,7 +13,6 @@ import (
 	"github.com/andypangaribuan/project9/abs"
 	"github.com/andypangaribuan/project9/model"
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 )
 
 func (*srDb) NewPostgresInstance(host string, port int, dbName, username, password string, schema *string, config *model.DbConfig, autoRebind, unsafeCompatibility bool, applicationName string) abs.DbPostgresInstance {
@@ -53,9 +52,6 @@ func getConnection(conn *srConnection) (*sqlx.DB, error) {
 		instance.SetMaxOpenConns(conn.maxOpenConnection)
 		err = instance.Ping()
 	}
-	if err != nil {
-		err = errors.WithStack(err)
-	}
 	return instance, err
 }
 
@@ -83,14 +79,10 @@ func execute(conn *srConnection, sqlQuery string, sqlPars ...interface{}) (sql.R
 
 	stmt, err := conn.instance.Prepare(sqlQuery)
 	if err != nil {
-		err = errors.WithStack(err)
 		return nil, err
 	}
 	defer func() { _ = stmt.Close() }()
 
 	res, err := stmt.Exec(sqlPars...)
-	if err != nil {
-		err = errors.WithStack(err)
-	}
 	return res, err
 }

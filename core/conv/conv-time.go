@@ -8,13 +8,13 @@ package conv
 import (
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 const (
-	layoutTimeDate = "2006-01-02"
-	layoutTimeFull = "2006-01-02 15:04:05"
+	layoutTimeDate   = "2006-01-02"
+	layoutTimeFull   = "2006-01-02 15:04:05"
+	layoutTimeMillis = "2006-01-02 15:04:05.000"
+	layoutTimeMicro  = "2006-01-02 15:04:05.000000"
 )
 
 var replacer = [][]string{
@@ -47,14 +47,33 @@ func (*srTime) ToStrFull(tm time.Time) string {
 	return tm.Format(layoutTimeFull)
 }
 
-func (*srTime) ToTime(layout string, value string) (tm time.Time, err error) {
+func (*srTime) ToStrMillis(tm time.Time) string {
+	return tm.Format(layoutTimeMillis)
+}
+
+func (*srTime) ToStrMicro(tm time.Time) string {
+	return tm.Format(layoutTimeMicro)
+}
+
+func (*srTime) ToTime(layout string, value string) (time.Time, error) {
 	for _, arr := range replacer {
 		layout = strings.Replace(layout, arr[0], arr[1], -1)
 	}
+	return time.Parse(layout, value)
+}
 
-	tm, err = time.Parse(layout, value)
-	if err != nil {
-		err = errors.WithStack(err)
-	}
-	return
+func (slf *srTime) ToTimeDate(value string) (time.Time, error) {
+	return time.Parse(layoutTimeDate, value)
+}
+
+func (slf *srTime) ToTimeFull(value string) (time.Time, error) {
+	return time.Parse(layoutTimeFull, value)
+}
+
+func (slf *srTime) ToTimeMillis(value string) (time.Time, error) {
+	return time.Parse(layoutTimeMillis, value)
+}
+
+func (slf *srTime) ToTimeMicro(value string) (time.Time, error) {
+	return time.Parse(layoutTimeMicro, value)
 }

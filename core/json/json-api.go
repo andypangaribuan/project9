@@ -7,7 +7,6 @@ package json
 
 import (
 	"github.com/json-iterator/go"
-	"github.com/pkg/errors"
 )
 
 var api jsoniter.API
@@ -26,41 +25,21 @@ func init() {
 }
 
 func (*srJson) Marshal(obj interface{}) ([]byte, error) {
-	data, err := api.Marshal(obj)
-	if err != nil {
-		err = errors.WithStack(err)
-	}
-	return data, err
+	return api.Marshal(obj)
 }
 
 func (*srJson) UnMarshal(data []byte, out interface{}) error {
-	err := api.Unmarshal(data, &out)
-	if err != nil {
-		err = errors.WithStack(err)
-	}
-	return err
+	return api.Unmarshal(data, &out)
 }
 
 func (*srJson) Encode(obj interface{}) (string, error) {
-	val, err := api.MarshalToString(obj)
-	if err != nil {
-		err = errors.WithStack(err)
-	}
-	return val, err
+	return api.MarshalToString(obj)
 }
 
 func (*srJson) Decode(jsonStr string, out interface{}) error {
-	err := api.UnmarshalFromString(jsonStr, &out)
-	if err != nil {
-		err = errors.WithStack(err)
-	}
-	return err
+	return api.UnmarshalFromString(jsonStr, &out)
 }
 
 func (*srJson) MapToJson(maps map[string]interface{}) (string, error) {
-	val, err := api.MarshalToString(maps)
-	if err != nil {
-		err = errors.WithStack(err)
-	}
-	return val, err
+	return api.MarshalToString(maps)
 }

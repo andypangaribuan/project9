@@ -6,21 +6,44 @@
 package util
 
 import (
+	"encoding/base64"
+	"fmt"
 	"time"
 
+	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/p9"
 	"github.com/golang-jwt/jwt"
 	"github.com/matoous/go-nanoid/v2"
 )
 
-func (*srUtil) GetNanoID(length ...int) (string, error) {
-	alphabet := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const idAlphabetLower = "abcdefghijklmnopqrstuvwxyz"
+const idAlphabetUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const idNumeric = "0123456789"
+
+func (slf *srUtil) GetNanoID(length ...int) string {
 	size := p9.Conf.NanoIdLength
 	if len(length) > 0 {
 		size = length[0]
 	}
+	if size <= 0 {
+		return ""
+	}
 
-	return gonanoid.Generate(alphabet, size)
+	id, _ := slf.GetRandom(size, idNumeric+idAlphabetLower+idAlphabetUpper)
+	return id
+}
+
+func (slf *srUtil) GetID25() string {
+	unixMicro := fmt.Sprintf("%v", f9.TimeNow().UnixMicro())
+	u3 := unixMicro[len(unixMicro)-3:]
+	ul := unixMicro[:len(unixMicro)-3]
+	id := fmt.Sprintf("%v%v", u3, ul)
+
+	nn, _ := slf.GetRandom(9, idAlphabetLower+idAlphabetUpper)
+	n1 := nn[:6]
+	n2 := nn[6:]
+
+	return fmt.Sprintf("%v%v%v", n1, id, n2)
 }
 
 func (*srUtil) GetRandom(length int, value string) (string, error) {
@@ -61,4 +84,12 @@ func (*srUtil) GetJwtClaims(token string, publicKey []byte) (*jwt.StandardClaims
 	}
 
 	return claims, false, err
+}
+
+func (*srUtil) Base64Encode(data []byte) string {
+	return base64.StdEncoding.EncodeToString(data)
+}
+
+func (*srUtil) Base64Decode(value string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(value)
 }

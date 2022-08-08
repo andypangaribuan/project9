@@ -13,18 +13,21 @@ import (
 )
 
 type Util interface {
-	GetNanoID(length ...int) (string, error)
+	GetNanoID(length ...int) string
+	GetID25() string
 	GetRandom(length int, value string) (string, error)
 	CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, pemKey []byte) (string, error)
 	GetJwtClaims(token string, publicKey []byte) (*jwt.StandardClaims, bool, error)
+	Base64Encode(data []byte) string
+	Base64Decode(value string) ([]byte, error)
 }
 
 type UtilEnv interface {
 	GetAppEnv(key string) actenv.AppEnv
-	GetStr(key string) string
-	GetInt(key string) int
-	GetInt32(key string) int32
-	GetBool(key string) bool
+	GetStr(key string, defValue ...string) string
+	GetInt(key string, defValue ...int) int
+	GetInt32(key string, defValue ...int32) int32
+	GetBool(key string, defValue ...bool) bool
 	GetBase64(key string) UtilEnvBase64
 }
 
