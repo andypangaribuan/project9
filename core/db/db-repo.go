@@ -28,11 +28,35 @@ type Repo[T any] struct {
 }
 
 func (slf *Repo[T]) SetColumnNames(names string) {
-	slf.ColumnNames = strings.TrimSpace(names)
+	slf.ColumnNames = slf.normalizeColumnNames(names)
 }
 
 func (slf *Repo[T]) SetInsertColumnNames(names string) {
-	slf.InsertColumnNames = strings.TrimSpace(names)
+	slf.InsertColumnNames = slf.normalizeColumnNames(names)
+}
+
+func (slf *Repo[T]) normalizeColumnNames(names string) string {
+	lines := strings.Split(names, "\n")
+	val := ""
+	isFirstLineEmpty := false
+
+	for idx, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			if idx == 0 {
+				isFirstLineEmpty = true
+			}
+			continue
+		}
+
+		if val != "" && isFirstLineEmpty {
+			val += "\t"
+		}
+
+		val += line
+	}
+
+	return val
 }
 
 func (slf *Repo[T]) OnUnsafe(unsafe *model.DbUnsafeSelectError) {

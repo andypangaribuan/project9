@@ -16,7 +16,10 @@ type Util interface {
 	GetNanoID(length ...int) string
 	GetID25() string
 	GetRandom(length int, value string) (string, error)
-	CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, pemKey []byte) (string, error)
+	BuildJwtToken(privateKey []byte, claims jwt.Claims) (string, error)
+	BuildJwtTokenWithPassword(privateKey []byte, password string, claims jwt.Claims) (string, error)
+	CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte) (string, error)
+	CreateJwtTokenWithPassword(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte, password string) (string, error)
 	GetJwtClaims(token string, publicKey []byte) (*jwt.StandardClaims, bool, error)
 	Base64Encode(data []byte) string
 	Base64Decode(value string) ([]byte, error)

@@ -6,6 +6,7 @@
 package util
 
 import (
+	"crypto/rsa"
 	"encoding/base64"
 	"fmt"
 	"time"
@@ -50,12 +51,45 @@ func (*srUtil) GetRandom(length int, value string) (string, error) {
 	return gonanoid.Generate(value, length)
 }
 
-func (*srUtil) CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte) (string, error) {
+func (slf *srUtil) BuildJwtToken(privateKey []byte, claims jwt.Claims) (string, error) {
 	key, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
 	if err != nil {
 		return "", err
 	}
 
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	return token.SignedString(key)
+}
+
+func (slf *srUtil) BuildJwtTokenWithPassword(privateKey []byte, password string, claims jwt.Claims) (string, error) {
+	key, err := jwt.ParseRSAPrivateKeyFromPEMWithPassword(privateKey, password)
+	if err != nil {
+		return "", err
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	return token.SignedString(key)
+}
+
+func (slf *srUtil) CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte) (string, error) {
+	key, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
+	if err != nil {
+		return "", err
+	}
+
+	return slf.createJwtToken(key, subject, id, expiresAt, issuedAt, notBefore)
+}
+
+func (slf *srUtil) CreateJwtTokenWithPassword(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte, password string) (string, error) {
+	key, err := jwt.ParseRSAPrivateKeyFromPEMWithPassword(privateKey, password)
+	if err != nil {
+		return "", err
+	}
+
+	return slf.createJwtToken(key, subject, id, expiresAt, issuedAt, notBefore)
+}
+
+func (*srUtil) createJwtToken(key *rsa.PrivateKey, subject, id string, expiresAt, issuedAt, notBefore time.Time) (string, error) {
 	claims := jwt.StandardClaims{
 		ExpiresAt: expiresAt.Unix(),
 		Id:        id,
