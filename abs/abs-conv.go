@@ -5,7 +5,11 @@
 
 package abs
 
-import "time"
+import (
+	"time"
+
+	"google.golang.org/protobuf/types/known/structpb"
+)
 
 type ConvTime interface {
 	ToStr(tm time.Time, format string) string
@@ -19,4 +23,8 @@ type ConvTime interface {
 	ToTimeFull(value string) (time.Time, error)
 	ToTimeMillis(value string) (time.Time, error)
 	ToTimeMicro(value string) (time.Time, error)
+}
+
+type ConvProto interface {
+	AnyToProtoStruct(sr any) (*structpb.Struct, error)
 }

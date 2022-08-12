@@ -6,7 +6,8 @@
 package conv
 
 type srTime struct{}
+type srProto struct{}
 
-func Create() *srTime {
-	return &srTime{}
+func Create() (*srTime, *srProto) {
+	return &srTime{}, &srProto{}
 }

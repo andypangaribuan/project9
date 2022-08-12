@@ -1,4 +1,7 @@
 <!-- 
+file: go.mod
+replace github.com/andypangaribuan/project9 => /Users/apangaribuan/repo/github/project9
+
 Find errors not caught by the compilers.
 This command vets the package in the current directory.
   $ go vet

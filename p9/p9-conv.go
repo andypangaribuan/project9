@@ -10,7 +10,8 @@ import (
 )
 
 type srConv struct {
-	Time *srConvTime
+	Time  *srConvTime
+	Proto *srConvProto
 }
 
 type srConvTime struct {
@@ -19,4 +20,12 @@ type srConvTime struct {
 
 type absConvTime interface {
 	abs.ConvTime
+}
+
+type srConvProto struct {
+	absConvProto
+}
+
+type absConvProto interface {
+	abs.ConvProto
 }
