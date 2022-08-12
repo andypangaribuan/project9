@@ -14,6 +14,7 @@ import (
 	"github.com/andypangaribuan/project9/core/http"
 	"github.com/andypangaribuan/project9/core/json"
 	"github.com/andypangaribuan/project9/core/log"
+	"github.com/andypangaribuan/project9/core/server"
 	"github.com/andypangaribuan/project9/core/util"
 	"github.com/andypangaribuan/project9/p9"
 )
@@ -29,5 +30,6 @@ func Initialize() {
 		Http(http.Create()).
 		Json(json.Create()).
 		Log(log.Create()).
+		Server(server.Create()).
 		Util(util.Create())
 }

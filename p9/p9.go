@@ -24,6 +24,7 @@ var (
 	Http   *srHttp
 	Json   *srJson
 	Log    *srLog
+	Server *srServer
 	Util   *srUtil
 )
 
@@ -84,6 +85,11 @@ func (slf *srInit) Json(fnJson abs.Json) *srInit {
 
 func (slf *srInit) Log(fnLog abs.Log) *srInit {
 	Log = &srLog{fnLog}
+	return slf
+}
+
+func (slf *srInit) Server(fn abs.Server) *srInit {
+	Server = &srServer{fn}
 	return slf
 }
 

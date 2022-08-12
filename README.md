@@ -48,6 +48,7 @@ project9.Initialize()
 | p9.Http   | API Caller       |
 | p9.Json   | Json             |
 | p9.Log    | Logging          |
+| p9.Server | TCP Server       |
 | p9.Util   | Utilities        |
 
 > f9 : access direct function
