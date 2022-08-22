@@ -8,3 +8,7 @@ package abs
 type CryptoMD5 interface {
 	Generate(data string) string
 }
+
+type CryptoSHA256 interface {
+	Generate(data string) string
+}

@@ -6,11 +6,11 @@
 package crypto
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 )
 
-func (*srCryptoMD5) Generate(data string) string {
-	hash := md5.Sum([]byte(data))
+func (*srCryptoSHA256) Generate(data string) string {
+	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])
 }

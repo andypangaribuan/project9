@@ -5,8 +5,10 @@
 
 package crypto
 
-type srCrypto struct{}
+type srCryptoMD5 struct{}
 
-func Create() *srCrypto {
-	return &srCrypto{}
+type srCryptoSHA256 struct{}
+
+func Create() (*srCryptoMD5, *srCryptoSHA256) {
+	return &srCryptoMD5{}, &srCryptoSHA256{}
 }
