@@ -22,56 +22,102 @@ func (slf *srEnv) GetAppEnv(key string) actenv.AppEnv {
 	}
 }
 
-func (*srEnv) GetStr(key string, defValue ...string) string {
-	value := os.Getenv(key)
-	value = strings.TrimSpace(value)
-	if value == "" {
-		if len(defValue) == 0 {
-			log.Fatalf("env key \"%v\" not found", key)
-		} else {
-			value = defValue[0]
-		}
+func (*srEnv) getEnv(key string) string {
+	return strings.TrimSpace(os.Getenv(key))
+}
+
+func getEnvDefault[T any](key string, defaultValue ...T) (string, *T) {
+	value := strings.TrimSpace(os.Getenv(key))
+
+	switch {
+	case value == "" && len(defaultValue) > 0:
+		return value, &defaultValue[0]
+	case value == "":
+		log.Fatalf(`env key "%v" doesn't exists'`, key)
 	}
+
+	return value, nil
+}
+
+func (*srEnv) GetStr(key string, defaultValue ...string) string {
+	strVal, val := getEnvDefault(key, defaultValue...)
+	if val != nil {
+		return *val
+	}
+
+	return strVal
+}
+
+func (slf *srEnv) GetInt(key string, defaultValue ...int) int {
+	strVal, val := getEnvDefault(key, defaultValue...)
+	if val != nil {
+		return *val
+	}
+
+	value, err := strconv.Atoi(strVal)
+	if err != nil {
+		log.Fatalf("env key \"%v\" is not int value\nerror:\n%+v", key, err)
+	}
+
 	return value
 }
 
-func (slf *srEnv) GetInt(key string, defValue ...int) int {
-	value, err := strconv.Atoi(slf.GetStr(key))
-	if err != nil {
-		if len(defValue) == 0 {
-			log.Fatalf("env key \"%v\" is not int value\nerror:\n%+v", key, err)
-		} else {
-			value = defValue[0]
-		}
+func (slf *srEnv) GetInt32(key string, defaultValue ...int32) int32 {
+	strVal, val := getEnvDefault(key, defaultValue...)
+	if val != nil {
+		return *val
 	}
-	return value
-}
 
-func (slf *srEnv) GetInt32(key string, defValue ...int32) int32 {
-	value, err := strconv.ParseInt(slf.GetStr(key), 10, 32)
+	value, err := strconv.ParseInt(strVal, 10, 32)
 	if err != nil {
-		if len(defValue) == 0 {
-			log.Fatalf("env key \"%v\" is not int value\nerror:\n%+v", key, err)
-		} else {
-			return defValue[0]
-		}
+		log.Fatalf(`env key "%v" is not int value\nerror:\n%v`, key, err)
 	}
+
 	return int32(value)
 }
 
-func (slf *srEnv) GetBool(key string, defValue ...bool) bool {
-	value := strings.ToLower(slf.GetStr(key))
-	if value == "1" || value == "true" {
-		return true
-	}
-	if value == "0" || value == "false" {
-		return false
-	}
-	if len(defValue) != 0 {
-		return defValue[0]
+func (slf *srEnv) GetFloat32(key string, defaultValue ...float32) float32 {
+	strVal, val := getEnvDefault(key, defaultValue...)
+	if val != nil {
+		return *val
 	}
 
-	log.Fatalf("env key \"%v\", from key env key \"%v\" is not a valid boolean value", value, key)
+	value, err := strconv.ParseFloat(strVal, 32)
+	if err != nil {
+		log.Fatalf("env key \"%v\" is not float32 value\nerror:\n%v", key, err)
+	}
+
+	return float32(value)
+}
+
+func (slf *srEnv) GetFloat64(key string, defaultValue ...float64) float64 {
+	strVal, val := getEnvDefault(key, defaultValue...)
+	if val != nil {
+		return *val
+	}
+
+	value, err := strconv.ParseFloat(strVal, 64)
+	if err != nil {
+		log.Fatalf("env key \"%v\" is not float64 value\nerror:\n%v", key, err)
+	}
+
+	return value
+}
+
+func (slf *srEnv) GetBool(key string, defaultValue ...bool) bool {
+	strVal, val := getEnvDefault(key, defaultValue...)
+	if val != nil {
+		return *val
+	}
+
+	switch strings.ToLower(strVal) {
+	case "1", "true":
+		return true
+	case "0", "false":
+		return false
+	}
+
+	log.Fatalf("env key \"%v\", from key env key \"%v\" is not a valid boolean value", strVal, key)
 	return false
 }
 
