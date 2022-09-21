@@ -33,6 +33,7 @@ type UtilEnv interface {
 	GetStr(key string, defaultValue ...string) string
 	GetInt(key string, defaultValue ...int) int
 	GetInt32(key string, defaultValue ...int32) int32
+	GetInt64(key string, defaultValue ...int64) int64
 	GetFloat32(key string, defaultValue ...float32) float32
 	GetFloat64(key string, defaultValue ...float64) float64
 	GetBool(key string, defaultValue ...bool) bool

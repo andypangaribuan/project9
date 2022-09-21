@@ -76,6 +76,20 @@ func (slf *srEnv) GetInt32(key string, defaultValue ...int32) int32 {
 	return int32(value)
 }
 
+func (slf *srEnv) GetInt64(key string, defaultValue ...int64) int64 {
+	strVal, val := getEnvDefault(key, defaultValue...)
+	if val != nil {
+		return *val
+	}
+
+	value, err := strconv.ParseInt(strVal, 10, 64)
+	if err != nil {
+		log.Fatalf(`env key "%v" is not int value\nerror:\n%v`, key, err)
+	}
+
+	return value
+}
+
 func (slf *srEnv) GetFloat32(key string, defaultValue ...float32) float32 {
 	strVal, val := getEnvDefault(key, defaultValue...)
 	if val != nil {

@@ -52,3 +52,9 @@ func TimeNow(timezone ...string) time.Time {
 
 	return time.Now().In(location)
 }
+
+func TimeRemoveTimeZone(tm time.Time) time.Time {
+	millis := p9.Conv.Time.ToStrMillis(tm)
+	timeWithoutTimeZone, _ := p9.Conv.Time.ToTimeMillis(millis)
+	return timeWithoutTimeZone
+}

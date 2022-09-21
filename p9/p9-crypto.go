@@ -8,8 +8,17 @@ package p9
 import "github.com/andypangaribuan/project9/abs"
 
 type srCrypto struct {
+	AES    *srCryptoAES
 	MD5    *srCryptoMD5
 	SHA256 *srCryptoSHA256
+}
+
+type srCryptoAES struct {
+	absCryptoAES
+}
+
+type absCryptoAES interface {
+	abs.CryptoAES
 }
 
 type srCryptoMD5 struct {
