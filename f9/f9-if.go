@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/andypangaribuan/project9/constraint"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func IfAllNil(items ...interface{}) bool {
@@ -36,10 +37,48 @@ func IfStrNotNilButEmpty(val *string) bool {
 	return false
 }
 
+func IfStrNilOrEmpty(val *string) bool {
+	if val == nil {
+		return true
+	}
+
+	if strings.TrimSpace(*val) == "" {
+		return true
+	}
+
+	return false
+}
+
 func IfPtrValueEqual[T constraint.ComparisonType, PtrT *T](left, right PtrT) bool {
 	if left == nil || right == nil {
 		return false
 	}
 
 	return *left == *right
+}
+
+func IfHaveEmpty(items ...string) bool {
+	haveEmpty := false
+
+	for _, item := range items {
+		if strings.TrimSpace(item) == "" {
+			haveEmpty = true
+			break
+		}
+	}
+
+	return haveEmpty
+}
+
+func IfAllStructPbNil(items ...*structpb.Value) bool {
+	allNil := true
+
+	for _, item := range items {
+		if item != nil && item.AsInterface() != nil {
+			allNil = false
+			break
+		}
+	}
+
+	return allNil
 }
