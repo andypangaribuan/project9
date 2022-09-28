@@ -9,7 +9,12 @@ import (
 	"github.com/andypangaribuan/project9/abs"
 )
 
+type absConv interface {
+	abs.Conv
+}
+
 type srConv struct {
+	absConv
 	Time  *srConvTime
 	Proto *srConvProto
 }

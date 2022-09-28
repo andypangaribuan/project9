@@ -49,10 +49,11 @@ func (slf *srInit) Check(fnStr abs.CheckStr) *srInit {
 	return slf
 }
 
-func (slf *srInit) Conv(fnTime abs.ConvTime, fnProto abs.ConvProto) *srInit {
+func (slf *srInit) Conv(fnConv abs.Conv, fnTime abs.ConvTime, fnProto abs.ConvProto) *srInit {
 	Conv = &srConv{
-		Time:  &srConvTime{fnTime},
-		Proto: &srConvProto{fnProto},
+		absConv: fnConv,
+		Time:    &srConvTime{fnTime},
+		Proto:   &srConvProto{fnProto},
 	}
 	return slf
 }

@@ -5,9 +5,11 @@
 
 package conv
 
+type srConv struct {}
+
 type srTime struct{}
 type srProto struct{}
 
-func Create() (*srTime, *srProto) {
-	return &srTime{}, &srProto{}
+func Create() (*srConv, *srTime, *srProto) {
+	return &srConv{}, &srTime{}, &srProto{}
 }

@@ -11,6 +11,10 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
+type Conv interface {
+	AnyToMap(obj interface{}) (map[string]interface{}, error)
+}
+
 type ConvTime interface {
 	ToStr(tm time.Time, format string) string
 	ToStrDate(tm time.Time) string
