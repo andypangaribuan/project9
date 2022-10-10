@@ -48,7 +48,9 @@ type UtilEnvBase64 interface {
 type UtilHashId interface {
 	Reload()
 	Encode(numbers ...int) string
+	Decode(hashed string) ([]int, error)
 	Encode64(numbers ...int64) string
+	DecodeInt64(hashed string) ([]int64, error)
 	Add(key, salt string, length int)
 	Get(key string) UtilHashId
 }

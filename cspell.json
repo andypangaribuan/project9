@@ -6,6 +6,7 @@
         "structpb",
         "dictio",
         "conv",
-        "gonanoid"
+        "gonanoid",
+        "hashids"
     ]
 }
