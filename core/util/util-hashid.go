@@ -28,10 +28,20 @@ func (slf *srHashId) Encode(numbers ...int) string {
 	return hashed
 }
 
+func (slf *srHashId) Decode(hashed string) ([]int, error) {
+	hid, _ := hashids.NewWithData(slf.instance)
+	return hid.DecodeWithError(hashed)
+}
+
 func (slf *srHashId) Encode64(numbers ...int64) string {
 	hid, _ := hashids.NewWithData(slf.instance)
 	hashed, _ := hid.EncodeInt64(numbers)
 	return hashed
+}
+
+func (slf *srHashId) DecodeInt64(hashed string) ([]int64, error) {
+	hid, _ := hashids.NewWithData(slf.instance)
+	return hid.DecodeInt64WithError(hashed)
 }
 
 func (slf *srHashId) Add(key, salt string, length int) {
