@@ -1,7 +1,9 @@
 /*
- * Copyright (c) 2022, Andy Pangaribuan <https://github.com/apangaribuan>.
+ * Copyright (c) 2022.
+ * Created by Andy Pangaribuan <https://github.com/apangaribuan>.
  * All Rights Reserved.
  */
+
 
 package db
 
