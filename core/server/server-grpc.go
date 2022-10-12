@@ -47,7 +47,7 @@ func (*srServer) StartGRPC(port int, autoRecover bool, register func(svc *grpc.S
 
 	register(server)
 
-	fmt.Printf("\nLISTEN PORT %v\n", address)
+	fmt.Printf("\nGRPC PORT: %v\n", port)
 	if err := server.Serve(listener); err != nil {
 		log.Fatal(err.Error())
 	}

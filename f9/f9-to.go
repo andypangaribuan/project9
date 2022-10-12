@@ -6,6 +6,7 @@
 package f9
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -37,8 +38,7 @@ import (
 		}
 	}
 
-	var iv interface{}
-	iv = val
+	var iv interface{} = val
 
 	switch iv := iv.(type) {
 	case int:
@@ -64,4 +64,10 @@ import (
 	}
 
 	return currency
+}
+
+
+func ToJsonRaw(data []byte) json.RawMessage {
+	var raw json.RawMessage = data
+	return raw
 }

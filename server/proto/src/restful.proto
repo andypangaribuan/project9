@@ -1,0 +1,37 @@
+/*
+ * Copyright (c) 2022.
+ * Created by Andy Pangaribuan <https://github.com/apangaribuan>.
+ * All Rights Reserved.
+ */
+
+syntax = "proto3";
+
+option go_package = "server/proto/gen/grf";
+package grf;
+
+import "google/protobuf/struct.proto";
+
+message Request {
+  string action = 1;
+  map<string, string> header = 2;
+  map<string, google.protobuf.Value> payload = 3;
+  map<string, string> params = 4;
+}
+
+message Response {
+  bytes data = 1;
+  RMeta meta = 2 ;
+}
+
+message RMeta {
+  int32 code = 1;
+  string status = 2;
+  string message = 3;
+  string address = 4;
+  string error = 5;
+  bytes data = 6;
+}
+
+service RestfulService {
+  rpc Restful(Request) returns (Response);
+}

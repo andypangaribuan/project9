@@ -24,6 +24,7 @@
   "errorLens.severityText": ["ERROR", "WARNING", "INFO", "HINT"],
   "errorLens.messageBackgroundMode": "line",
   "editor.rulers": [120],
+  "editor.foldingStrategy": "indentation",
   "fileHeaderComment.parameter": {
     "*": {
       "author": "Andy Pangaribuan",

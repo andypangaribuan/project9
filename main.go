@@ -19,7 +19,6 @@ import (
 	"github.com/andypangaribuan/project9/p9"
 )
 
-//goland:noinspection ALL
 func Initialize() {
 	p9.Init().
 		Check(check.Create()).
