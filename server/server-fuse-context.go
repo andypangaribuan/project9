@@ -222,6 +222,7 @@ func (slf *srFuseContext) SetAuth(authX, authY, authZ interface{}) {
 	slf.authX = authX
 	slf.authY = authY
 	slf.authZ = authZ
+	slf.isAuthSet = true
 }
 
 //endregion
@@ -451,7 +452,7 @@ func (slf *srFuseContext) send(fo FuseOpt, opt ...FuseOpt) error {
 			Meta: &grf.RMeta{
 				Code:    int32(response.Meta.Code),
 				Status:  response.Meta.Status,
-				Message: response.Meta.Status,
+				Message: response.Meta.Message,
 				Address: response.Meta.Address,
 				Error:   response.Meta.Error,
 				Data:    metaData,

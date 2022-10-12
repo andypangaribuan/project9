@@ -41,9 +41,11 @@ func (slf *srFuseGrpc) Restful(c context.Context, req *grf.Request) (*grf.Respon
 
 	if len(handlers) >= 2 {
 		err = handlers[0](ctx)
-		if err == nil {
-			err = handlers[1](ctx)
+		if !ctx.isAuthSet {
+			return ctx.grpcSend(err)
 		}
+
+		err = handlers[1](ctx)
 	} else {
 		err = handlers[0](ctx)
 	}
@@ -116,5 +118,6 @@ func (slf *srClientFuseGRPC) Restful(path string, header map[string]string, payl
 		Params:  params,
 	}
 
-	return slf.fuseGrpc.client.Restful(ctx, request)
+	res, err := slf.fuseGrpc.client.Restful(ctx, request)
+	return res, err
 }

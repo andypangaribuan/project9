@@ -89,9 +89,10 @@ type srFuseContext struct {
 	header        map[string]string
 	multipartFile map[string][]*multipart.FileHeader
 
-	authX interface{}
-	authY interface{}
-	authZ interface{}
+	authX     interface{}
+	authY     interface{}
+	authZ     interface{}
+	isAuthSet bool
 }
 
 type srFuseGrpc struct {

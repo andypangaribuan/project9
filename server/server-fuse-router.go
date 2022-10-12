@@ -23,30 +23,24 @@ func (slf *srFuseRouter) Single(path string, handlers ...func(sc FuseContext) er
 		panic(panicMsg)
 	}
 
-	handler := handlers[0]
 	ep := strings.TrimSpace(path[index+1:])
-	auth := make([]func(FuseContext) error, 0)
-
-	if len(handlers) == 2 {
-		auth = append(auth, handlers[1])
-	}
 
 	switch path[0:index] {
 	case "GET":
-		slf.fiberApp.Get(ep, slf.restfulProcess(ep, handler, auth...))
+		slf.fiberApp.Get(ep, slf.restfulProcess(ep, handlers...))
 	case "POS":
-		slf.fiberApp.Post(ep, slf.restfulProcess(ep, handler, auth...))
+		slf.fiberApp.Post(ep, slf.restfulProcess(ep, handlers...))
 	case "DEL":
-		slf.fiberApp.Delete(ep, slf.restfulProcess(ep, handler, auth...))
+		slf.fiberApp.Delete(ep, slf.restfulProcess(ep, handlers...))
 	case "PUT":
-		slf.fiberApp.Put(ep, slf.restfulProcess(ep, handler, auth...))
+		slf.fiberApp.Put(ep, slf.restfulProcess(ep, handlers...))
 	case "PAT":
-		slf.fiberApp.Patch(ep, slf.restfulProcess(ep, handler, auth...))
+		slf.fiberApp.Patch(ep, slf.restfulProcess(ep, handlers...))
 	default:
 		panic(panicMsg)
 	}
 
-	slf.grpcProcess(path, handler, auth...)
+	slf.grpcProcess(path, handlers...)
 }
 
 func (slf *srFuseRouter) Group(endpoints map[string][]func(sc FuseContext) error) {
@@ -55,27 +49,23 @@ func (slf *srFuseRouter) Group(endpoints map[string][]func(sc FuseContext) error
 	}
 }
 
-func (slf *srFuseRouter) restfulProcess(path string, handler func(FuseContext) error, auth ...func(FuseContext) error) func(ctx *fiber.Ctx) error {
-	return func(ctx *fiber.Ctx) error {
-		context := &srFuseContext{fiberCtx: ctx, path: path}
+func (slf *srFuseRouter) restfulProcess(path string, handlers ...func(FuseContext) error) func(ctx *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		ctx := &srFuseContext{fiberCtx: c, path: path}
 
-		if len(auth) == 1 {
-			err := auth[0](context)
-			if err != nil {
+		if len(handlers) >= 2 {
+			err := handlers[0](ctx)
+			if !ctx.isAuthSet {
 				return err
 			}
+
+			return handlers[1](ctx)
 		}
 
-		return handler(context)
+		return handlers[0](ctx)
 	}
 }
 
-func (slf *srFuseRouter) grpcProcess(path string, handler func(FuseContext) error, auth ...func(FuseContext) error) {
-	handlers := make([]func(FuseContext) error, 0)
-	handlers = append(handlers, handler)
-	if len(auth) > 0 {
-		handlers = append(handlers, auth...)
-	}
-
+func (slf *srFuseRouter) grpcProcess(path string, handlers ...func(FuseContext) error) {
 	slf.fuseGrpc.routes[path] = handlers
 }
