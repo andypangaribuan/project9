@@ -57,4 +57,3 @@ func (slf *View) Select(out interface{}, sqlQuery string, sqlPars ...interface{}
 
 	return nil
 }
-

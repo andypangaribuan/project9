@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
- func ToCurrencyFormat[T string | int | int32 | int64 | float32 | float64](val T, decimalPoint int, thousandSeparator, decimalSeparator string) string {
+func ToCurrencyFormat[T string | int | int32 | int64 | float32 | float64](val T, decimalPoint int, thousandSeparator, decimalSeparator string) string {
 	currency := ""
 
 	convert := func(val float64) {
@@ -65,7 +65,6 @@ import (
 
 	return currency
 }
-
 
 func ToJsonRaw(data []byte) json.RawMessage {
 	var raw json.RawMessage = data

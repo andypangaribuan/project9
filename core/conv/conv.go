@@ -5,7 +5,7 @@
 
 package conv
 
-type srConv struct {}
+type srConv struct{}
 
 type srTime struct{}
 type srProto struct{}

@@ -7,6 +7,10 @@ package check
 
 import "strings"
 
+func (*srStr) IsEmpty(val string) bool {
+	return strings.ToLower(val) == ""
+}
+
 func (*srStr) IsEmptyPtr(val *string) (string, bool) {
 	if val == nil {
 		return "", true

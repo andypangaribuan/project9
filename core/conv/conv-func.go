@@ -18,6 +18,6 @@ func (slf *srConv) AnyToMap(obj interface{}) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return m, nil
 }

@@ -6,5 +6,6 @@
 package abs
 
 type CheckStr interface {
+	IsEmpty(val string) bool
 	IsEmptyPtr(val *string) (string, bool)
 }

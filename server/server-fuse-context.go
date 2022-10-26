@@ -426,6 +426,30 @@ func (slf *srFuseContext) send(fo FuseOpt, opt ...FuseOpt) error {
 		fmt.Printf("\n\n%v\n", response.Meta.Error)
 	}
 
+	restResponse := func() error {
+		if len(opt) > 0 && len(opt[0].NewMeta) > 0 {
+			meta, _ := p9.Conv.AnyToMap(response.Meta)
+			for k, v := range opt[0].NewMeta {
+				meta[k] = v
+				// if reflect.ValueOf(v).IsZero() {
+				// 	delete(meta, k)
+				// }
+			}
+
+			newResponse := struct {
+				Meta interface{} `json:"meta"`
+				Data interface{} `json:"data,omitempty"`
+			}{
+				Meta: meta,
+				Data: response.Data,
+			}
+
+			return slf.fiberCtx.Status(fo.code).JSON(newResponse)
+		}
+
+		return slf.fiberCtx.Status(fo.code).JSON(response)
+	}
+
 	grpcResponse := func() error {
 		var (
 			err      error
@@ -464,7 +488,7 @@ func (slf *srFuseContext) send(fo FuseOpt, opt ...FuseOpt) error {
 
 	switch {
 	case slf.fiberCtx != nil:
-		return slf.fiberCtx.Status(fo.code).JSON(response)
+		return restResponse()
 	case slf.grpcCtx != nil:
 		return grpcResponse()
 	}

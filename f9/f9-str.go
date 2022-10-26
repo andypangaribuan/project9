@@ -7,7 +7,7 @@ package f9
 
 import "strings"
 
- func PtrStringTrimSpace(pointers ...*string) {
+func PtrStringTrimSpace(pointers ...*string) {
 	for i := 0; i < len(pointers); i++ {
 		if pointers[i] != nil {
 			val := strings.TrimSpace(*pointers[i])

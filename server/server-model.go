@@ -44,6 +44,7 @@ type FuseOpt struct {
 	Error    error
 	MetaData interface{}
 	Data     interface{}
+	NewMeta  map[string]interface{}
 }
 
 type FuseRouter interface {

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
- func GetStructPbValue[R any](val *structpb.Value) R {
+func GetStructPbValue[R any](val *structpb.Value) R {
 	defaultValue := *new(R)
 	resType := fmt.Sprintf("%T", defaultValue)
 
@@ -54,7 +54,6 @@ func toR[T any, R any](typeData string, val T) R {
 	}
 	return v.(R)
 }
-
 
 func GetKeyFromMap[K comparable, V any](m map[K]V) []K {
 	arr := make([]K, 0)

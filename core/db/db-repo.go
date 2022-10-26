@@ -4,7 +4,6 @@
  * All Rights Reserved.
  */
 
-
 package db
 
 import (

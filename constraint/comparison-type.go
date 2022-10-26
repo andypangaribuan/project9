@@ -7,6 +7,6 @@ package constraint
 
 type ComparisonType interface {
 	string |
-	int | int32 | int64 |
-	float32 | float64
+		int | int32 | int64 |
+		float32 | float64
 }
