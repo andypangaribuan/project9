@@ -18,7 +18,8 @@ import (
 )
 
 type FuseContext interface {
-	Params(key string) string
+	Params(key string, defaultValue ...string) string
+	Query(key string, defaultValue ...string) string
 	Parser(header, body interface{}) (bool, error)
 
 	AuthX() interface{}
@@ -80,6 +81,7 @@ type srFuseGrpcContext struct {
 	header   map[string]string
 	payload  map[string]*structpb.Value
 	params   map[string]string
+	queries  map[string]string
 }
 
 type srFuseContext struct {

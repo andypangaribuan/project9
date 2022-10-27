@@ -29,6 +29,7 @@ func (slf *srFuseGrpc) Restful(c context.Context, req *grf.Request) (*grf.Respon
 				header:  req.Header,
 				payload: req.Payload,
 				params:  req.Params,
+				queries: req.Queries,
 			},
 		}
 	)

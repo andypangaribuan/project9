@@ -73,7 +73,7 @@ func (slf *srFuseContext) mpfDecoder() *schema.Decoder {
 	return mpfDecoderInstance
 }
 
-func (slf *srFuseContext) Params(key string) string {
+func (slf *srFuseContext) Params(key string, defaultValue ...string) string {
 	switch {
 	case slf.fiberCtx != nil:
 		return slf.fiberCtx.Params(key, "")
@@ -82,6 +82,25 @@ func (slf *srFuseContext) Params(key string) string {
 		val := ""
 		if len(slf.grpcCtx.params) > 0 {
 			if v, ok := slf.grpcCtx.params[key]; ok {
+				val = v
+			}
+		}
+		return val
+
+	default:
+		panic("unimplemented")
+	}
+}
+
+func (slf *srFuseContext) Query(key string, defaultValue ...string) string {
+	switch {
+	case slf.fiberCtx != nil:
+		return slf.fiberCtx.Query(key, defaultValue...)
+
+	case slf.grpcCtx != nil:
+		val := ""
+		if len(slf.grpcCtx.queries) > 0 {
+			if v, ok := slf.grpcCtx.queries[key]; ok {
 				val = v
 			}
 		}
