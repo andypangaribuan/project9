@@ -446,7 +446,13 @@ func (slf *srFuseContext) send(fo FuseOpt, opt ...FuseOpt) error {
 	}
 
 	restResponse := func() error {
-		if len(opt) > 0 && len(opt[0].NewMeta) > 0 {
+		if len(opt) == 0 {
+			return slf.fiberCtx.Status(fo.code).JSON(response)
+		}
+
+		var newMeta interface{} = response.Meta
+
+		if len(opt[0].NewMeta) > 0 {
 			meta, _ := p9.Conv.AnyToMap(response.Meta)
 			for k, v := range opt[0].NewMeta {
 				meta[k] = v
@@ -455,18 +461,32 @@ func (slf *srFuseContext) send(fo FuseOpt, opt ...FuseOpt) error {
 				// }
 			}
 
-			newResponse := struct {
-				Meta interface{} `json:"meta"`
-				Data interface{} `json:"data,omitempty"`
-			}{
-				Meta: meta,
-				Data: response.Data,
-			}
-
-			return slf.fiberCtx.Status(fo.code).JSON(newResponse)
+			newMeta = meta
 		}
 
-		return slf.fiberCtx.Status(fo.code).JSON(response)
+		newResponse := map[string]interface{}{
+			"meta": newMeta,
+		}
+
+		switch v := response.Data.(type) {
+		case string:
+			if len(v) > 0 {
+				newResponse["data"] = v
+			}
+
+		default:
+			if v != nil {
+				newResponse["data"] = v
+			}
+		}
+
+		if len(opt[0].NewHeader) > 0 {
+			for k, v := range opt[0].NewHeader {
+				newResponse[k] = v
+			}
+		}
+
+		return slf.fiberCtx.Status(fo.code).JSON(newResponse)
 	}
 
 	grpcResponse := func() error {
