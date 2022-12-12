@@ -23,6 +23,7 @@ type Util interface {
 	GetJwtClaims(token string, publicKey []byte) (*jwt.StandardClaims, bool, error)
 	Base64Encode(data []byte) string
 	Base64Decode(value string) ([]byte, error)
+	GetExecutionInfo(depth int) (execFunc string, execPath string)
 
 	// ReflectionSet path: core.util.util-reflection-set.go
 	ReflectionSet(obj interface{}, bind map[string]interface{}) error

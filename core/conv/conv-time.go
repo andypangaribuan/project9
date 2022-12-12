@@ -55,6 +55,18 @@ func (*srTime) ToStrMicro(tm time.Time) string {
 	return tm.Format(layoutTimeMicro)
 }
 
+func (*srTime) ToStrRFC3339(tm time.Time) string {
+	return tm.Format(time.RFC3339)
+}
+
+func (*srTime) ToStrRFC3339MilliSecond(tm time.Time) string {
+	return tm.Format("2006-01-02T15:04:05.000Z07:00")
+}
+
+func (*srTime) ToStrRFC3339MicroSecond(tm time.Time) string {
+	return tm.Format("2006-01-02T15:04:05.000000Z07:00")
+}
+
 func (*srTime) ToTime(layout string, value string) (time.Time, error) {
 	for _, arr := range replacer {
 		layout = strings.Replace(layout, arr[0], arr[1], -1)

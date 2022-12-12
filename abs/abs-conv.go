@@ -22,6 +22,10 @@ type ConvTime interface {
 	ToStrMillis(tm time.Time) string
 	ToStrMicro(tm time.Time) string
 
+	ToStrRFC3339(tm time.Time) string
+	ToStrRFC3339MilliSecond(tm time.Time) string
+	ToStrRFC3339MicroSecond(tm time.Time) string
+
 	ToTime(layout string, value string) (tm time.Time, err error)
 	ToTimeDate(value string) (time.Time, error)
 	ToTimeFull(value string) (time.Time, error)

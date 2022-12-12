@@ -9,6 +9,7 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"fmt"
+	"runtime"
 	"time"
 
 	"github.com/andypangaribuan/project9/f9"
@@ -126,4 +127,11 @@ func (*srUtil) Base64Encode(data []byte) string {
 
 func (*srUtil) Base64Decode(value string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(value)
+}
+
+func (*srUtil) GetExecutionInfo(depth int) (execFunc string, execPath string) {
+	pc, filename, line, _ := runtime.Caller(1 + depth)
+	execFunc = runtime.FuncForPC(pc).Name()
+	execPath = fmt.Sprintf("%v:%v", filename, line)
+	return
 }
