@@ -40,3 +40,19 @@ type CLogRequestService struct {
 	FinishAt   time.Time
 	CreatedAt  time.Time
 }
+
+type CLogRequestDbq struct {
+	Uid        string
+	SvcName    string
+	SvcParent  *string
+	SqlQuery   string
+	SqlPars    *string
+	Severity   string
+	Path       string
+	Function   string
+	Error      *string
+	StackTrace *string
+	StartAt    time.Time
+	FinishAt   time.Time
+	CreatedAt  time.Time
+}

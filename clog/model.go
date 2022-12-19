@@ -29,3 +29,13 @@ type SendServiceModel struct {
 	Error      *string
 	StackTrace *string
 }
+
+type SendDbqModel struct {
+	StartAt    time.Time
+	ExecFunc   *string
+	ExecPath   *string
+	SqlQuery   string
+	SqlPars    *string
+	Error      *string
+	StackTrace *string
+}

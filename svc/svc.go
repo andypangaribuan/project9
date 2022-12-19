@@ -10,7 +10,7 @@ func InitCLogSVC(grpcAddress string) (CLogSVC, error) {
 	sr := &srCLog{
 		address: grpcAddress,
 	}
-	
+
 	err := sr.buildConnection()
 	if err != nil {
 		return nil, err

@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type CLogServiceClient interface {
 	ServiceLog(ctx context.Context, in *RequestServiceLog, opts ...grpc.CallOption) (*Response, error)
 	InfoLog(ctx context.Context, in *RequestInfoLog, opts ...grpc.CallOption) (*Response, error)
+	DbqLog(ctx context.Context, in *RequestDbqLog, opts ...grpc.CallOption) (*Response, error)
 }
 
 type cLogServiceClient struct {
@@ -36,7 +37,7 @@ func NewCLogServiceClient(cc grpc.ClientConnInterface) CLogServiceClient {
 
 func (c *cLogServiceClient) ServiceLog(ctx context.Context, in *RequestServiceLog, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/clog.CLogService/ServiceLog", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clog_svc.CLogService/ServiceLog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +46,16 @@ func (c *cLogServiceClient) ServiceLog(ctx context.Context, in *RequestServiceLo
 
 func (c *cLogServiceClient) InfoLog(ctx context.Context, in *RequestInfoLog, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/clog.CLogService/InfoLog", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/clog_svc.CLogService/InfoLog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cLogServiceClient) DbqLog(ctx context.Context, in *RequestDbqLog, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/clog_svc.CLogService/DbqLog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +68,7 @@ func (c *cLogServiceClient) InfoLog(ctx context.Context, in *RequestInfoLog, opt
 type CLogServiceServer interface {
 	ServiceLog(context.Context, *RequestServiceLog) (*Response, error)
 	InfoLog(context.Context, *RequestInfoLog) (*Response, error)
+	DbqLog(context.Context, *RequestDbqLog) (*Response, error)
 	mustEmbedUnimplementedCLogServiceServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedCLogServiceServer) ServiceLog(context.Context, *RequestServic
 }
 func (UnimplementedCLogServiceServer) InfoLog(context.Context, *RequestInfoLog) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InfoLog not implemented")
+}
+func (UnimplementedCLogServiceServer) DbqLog(context.Context, *RequestDbqLog) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DbqLog not implemented")
 }
 func (UnimplementedCLogServiceServer) mustEmbedUnimplementedCLogServiceServer() {}
 
@@ -94,7 +108,7 @@ func _CLogService_ServiceLog_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clog.CLogService/ServiceLog",
+		FullMethod: "/clog_svc.CLogService/ServiceLog",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CLogServiceServer).ServiceLog(ctx, req.(*RequestServiceLog))
@@ -112,10 +126,28 @@ func _CLogService_InfoLog_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clog.CLogService/InfoLog",
+		FullMethod: "/clog_svc.CLogService/InfoLog",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CLogServiceServer).InfoLog(ctx, req.(*RequestInfoLog))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CLogService_DbqLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestDbqLog)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CLogServiceServer).DbqLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clog_svc.CLogService/DbqLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CLogServiceServer).DbqLog(ctx, req.(*RequestDbqLog))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -124,7 +156,7 @@ func _CLogService_InfoLog_Handler(srv interface{}, ctx context.Context, dec func
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CLogService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "clog.CLogService",
+	ServiceName: "clog_svc.CLogService",
 	HandlerType: (*CLogServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -134,6 +166,10 @@ var CLogService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InfoLog",
 			Handler:    _CLogService_InfoLog_Handler,
+		},
+		{
+			MethodName: "DbqLog",
+			Handler:    _CLogService_DbqLog_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

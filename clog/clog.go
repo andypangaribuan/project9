@@ -94,6 +94,45 @@ func SendService(depth int, ins Instance, severity Severity, m SendServiceModel,
 	}
 }
 
+func SendDbq(depth int, ins Instance, severity Severity, m SendDbqModel, onGoroutine bool) {
+	var (
+		timeNow  = f9.TimeNow()
+		execFunc string
+		execPath string
+	)
+
+	if m.ExecFunc != nil && m.ExecPath != nil {
+		execFunc = *m.ExecFunc
+		execPath = *m.ExecPath
+	} else {
+		execFunc, execPath = p9.Util.GetExecutionInfo(1 + depth)
+	}
+
+	req := psvc.CLogRequestDbq{
+		Uid:        ins.UID,
+		SvcName:    svcName,
+		SvcParent:  f9.Ternary(ins.SvcParent == "", nil, &ins.SvcParent),
+		SqlQuery:   m.SqlQuery,
+		SqlPars:    m.SqlPars,
+		Severity:   severity.String(),
+		Path:       execPath,
+		Function:   execFunc,
+		Error:      m.Error,
+		StackTrace: m.StackTrace,
+		StartAt:    m.StartAt,
+		FinishAt:   timeNow,
+		CreatedAt:  timeNow,
+	}
+
+	if onGoroutine {
+		go func() {
+			svcResult(svc.Dbq(req))
+		}()
+	} else {
+		svcResult(svc.Dbq(req))
+	}
+}
+
 func svcResult(status string, message string, err error) {
 	if err != nil {
 		log.Printf("clog error: %+v\n", err)

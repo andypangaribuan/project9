@@ -184,3 +184,45 @@ func (slf *srCLog) Service(val CLogRequestService) (status string, message strin
 
 	return res.Status, res.Message, nil
 }
+
+func (slf *srCLog) Dbq(val CLogRequestDbq) (status string, message string, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	req := &clog_svc.RequestDbqLog{
+		Uid:       val.Uid,
+		SvcName:   val.SvcName,
+		SqlQuery:  val.SqlQuery,
+		Severity:  val.Severity,
+		Path:      val.Path,
+		Function:  val.Function,
+		StartAt:   p9.Conv.Time.ToStrRFC3339MilliSecond(val.StartAt),
+		FinishAt:  p9.Conv.Time.ToStrRFC3339MilliSecond(val.FinishAt),
+		CreatedAt: p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
+	}
+
+	if val.SvcParent != nil {
+		req.SvcParent = &wrapperspb.StringValue{Value: *val.SvcParent}
+	}
+	if val.SqlPars != nil {
+		req.SqlPars = &wrapperspb.StringValue{Value: *val.SqlPars}
+	}
+	if val.Error != nil {
+		req.Error = &wrapperspb.StringValue{Value: *val.Error}
+	}
+	if val.StackTrace != nil {
+		req.StackTrace = &wrapperspb.StringValue{Value: *val.StackTrace}
+	}
+
+	client, err := slf.getClient()
+	if err != nil {
+		return "", "", err
+	}
+
+	res, err := client.DbqLog(ctx, req)
+	if err != nil {
+		return "", "", err
+	}
+
+	return res.Status, res.Message, nil
+}
