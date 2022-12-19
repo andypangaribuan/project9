@@ -37,7 +37,7 @@ func (slf *srFuseGrpc) Restful(c context.Context, req *grf.Request) (*grf.Respon
 	handlers, ok := slf.routes[req.Action]
 	if !ok {
 		err = fmt.Errorf(`action not found: "%v"`, req.Action)
-		return ctx.grpcSend(ctx.R500InternalServerError(err))
+		return ctx.grpcSend(ctx.R500InternalServerError(nil, err))
 	}
 
 	if len(handlers) >= 2 {

@@ -30,7 +30,7 @@ type CLogRequestService struct {
 	Function   string
 	ReqHeader  *string
 	ReqBody    *string
-	ReqPar     *string
+	ReqParam   *string
 	ResData    *string
 	ResCode    *int
 	Data       *string

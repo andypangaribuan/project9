@@ -1,0 +1,10 @@
+# Dictionary for special name on this project
+gofiber
+protobuf
+psvc
+endregion
+structpb
+dictio
+conv
+gonanoid
+hashids

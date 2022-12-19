@@ -4,7 +4,7 @@
 // - protoc             v3.21.4
 // source: proto/clog.proto
 
-package clog
+package clog_svc
 
 import (
 	context "context"

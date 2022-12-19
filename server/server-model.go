@@ -11,6 +11,7 @@ import (
 	"mime/multipart"
 	"sync"
 
+	"github.com/andypangaribuan/project9/clog"
 	"github.com/andypangaribuan/project9/server/proto/gen/grf"
 	"github.com/gofiber/fiber/v2"
 	"google.golang.org/grpc"
@@ -20,33 +21,35 @@ import (
 type FuseContext interface {
 	Params(key string, defaultValue ...string) string
 	Query(key string, defaultValue ...string) string
-	Parser(header, body interface{}) (bool, error)
+	Parser(cli *clog.Instance, header, body interface{}) (bool, error)
 
 	AuthX() interface{}
 	AuthY() interface{}
 	AuthZ() interface{}
 	SetAuth(authX, authY, authZ interface{})
 
-	R200OK(data interface{}, opt ...FuseOpt) error
-	R400BadRequest(message string, opt ...FuseOpt) error
-	R401Unauthorized(message string, opt ...FuseOpt) error
-	R403Forbidden(message string, opt ...FuseOpt) error
-	R404NotFound(message string, opt ...FuseOpt) error
-	R406NotAcceptable(message string, opt ...FuseOpt) error
-	R428PreconditionRequired(message string, opt ...FuseOpt) error
-	R500InternalServerError(err error, opt ...FuseOpt) error
+	R200OK(cli *clog.Instance, data interface{}, opt ...FuseOpt) error
+	R400BadRequest(cli *clog.Instance, message string, opt ...FuseOpt) error
+	R401Unauthorized(cli *clog.Instance, message string, opt ...FuseOpt) error
+	R403Forbidden(cli *clog.Instance, message string, opt ...FuseOpt) error
+	R404NotFound(cli *clog.Instance, message string, opt ...FuseOpt) error
+	R406NotAcceptable(cli *clog.Instance, message string, opt ...FuseOpt) error
+	R428PreconditionRequired(cli *clog.Instance, message string, opt ...FuseOpt) error
+	R500InternalServerError(cli *clog.Instance, err error, opt ...FuseOpt) error
 }
 
 type FuseOpt struct {
-	code     int
-	Status   string
-	Message  string
-	Address  string
-	Error    error
-	MetaData interface{}
-	Data     interface{}
-	NewMeta  map[string]interface{}
-	NewHeader map[string]interface{}
+	code       int
+	Status     string
+	Message    string
+	Address    string
+	Error      error
+	MetaData   interface{}
+	Data       interface{}
+	NewMeta    map[string]interface{}
+	NewHeader  map[string]interface{}
+	LogMessage string
+	LogData    string
 }
 
 type FuseRouter interface {
@@ -92,6 +95,7 @@ type srFuseContext struct {
 
 	header        map[string]string
 	multipartFile map[string][]*multipart.FileHeader
+	jsonBody      *string
 
 	authX     interface{}
 	authY     interface{}

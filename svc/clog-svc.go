@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/andypangaribuan/project9/p9"
-	"github.com/andypangaribuan/project9/proto/clog"
+	"github.com/andypangaribuan/project9/proto/clog-svc"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -24,7 +24,7 @@ type srCLog struct {
 	address string
 	mutex   sync.RWMutex
 	conn    *grpc.ClientConn
-	client  clog.CLogServiceClient
+	client  clog_svc.CLogServiceClient
 }
 
 func (slf *srCLog) getConnection() (*grpc.ClientConn, error) {
@@ -65,7 +65,7 @@ func (slf *srCLog) buildConnection() error {
 	return nil
 }
 
-func (slf *srCLog) getClient() (clog.CLogServiceClient, error) {
+func (slf *srCLog) getClient() (clog_svc.CLogServiceClient, error) {
 	if slf.client == nil {
 		err := slf.buildClient()
 		if err != nil {
@@ -87,7 +87,7 @@ func (slf *srCLog) buildClient() error {
 		return err
 	}
 
-	slf.client = clog.NewCLogServiceClient(conn)
+	slf.client = clog_svc.NewCLogServiceClient(conn)
 	return nil
 }
 
@@ -95,7 +95,7 @@ func (slf *srCLog) Info(val CLogRequestInfo) (status string, message string, err
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	req := &clog.RequestInfoLog{
+	req := &clog_svc.RequestInfoLog{
 		Uid:       val.Uid,
 		SvcName:   val.SvcName,
 		Message:   val.Message,
@@ -130,7 +130,7 @@ func (slf *srCLog) Service(val CLogRequestService) (status string, message strin
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	req := &clog.RequestServiceLog{
+	req := &clog_svc.RequestServiceLog{
 		Uid:       val.Uid,
 		SvcName:   val.SvcName,
 		Severity:  val.Severity,
@@ -153,8 +153,8 @@ func (slf *srCLog) Service(val CLogRequestService) (status string, message strin
 	if val.ReqBody != nil {
 		req.ReqBody = &wrapperspb.StringValue{Value: *val.ReqBody}
 	}
-	if val.ReqPar != nil {
-		req.ReqPar = &wrapperspb.StringValue{Value: *val.ReqPar}
+	if val.ReqParam != nil {
+		req.ReqParam = &wrapperspb.StringValue{Value: *val.ReqParam}
 	}
 	if val.ResData != nil {
 		req.ResData = &wrapperspb.StringValue{Value: *val.ResData}
