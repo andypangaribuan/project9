@@ -19,6 +19,7 @@ import (
 	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/p9"
 	"github.com/andypangaribuan/project9/server/proto/gen/grf"
+	"github.com/gofiber/fiber/v2"
 	"github.com/gorilla/schema"
 )
 
@@ -110,6 +111,10 @@ func (slf *srFuseContext) Query(key string, defaultValue ...string) string {
 	default:
 		panic("unimplemented")
 	}
+}
+
+func (slf *srFuseContext) Context() *fiber.Ctx {
+	return slf.fiberCtx
 }
 
 func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (bool, error) {

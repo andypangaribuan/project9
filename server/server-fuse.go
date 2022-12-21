@@ -62,11 +62,11 @@ func Fuse(restfulPort, grpcPort int, autoRecover bool, withErr bool, routes func
 		panic("restfulPort and grpcPort cannot have same value")
 	}
 
-	if isPortUse(restfulPort) {
+	if restfulPort != -1 && isPortUse(restfulPort) {
 		panic("restfulPort already in use")
 	}
 
-	if isPortUse(grpcPort) {
+	if grpcPort != -1 && isPortUse(grpcPort) {
 		panic("grpcPort already in use")
 	}
 
@@ -77,7 +77,7 @@ func Fuse(restfulPort, grpcPort int, autoRecover bool, withErr bool, routes func
 		JSONDecoder: p9.Json.UnMarshal,
 	})
 
-	if autoRecover {
+	if restfulPort != -1 && autoRecover {
 		fuseFiberApp.Use(recover.New())
 	}
 
@@ -90,14 +90,19 @@ func Fuse(restfulPort, grpcPort int, autoRecover bool, withErr bool, routes func
 
 	routes(router)
 
-	go func() {
-		register := func(server *grpc.Server) {
-			grf.RegisterRestfulServiceServer(server, router.fuseGrpc)
-		}
-		p9.Server.StartGRPC(grpcPort, autoRecover, register, 3)
-	}()
+	if grpcPort != -1 {
+		go func() {
+			register := func(server *grpc.Server) {
+				grf.RegisterRestfulServiceServer(server, router.fuseGrpc)
+			}
 
-	log.Fatal(fuseFiberApp.Listen(fmt.Sprintf(":%v", restfulPort)))
+			p9.Server.StartGRPC(grpcPort, autoRecover, register, 3)
+		}()
+	}
+
+	if restfulPort != -1 {
+		log.Fatal(fuseFiberApp.Listen(fmt.Sprintf(":%v", restfulPort)))
+	}
 }
 
 func isPortUse(port int) bool {

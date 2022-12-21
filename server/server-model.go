@@ -36,6 +36,8 @@ type FuseContext interface {
 	R406NotAcceptable(cli *clog.Instance, message string, opt ...FuseOpt) error
 	R428PreconditionRequired(cli *clog.Instance, message string, opt ...FuseOpt) error
 	R500InternalServerError(cli *clog.Instance, err error, opt ...FuseOpt) error
+
+	Context() *fiber.Ctx 
 }
 
 type FuseOpt struct {
