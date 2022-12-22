@@ -250,6 +250,14 @@ func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (
 	return true, nil
 }
 
+func (slf *srFuseContext) ClientIP() string {
+	if slf.clientIP == "" {
+		slf.clientIP = cip.getClientIP(slf)
+	}
+
+	return slf.clientIP
+}
+
 //endregion
 
 //region auth
@@ -548,7 +556,7 @@ func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) e
 			execFunc, execPath := p9.Util.GetExecutionInfo(4)
 			header := slf.getHeader()
 			params := slf.fiberCtx.AllParams()
-			clientIp := cip.getClientIP(slf)
+			clientIp := f9.TernaryFnB(slf.clientIP != "", slf.clientIP, func() string { return cip.getClientIP(slf) })
 			go doSaveLog(resCode, response, execFunc, execPath, header, params, clientIp)
 		}
 	}

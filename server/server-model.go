@@ -24,6 +24,7 @@ type FuseContext interface {
 	Params(key string, defaultValue ...string) string
 	Query(key string, defaultValue ...string) string
 	Parser(cli *clog.Instance, header, body interface{}) (bool, error)
+	ClientIP() string
 
 	AuthX() interface{}
 	AuthY() interface{}
@@ -94,6 +95,7 @@ type srFuseContext struct {
 	fiberCtx *fiber.Ctx
 	grpcCtx  *srFuseGrpcContext
 	path     string
+	clientIP string
 
 	header        map[string]string
 	multipartFile map[string][]*multipart.FileHeader
