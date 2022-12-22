@@ -17,6 +17,7 @@ type Instance struct {
 }
 
 type SendServiceModel struct {
+	Endpoint   string
 	ExecFunc   *string
 	ExecPath   *string
 	Message    *string

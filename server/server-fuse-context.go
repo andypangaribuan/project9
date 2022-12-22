@@ -4,6 +4,7 @@
  * All Rights Reserved.
  */
 
+/* spell-checker: disable */
 package server
 
 import (
@@ -482,7 +483,7 @@ func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) e
 		fmt.Printf("\n\n%v\n", response.Meta.Error)
 	}
 
-	doSaveLog := func(resCode int, response interface{}, execFunc, execPath string, header, params map[string]string, clientIp string) {
+	doSaveLog := func(resCode int, response interface{}, execFunc, execPath string, header, params map[string]string, endpoint, clientIp string) {
 		var (
 			severity   = clog.Info
 			message    *string
@@ -534,6 +535,7 @@ func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) e
 		}
 
 		m := clog.SendServiceModel{
+			Endpoint:   endpoint,
 			ExecFunc:   &execFunc,
 			ExecPath:   &execPath,
 			Message:    message,
@@ -557,7 +559,8 @@ func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) e
 			header := slf.getHeader()
 			params := slf.fiberCtx.AllParams()
 			clientIp := f9.TernaryFnB(slf.clientIP != "", slf.clientIP, func() string { return cip.getClientIP(slf) })
-			go doSaveLog(resCode, response, execFunc, execPath, header, params, clientIp)
+			endpoint := strings.ToLower(fmt.Sprintf("%v:%v", slf.fiberCtx.Route().Method, slf.fiberCtx.Route().Path))
+			go doSaveLog(resCode, response, execFunc, execPath, header, params, endpoint, clientIp)
 		}
 	}
 

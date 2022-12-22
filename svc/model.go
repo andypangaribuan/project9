@@ -24,6 +24,7 @@ type CLogRequestService struct {
 	Uid        string
 	SvcName    string
 	SvcParent  *string
+	Endpoint   string
 	Message    *string
 	Severity   string
 	Path       string

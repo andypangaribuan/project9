@@ -4,6 +4,7 @@
  * All Rights Reserved.
  */
 
+/* spell-checker: disable */
 package svc
 
 import (
@@ -133,6 +134,7 @@ func (slf *srCLog) Service(val CLogRequestService) (status string, message strin
 	req := &clog_svc.RequestServiceLog{
 		Uid:       val.Uid,
 		SvcName:   val.SvcName,
+		Endpoint:  val.Endpoint,
 		Severity:  val.Severity,
 		Path:      val.Path,
 		Function:  val.Function,
