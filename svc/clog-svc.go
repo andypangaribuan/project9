@@ -136,6 +136,7 @@ func (slf *srCLog) Service(val CLogRequestService) (status string, message strin
 		Severity:  val.Severity,
 		Path:      val.Path,
 		Function:  val.Function,
+		ClientIP:  val.ClientIP,
 		StartAt:   p9.Conv.Time.ToStrRFC3339MilliSecond(val.StartAt),
 		FinishAt:  p9.Conv.Time.ToStrRFC3339MilliSecond(val.FinishAt),
 		CreatedAt: p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),

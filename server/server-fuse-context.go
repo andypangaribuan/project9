@@ -19,7 +19,6 @@ import (
 	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/p9"
 	"github.com/andypangaribuan/project9/server/proto/gen/grf"
-	"github.com/gofiber/fiber/v2"
 	"github.com/gorilla/schema"
 )
 
@@ -111,10 +110,6 @@ func (slf *srFuseContext) Query(key string, defaultValue ...string) string {
 	default:
 		panic("unimplemented")
 	}
-}
-
-func (slf *srFuseContext) Context() *fiber.Ctx {
-	return slf.fiberCtx
 }
 
 func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (bool, error) {
@@ -479,7 +474,7 @@ func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) e
 		fmt.Printf("\n\n%v\n", response.Meta.Error)
 	}
 
-	doSaveLog := func(resCode int, response interface{}, execFunc, execPath string, header, params map[string]string) {
+	doSaveLog := func(resCode int, response interface{}, execFunc, execPath string, header, params map[string]string, clientIp string) {
 		var (
 			severity   = clog.Info
 			message    *string
@@ -542,6 +537,7 @@ func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) e
 			Data:       data,
 			Error:      err,
 			StackTrace: stackTrace,
+			ClientIP:   clientIp,
 		}
 
 		clog.SendService(0, *cli, severity, m, false)
@@ -552,7 +548,8 @@ func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) e
 			execFunc, execPath := p9.Util.GetExecutionInfo(4)
 			header := slf.getHeader()
 			params := slf.fiberCtx.AllParams()
-			go doSaveLog(resCode, response, execFunc, execPath, header, params)
+			clientIp := cip.getClientIP(slf)
+			go doSaveLog(resCode, response, execFunc, execPath, header, params, clientIp)
 		}
 	}
 

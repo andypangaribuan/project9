@@ -36,6 +36,7 @@ type CLogRequestService struct {
 	Data       *string
 	Error      *string
 	StackTrace *string
+	ClientIP   string
 	StartAt    time.Time
 	FinishAt   time.Time
 	CreatedAt  time.Time

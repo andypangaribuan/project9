@@ -28,6 +28,7 @@ type SendServiceModel struct {
 	Data       *string
 	Error      *string
 	StackTrace *string
+	ClientIP   string
 }
 
 type SendDbqModel struct {

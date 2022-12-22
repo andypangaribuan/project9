@@ -4,11 +4,13 @@
  * All Rights Reserved.
  */
 
+/* spell-checker: disable */
 package server
 
 import (
 	"context"
 	"mime/multipart"
+	"net"
 	"sync"
 
 	"github.com/andypangaribuan/project9/clog"
@@ -36,8 +38,6 @@ type FuseContext interface {
 	R406NotAcceptable(cli *clog.Instance, message string, opt ...FuseOpt) error
 	R428PreconditionRequired(cli *clog.Instance, message string, opt ...FuseOpt) error
 	R500InternalServerError(cli *clog.Instance, err error, opt ...FuseOpt) error
-
-	Context() *fiber.Ctx 
 }
 
 type FuseOpt struct {
@@ -129,4 +129,18 @@ type ClientFuseGRPC interface {
 
 type srClientFuseGRPC struct {
 	fuseGrpc *srConnectFuseGRPC
+}
+
+type srClientIP struct {
+	cidrs                       []*net.IPNet
+	xOriginalForwardedForHeader string
+	xForwardedForHeader         string
+	xForwardedHeader            string
+	forwardedForHeader          string
+	forwardedHeader             string
+	xClientIPHeader             string
+	xRealIPHeader               string
+	cfConnectingIPHeader        string
+	fastlyClientIPHeader        string
+	trueClientIPHeader          string
 }
