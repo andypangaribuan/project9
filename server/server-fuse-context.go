@@ -259,6 +259,14 @@ func (slf *srFuseContext) ClientIP() string {
 	return slf.clientIP
 }
 
+func (slf *srFuseContext) Path() string {
+	return slf.fiberCtx.Route().Path
+}
+
+func (slf *srFuseContext) Method() string {
+	return slf.fiberCtx.Route().Method
+}
+
 //endregion
 
 //region auth

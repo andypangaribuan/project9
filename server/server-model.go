@@ -25,6 +25,8 @@ type FuseContext interface {
 	Query(key string, defaultValue ...string) string
 	Parser(cli *clog.Instance, header, body interface{}) (bool, error)
 	ClientIP() string
+	Path() string
+	Method() string
 
 	AuthX() interface{}
 	AuthY() interface{}
