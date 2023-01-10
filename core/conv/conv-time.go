@@ -6,8 +6,11 @@
 package conv
 
 import (
+	"fmt"
 	"strings"
 	"time"
+
+	"github.com/andypangaribuan/project9/f9"
 )
 
 const (
@@ -88,4 +91,59 @@ func (slf *srTime) ToTimeMillis(value string) (time.Time, error) {
 
 func (slf *srTime) ToTimeMicro(value string) (time.Time, error) {
 	return time.Parse(layoutTimeMicro, value)
+}
+
+func (slf *srTime) GetTimeZone(tm time.Time) string {
+	hour := 3600 // second
+	minute := 60 // second
+	isPlus := true
+	_, offset := tm.Zone()
+
+	if offset < 0 {
+		isPlus = false
+		offset *= -1
+	}
+
+	h := offset / hour
+	offset = offset - (hour * h)
+
+	m := offset / minute
+
+	hs := fmt.Sprintf("%v", h)
+	if len(hs) == 1 {
+		hs = "0" + hs
+	}
+
+	ms := fmt.Sprintf("%v", m)
+	if len(ms) == 1 {
+		ms = "0" + ms
+	}
+
+	zone := f9.Ternary(isPlus, "+", "-")
+	zone += hs + ":" + ms
+
+	return zone
+}
+
+func (slf *srTime) RemovePart(tm time.Time, part ...string) time.Time {
+	for _, p := range part {
+		switch p {
+		case "yyyy":
+			tm = time.Date(0, tm.Month(), tm.Day(), tm.Hour(), tm.Minute(), tm.Second(), tm.Nanosecond(), tm.Location())
+		case "MM":
+			tm = time.Date(tm.Year(), 1, tm.Day(), tm.Hour(), tm.Minute(), tm.Second(), tm.Nanosecond(), tm.Location())
+		case "dd":
+			tm = time.Date(tm.Year(), tm.Month(), 1, tm.Hour(), tm.Minute(), tm.Second(), tm.Nanosecond(), tm.Location())
+		case "HH":
+			tm = time.Date(tm.Year(), tm.Month(), tm.Day(), 0, tm.Minute(), tm.Second(), tm.Nanosecond(), tm.Location())
+		case "mm":
+			tm = time.Date(tm.Year(), tm.Month(), tm.Day(), tm.Hour(), 0, tm.Second(), tm.Nanosecond(), tm.Location())
+		case "ss":
+			tm = time.Date(tm.Year(), tm.Month(), tm.Day(), tm.Hour(), tm.Minute(), 0, tm.Nanosecond(), tm.Location())
+		case "ns":
+			tm = time.Date(tm.Year(), tm.Month(), tm.Day(), tm.Hour(), tm.Minute(), tm.Second(), 0, tm.Location())
+		}
+	}
+
+	return tm
 }

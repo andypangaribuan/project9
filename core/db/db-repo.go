@@ -116,7 +116,11 @@ INSERT INTO ::tableName (
 ) VALUES (
 	::insertParamSign
 )`)
-	sql.transform(slf)
+
+	err := sql.transform(slf)
+	if err != nil {
+		return sql, err
+	}
 
 	return sql, slf.DbInstance.Execute(sql.query, sqlPars)
 }
@@ -155,7 +159,10 @@ func (slf *Repo[T]) doUpdate(keyVals map[string]interface{}, whereQuery string, 
 	sql.query += fmt.Sprintf(" %v", whereQuery)
 	sql.pars = append(sql.pars, wherePars...)
 
-	sql.transform(slf)
+	err := sql.transform(slf)
+	if err != nil {
+		return sql, err
+	}
 
 	return sql, slf.DbInstance.Execute(sql.query, sql.pars)
 }
@@ -203,11 +210,61 @@ func (slf *Repo[T]) goGetDatas(whereQuery string, endQuery string, wherePars ...
 	}
 
 	sql.query += " " + query
-	sql.transform(slf)
 	sql.pars = wherePars
+
+	err := sql.transform(slf)
+	if err != nil {
+		return sql, models, err
+	}
 
 	unsafe, err := slf.DbInstance.Select(&models, sql.query, sql.pars)
 	slf.OnUnsafe(unsafe)
+	if err != nil {
+		if e, ok := err.(*pq.Error); ok {
+			msg := strings.TrimSpace(e.Message)
+			if msg != "" {
+				msg += "\n"
+			}
+			msg += fmt.Sprintf("sql: %v\npars: %v", sql.query, sql.pars)
+			e.Message = msg
+			err = e
+		}
+		return sql, nil, err
+	}
+
+	return sql, models, nil
+}
+
+func (slf *Repo[T]) Select(cli *clog.Instance, query string, args ...interface{}) ([]T, error) {
+	startAt := f9.TimeNow()
+	sql, models, err := slf.doSelect(query, args...)
+
+	if cli != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return models, err
+}
+
+func (slf *Repo[T]) doSelect(query string, args ...interface{}) (*srRepoSql[T], []T, error) {
+	var models []T
+	sql := srRepoSql[T]{}.new("")
+
+	sql.query = strings.TrimSpace(query)
+	sql.pars = args
+
+	query, pars, err := transformIn(sql.query, sql.pars...)
+	if err != nil {
+		return sql, models, err
+	}
+
+	sql.query = query
+	sql.pars = pars
+
+	unsafe, err := slf.DbInstance.Select(&models, sql.query, sql.pars...)
+	slf.OnUnsafe(unsafe)
+
 	if err != nil {
 		if e, ok := err.(*pq.Error); ok {
 			msg := strings.TrimSpace(e.Message)
@@ -236,8 +293,20 @@ func (slf *Repo[T]) Count(cli *clog.Instance, whereQuery, endQuery string, where
 	return count, err
 }
 
+func (slf *Repo[T]) RawCount(cli *clog.Instance, query string, pars ...interface{}) (int, error) {
+	startAt := f9.TimeNow()
+	sql, count, err := slf.doRawCount(query, pars...)
+
+	if cli != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return count, err
+}
+
 func (slf *Repo[T]) doCount(whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], int, error) {
-	sql := srRepoSql[T]{}.new(`SELECT COUNT(*) FROM ::tableName`)
+	sql := srRepoSql[T]{}.new(`SELECT COUNT(1) FROM ::tableName`)
 
 	query := strings.TrimSpace(whereQuery)
 	if query != "" {
@@ -254,11 +323,34 @@ func (slf *Repo[T]) doCount(whereQuery, endQuery string, wherePars ...interface{
 	}
 
 	sql.query += " " + query
-	sql.transform(slf)
 	sql.pars = wherePars
 
+	err := sql.transform(slf)
+	if err != nil {
+		return nil, -1, err
+	}
+
 	var count int
-	err := slf.DbInstance.Get(&count, sql.query, sql.pars)
+	err = slf.DbInstance.Get(&count, sql.query, sql.pars)
+	return sql, count, err
+}
+
+func (slf *Repo[T]) doRawCount(query string, pars ...interface{}) (*srRepoSql[T], int, error) {
+	sql := srRepoSql[T]{}.new(``)
+
+	sql.query = strings.TrimSpace(query)
+	sql.pars = pars
+
+	query, pars, err := transformIn(sql.query, sql.pars...)
+	if err != nil {
+		return sql, -1, err
+	}
+
+	sql.query = query
+	sql.pars = pars
+
+	var count int
+	err = slf.DbInstance.Get(&count, sql.query, sql.pars)
 	return sql, count, err
 }
 
@@ -286,8 +378,12 @@ func (slf *Repo[T]) doDelete(whereQuery string, wherePars ...interface{}) (*srRe
 	}
 
 	sql.query += " " + query
-	sql.transform(slf)
 	sql.pars = wherePars
+
+	err := sql.transform(slf)
+	if err != nil {
+		return nil, err
+	}
 
 	return sql, slf.DbInstance.Execute(sql.query, sql.pars)
 }
@@ -306,8 +402,13 @@ func (slf *Repo[T]) Execute(cli *clog.Instance, sqlQuery string, sqlPars ...inte
 
 func (slf *Repo[T]) doExecute(sqlQuery string, sqlPars ...interface{}) (*srRepoSql[T], error) {
 	sql := srRepoSql[T]{}.new(sqlQuery)
-	sql.transform(slf)
 	sql.pars = sqlPars
+
+	err := sql.transform(slf)
+	if err != nil {
+		return nil, err
+	}
+
 	return sql, slf.DbInstance.Execute(sql.query, sql.pars)
 }
 

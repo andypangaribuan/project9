@@ -1,6 +1,7 @@
 # Dictionary for special name on this project
 gofiber
 protobuf
+sqlx
 psvc
 endregion
 structpb
@@ -8,3 +9,7 @@ dictio
 conv
 gonanoid
 hashids
+millis
+datas
+vals
+shopspring

@@ -563,7 +563,18 @@ func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) e
 
 	saveLog := func(resCode int, response interface{}) {
 		if cli != nil {
-			execFunc, execPath := p9.Util.GetExecutionInfo(4)
+			depth := 4
+			execFunc, execPath := p9.Util.GetExecutionInfo(depth)
+
+			for {
+				if !strings.Contains(execPath, "/project9/server/server-fuse-context.go") {
+					break
+				}
+
+				depth++
+				execFunc, execPath = p9.Util.GetExecutionInfo(depth)
+			}
+
 			header := slf.getHeader()
 			params := slf.fiberCtx.AllParams()
 			clientIp := f9.TernaryFnB(slf.clientIP != "", slf.clientIP, func() string { return cip.getClientIP(slf) })

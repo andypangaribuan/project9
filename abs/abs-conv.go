@@ -31,6 +31,9 @@ type ConvTime interface {
 	ToTimeFull(value string) (time.Time, error)
 	ToTimeMillis(value string) (time.Time, error)
 	ToTimeMicro(value string) (time.Time, error)
+
+	GetTimeZone(tm time.Time) string
+	RemovePart(tm time.Time, part ...string) time.Time
 }
 
 type ConvProto interface {

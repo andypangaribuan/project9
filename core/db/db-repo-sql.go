@@ -5,7 +5,11 @@
 
 package db
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/jmoiron/sqlx"
+)
 
 type srRepoSql[T any] struct {
 	query string
@@ -18,7 +22,7 @@ func (slf srRepoSql[T]) new(query string) *srRepoSql[T] {
 	return &slf
 }
 
-func (slf *srRepoSql[T]) transform(base *Repo[T]) {
+func (slf *srRepoSql[T]) transform(base *Repo[T]) error {
 	insertColumnNames := ""
 
 	if strings.Contains(slf.query, "::tableName") {
@@ -54,4 +58,20 @@ func (slf *srRepoSql[T]) transform(base *Repo[T]) {
 	}
 
 	slf.query = strings.TrimSpace(slf.query)
+
+	if strings.Contains(strings.ToUpper(slf.query), " IN ") {
+		query, pars, err := transformIn(slf.query, slf.pars...)
+		if err != nil {
+			return err
+		}
+
+		slf.query = query
+		slf.pars = pars
+	}
+
+	return nil
+}
+
+func transformIn(query string, args ...interface{}) (string, []interface{}, error) {
+	return sqlx.In(query, args...)
 }

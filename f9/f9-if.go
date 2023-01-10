@@ -25,6 +25,16 @@ func IfAllNil(items ...interface{}) bool {
 	return allNil
 }
 
+func IfHaveNil(items ...interface{}) bool {
+	for _, item := range items {
+		if item == nil {
+			return true
+		}
+	}
+
+	return false
+}
+
 func IfStrNotNilButEmpty(val *string) bool {
 	if val == nil {
 		return false
@@ -81,4 +91,22 @@ func IfAllStructPbNil(items ...*structpb.Value) bool {
 	}
 
 	return allNil
+}
+
+func IfHaveIn[T comparable](val T, in ...T) bool {
+	for _, v := range in {
+		if val == v {
+			return true
+		}
+	}
+
+	return false
+}
+
+func IfEqual[T comparable](left *T, right T) bool {
+	if left == nil {
+		return false
+	}
+
+	return *left == right
 }
