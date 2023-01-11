@@ -41,7 +41,12 @@ const (
 	tagNameTimeLocation = "jdt_location" // ori: time_location
 )
 
-var configWithCustomTimeFormat = jsoniter.ConfigCompatibleWithStandardLibrary
+// var configWithCustomTimeFormat = jsoniter.ConfigCompatibleWithStandardLibrary
+var configWithCustomTimeFormat = jsoniter.Config{
+	EscapeHTML:             false,
+	SortMapKeys:            true,
+	ValidateJsonRawMessage: true,
+}.Froze()
 
 var formatAlias = map[string]string{
 	ansic:       time.ANSIC,

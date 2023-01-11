@@ -9,13 +9,12 @@ package fc
 import (
 	"errors"
 	"log"
-	"strconv"
 
 	"github.com/shopspring/decimal"
 )
 
-func FCal(val ...interface{}) FCT {
-	fcv, err := FSCal(val...)
+func Cal(val ...interface{}) FCT {
+	fcv, err := SCal(val...)
 	if err != nil {
 		log.Fatalf("error: %+v\n", err)
 	}
@@ -23,7 +22,7 @@ func FCal(val ...interface{}) FCT {
 	return fcv
 }
 
-func FSCal(val ...interface{}) (FCT, error) {
+func SCal(val ...interface{}) (FCT, error) {
 	fv := FCT{
 		V1: "0",
 		V2: "0",
@@ -117,59 +116,4 @@ func FSCal(val ...interface{}) (FCT, error) {
 
 	fv.set(lsv[0].(decimal.Decimal))
 	return fv, nil
-}
-
-func toDecimal(val interface{}) (decimal.Decimal, error) {
-	var d decimal.Decimal
-
-	switch v := val.(type) {
-	case string:
-		f, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			return d, err
-		}
-
-		d = decimal.NewFromFloat(f)
-
-		return d, nil
-
-	case int:
-		v64 := int64(v)
-		return decimal.NewFromInt(v64), nil
-
-	case int32:
-		return decimal.NewFromInt32(v), nil
-
-	case int64:
-		return decimal.NewFromInt(v), nil
-
-	case float32:
-		return decimal.NewFromFloat32(v), nil
-
-	case float64:
-		return decimal.NewFromFloat(v), nil
-
-	case decimal.Decimal:
-		return v, nil
-
-	case FCT:
-		return v.vd, nil
-	}
-
-	return d, errors.New("unknown type")
-}
-
-func isOperation(val interface{}) (string, bool) {
-	switch v := val.(type) {
-	case string:
-		if v == "+" || v == "-" || v == "*" || v == "/" {
-			return v, true
-		}
-	}
-
-	return "", false
-}
-
-func removeIndex[T any](ls []T, index int) []T {
-	return append(ls[:index], ls[index+1:]...)
 }

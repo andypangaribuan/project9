@@ -12,12 +12,16 @@ import (
 
 	"github.com/andypangaribuan/project9/fc"
 	"github.com/shopspring/decimal"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 func TestPerimeter(t *testing.T) {
-	fcv := fc.FCal(0.1, "*", 0.2, "/", 0.2) //, "+", 0.3, "+", 0.2, "*", 0.3)
-	fcv = fc.FCal(fcv, "+", 0.3)
-	fcv = fc.FCal(fcv, "+", 0.2, "*", 0.3)
+	fmt.Println(printer.Sprintf("%.0f", 123456789.1001))
+
+	fcv := fc.Cal(0.1, "*", 0.2, "/", 0.2) //, "+", 0.3, "+", 0.2, "*", 0.3)
+	fcv = fc.Cal(fcv, "+", 0.3)
+	fcv = fc.Cal(fcv, "+", 0.2, "*", 0.3)
 	d1 := decimal.NewFromFloat(0.1)
 	d2 := decimal.NewFromFloat(0.2)
 	d3 := decimal.NewFromFloat(0.2)
@@ -33,7 +37,7 @@ func TestPerimeter(t *testing.T) {
 	v3 := 10000.0
 	d = deci(v1).Div(deci(v2)).Mul(deci(v3))
 	v := v1 / v2 * v3
-	f := fc.FCal(v1, "/", v2, "*", v3)
+	f := fc.Cal(v1, "/", v2, "*", v3)
 	fmt.Printf("d: %.20f, f: %.20f, v: %.20f, r: %.20f, r1: %.20f\n", d.InexactFloat64(), f.Float64(), v, 0.3/0.1*10000, 3.0)
 }
 
@@ -52,4 +56,10 @@ func deci(v interface{}) decimal.Decimal {
 	}
 
 	return decimal.NewFromInt(0)
+}
+
+var printer *message.Printer
+
+func init() {
+	printer = message.NewPrinter(language.Indonesian)
 }
