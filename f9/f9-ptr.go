@@ -21,3 +21,11 @@ func PtrNotNilVoid[T any](val *T, fn func()) {
 		fn()
 	}
 }
+
+func PtrValue[T any](val *T, defaultValue T) T {
+	if val == nil {
+		return defaultValue
+	}
+
+	return *val
+}

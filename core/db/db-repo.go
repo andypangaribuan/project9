@@ -235,6 +235,18 @@ func (slf *Repo[T]) goGetDatas(whereQuery string, endQuery string, wherePars ...
 	return sql, models, nil
 }
 
+func (slf *Repo[T]) SelectFirst(cli *clog.Instance, query string, args ...interface{}) (*T, error) {
+	startAt := f9.TimeNow()
+	sql, models, err := slf.doSelect(query, args...)
+
+	if cli != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return slf.first(models), err
+}
+
 func (slf *Repo[T]) Select(cli *clog.Instance, query string, args ...interface{}) ([]T, error) {
 	startAt := f9.TimeNow()
 	sql, models, err := slf.doSelect(query, args...)
