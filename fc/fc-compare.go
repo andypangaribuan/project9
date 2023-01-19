@@ -9,6 +9,7 @@ package fc
 import (
 	"errors"
 	"log"
+	"reflect"
 
 	"github.com/andypangaribuan/project9/f9"
 )
@@ -23,8 +24,24 @@ func Compare(v1 interface{}, operation string, v2 interface{}) bool {
 }
 
 func SCompare(v1 interface{}, operation string, v2 interface{}) (bool, error) {
-	if !f9.IfHaveIn(operation, "==", "<", "<=", ">=", ">") {
-		return false, errors.New("invalid operation")
+	if !f9.IfHaveIn(operation, "==", "!=", "<", "<=", ">=", ">") {
+		return false, errors.New("fc.SCompare: invalid operation")
+	}
+
+	if v1 == nil {
+		return false, errors.New("v1 cannot nil")
+	}
+
+	if v2 == nil {
+		return false, errors.New("v2 cannot nil")
+	}
+
+	if rv := reflect.ValueOf(v1); rv.Kind() == reflect.Ptr {
+		v1 = rv.Elem().Interface()
+	}
+
+	if rv := reflect.ValueOf(v2); rv.Kind() == reflect.Ptr {
+		v2 = rv.Elem().Interface()
 	}
 
 	var (
@@ -35,6 +52,7 @@ func SCompare(v1 interface{}, operation string, v2 interface{}) (bool, error) {
 	switch v := v1.(type) {
 	case FCT:
 		fv1 = v
+
 	default:
 		fv1 = New(v)
 	}
@@ -49,6 +67,9 @@ func SCompare(v1 interface{}, operation string, v2 interface{}) (bool, error) {
 	switch operation {
 	case "==":
 		return fv1.vd.Equal(fv2.vd), nil
+
+	case "!=":
+		return !fv1.vd.Equal(fv2.vd), nil
 
 	case "<":
 		return fv1.vd.LessThan(fv2.vd), nil

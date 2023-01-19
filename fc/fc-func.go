@@ -8,7 +8,7 @@ package fc
 
 import (
 	"errors"
-	"strconv"
+	"reflect"
 
 	"github.com/shopspring/decimal"
 )
@@ -16,16 +16,18 @@ import (
 func toDecimal(val interface{}) (decimal.Decimal, error) {
 	var d decimal.Decimal
 
+	if val == nil {
+		return d, errors.New("val cannot nil")
+	}
+
 	switch v := val.(type) {
 	case string:
-		f, err := strconv.ParseFloat(v, 64)
+		dv, err := decimal.NewFromString(v)
 		if err != nil {
 			return d, err
 		}
 
-		d = decimal.NewFromFloat(f)
-
-		return d, nil
+		return dv, nil
 
 	case int:
 		v64 := int64(v)
@@ -48,6 +50,10 @@ func toDecimal(val interface{}) (decimal.Decimal, error) {
 
 	case FCT:
 		return v.vd, nil
+	}
+
+	if rv := reflect.ValueOf(val); rv.Kind() == reflect.Ptr {
+		return toDecimal(rv.Elem().Interface())
 	}
 
 	return d, errors.New("unknown type")

@@ -75,6 +75,14 @@ func (slf *srFuseContext) mpfDecoder() *schema.Decoder {
 	return mpfDecoderInstance
 }
 
+func (slf *srFuseContext) Request() FuseContextRequest {
+	return slf.reqCtx
+}
+
+func (slf *srFuseContextRequest) Header() map[string]string {
+	return slf.fuseCtx.fiberCtx.GetReqHeaders()
+}
+
 func (slf *srFuseContext) Params(key string, defaultValue ...string) string {
 	switch {
 	case slf.fiberCtx != nil:

@@ -21,6 +21,7 @@ import (
 )
 
 type FuseContext interface {
+	Request() FuseContextRequest
 	Params(key string, defaultValue ...string) string
 	Query(key string, defaultValue ...string) string
 	Parser(cli *clog.Instance, header, body interface{}) (bool, error)
@@ -33,6 +34,9 @@ type FuseContext interface {
 	AuthZ() interface{}
 	SetAuth(authX, authY, authZ interface{})
 
+	RString(cli *clog.Instance, code int, data string) error
+	RJson(cli *clog.Instance, code int, data interface{}) error
+	RJsonRaw(cli *clog.Instance, code int, data []byte) error
 	R200OK(cli *clog.Instance, data interface{}, opt ...FuseOpt) error
 	R400BadRequest(cli *clog.Instance, message string, opt ...FuseOpt) error
 	R401Unauthorized(cli *clog.Instance, message string, opt ...FuseOpt) error
@@ -41,6 +45,10 @@ type FuseContext interface {
 	R406NotAcceptable(cli *clog.Instance, message string, opt ...FuseOpt) error
 	R428PreconditionRequired(cli *clog.Instance, message string, opt ...FuseOpt) error
 	R500InternalServerError(cli *clog.Instance, err error, opt ...FuseOpt) error
+}
+
+type FuseContextRequest interface {
+	Header() map[string]string
 }
 
 type FuseOpt struct {
@@ -96,6 +104,7 @@ type srFuseGrpcContext struct {
 type srFuseContext struct {
 	fiberCtx *fiber.Ctx
 	grpcCtx  *srFuseGrpcContext
+	reqCtx   *srFuseContextRequest
 	path     string
 	clientIP string
 
@@ -107,6 +116,10 @@ type srFuseContext struct {
 	authY     interface{}
 	authZ     interface{}
 	isAuthSet bool
+}
+
+type srFuseContextRequest struct {
+	fuseCtx *srFuseContext
 }
 
 type srFuseGrpc struct {

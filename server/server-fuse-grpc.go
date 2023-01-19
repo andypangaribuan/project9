@@ -34,6 +34,10 @@ func (slf *srFuseGrpc) Restful(c context.Context, req *grf.Request) (*grf.Respon
 		}
 	)
 
+	ctx.reqCtx = &srFuseContextRequest{
+		fuseCtx: ctx,
+	}
+
 	handlers, ok := slf.routes[req.Action]
 	if !ok {
 		err = fmt.Errorf(`action not found: "%v"`, req.Action)
