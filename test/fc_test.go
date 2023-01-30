@@ -20,7 +20,8 @@ func TestPerimeter(t *testing.T) {
 	// dx, _ := decimal.NewFromString("958910.2380000000121071934700012")
 	fc1 := fc.New("0.1234567890123456789012345")
 	fc1 = fc1.Floor(5)
-	fmt.Printf("%.10f\n", fc1.Float64())
+	fc2 := fc.New("98.00")
+	fmt.Printf("%.10f | %v\n", fc1.Float64(), fc2.ToString())
 
 	fmt.Println(printer.Sprintf("%.0f", 123456789.1001))
 

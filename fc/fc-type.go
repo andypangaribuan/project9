@@ -216,8 +216,23 @@ func (slf *FCT) PtrFloor(opt ...interface{}) *FCT {
 	}
 
 	if defaultValue != nil {
-		return defaultValue
+		return f9.Ptr(defaultValue.Floor(places...))
 	}
 
 	return nil
+}
+
+
+func (slf *FCT) ToString() string {
+	exp := int(slf.vd.Exponent())
+	if exp < 0 {
+		exp *= -1
+	}
+
+	if exp == 0 {
+		exp = 1
+	}
+
+	format := "%." + strconv.Itoa(exp) + "f"
+	return fmt.Sprintf(format, slf.vd.InexactFloat64())
 }
