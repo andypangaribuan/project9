@@ -72,17 +72,70 @@ func normalizeSqlQueryParams(conn *srConnection, sqlQuery string, sqlPars []inte
 	return query, pars
 }
 
-func execute(conn *srConnection, sqlQuery string, sqlPars ...interface{}) (sql.Result, error) {
+func execute(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (sql.Result, error) {
 	if conn.driverName == "postgres" && conn.autoRebind && len(sqlPars) > 0 {
 		sqlQuery = sqlx.Rebind(sqlx.DOLLAR, sqlQuery)
+	}
+
+	if tx != nil {
+		switch v := tx.(type) {
+		case *pqInstanceTx:
+			stmt, err := v.tx.Prepare(sqlQuery)
+			if err != nil {
+				return nil, err
+			}
+			defer stmt.Close()
+
+			res, err := stmt.Exec(sqlPars...)
+			return res, err
+		}
 	}
 
 	stmt, err := conn.instance.Prepare(sqlQuery)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = stmt.Close() }()
+	defer stmt.Close()
 
 	res, err := stmt.Exec(sqlPars...)
 	return res, err
+}
+
+func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, error) {
+	if conn.driverName == "postgres" && conn.autoRebind && len(sqlPars) > 0 {
+		sqlQuery = sqlx.Rebind(sqlx.DOLLAR, sqlQuery)
+	}
+
+	if tx != nil {
+		switch v := tx.(type) {
+		case *pqInstanceTx:
+			stmt, err := v.tx.Prepare(sqlQuery)
+			if err != nil {
+				return nil, err
+			}
+			defer stmt.Close()
+
+			var id *int64
+			err = stmt.QueryRow(sqlPars...).Scan(&id)
+			if err != nil {
+				return nil, err
+			}
+
+			return id, err
+		}
+	}
+
+	stmt, err := conn.instance.Prepare(sqlQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	var id *int64
+	err = stmt.QueryRow(sqlPars...).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+
+	return id, err
 }

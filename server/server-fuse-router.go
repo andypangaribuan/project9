@@ -52,7 +52,7 @@ func (slf *srFuseRouter) Group(endpoints map[string][]func(sc FuseContext) error
 func (slf *srFuseRouter) restfulProcess(path string, handlers ...func(FuseContext) error) func(ctx *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		ctx := &srFuseContext{fiberCtx: c, path: path}
-		ctx.reqCtx = &srFuseContextRequest {
+		ctx.reqCtx = &srFuseContextRequest{
 			fuseCtx: ctx,
 		}
 

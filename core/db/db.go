@@ -21,6 +21,11 @@ type pqInstance struct {
 	conn *srConnection
 }
 
+type pqInstanceTx struct {
+	instance *pqInstance
+	tx       *sqlx.Tx
+}
+
 type srConnection struct {
 	connStr               string
 	driverName            string

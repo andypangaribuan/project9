@@ -57,7 +57,7 @@ func (slf *FCT) set(vd decimal.Decimal) {
 	if exp < 1 {
 		exp = 1
 	}
-	
+
 	format := "%." + strconv.Itoa(exp) + "f"
 
 	slf.vd = vd
@@ -171,7 +171,7 @@ func (slf FCT) Floor(places ...int) FCT {
 			currentValue := slf.vd.Coefficient()
 			newValue := new(big.Int).Div(currentValue, thousandDivDecimal)
 
-			return New(decimal.NewFromBigInt(newValue, int32(places[0] * -1)))
+			return New(decimal.NewFromBigInt(newValue, int32(places[0]*-1)))
 		}
 
 	}
@@ -221,7 +221,6 @@ func (slf *FCT) PtrFloor(opt ...interface{}) *FCT {
 
 	return nil
 }
-
 
 func (slf *FCT) ToString() string {
 	exp := int(slf.vd.Exponent())
