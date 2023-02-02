@@ -19,6 +19,22 @@ func init() {
 }
 
 func TimeNow(timezone ...string) time.Time {
+	location := getTimeLocation(timezone...)
+	return time.Now().In(location)
+}
+
+func TimeRemoveTimeZone(tm time.Time) time.Time {
+	millis := p9.Conv.Time.ToStrMillis(tm)
+	timeWithoutTimeZone, _ := p9.Conv.Time.ToTimeMillis(millis)
+	return timeWithoutTimeZone
+}
+
+func CustomTime(year, month, day, hour, min, sec, nsec int, timezone ...string) time.Time {
+	location := getTimeLocation(timezone...)
+	return time.Date(year, time.Month(month), day, hour, min, sec, nsec, location)
+}
+
+func getTimeLocation(timezone ...string) *time.Location {
 	zone := ""
 	if len(timezone) > 0 && timezone[0] != "" {
 		zone = timezone[0]
@@ -26,9 +42,7 @@ func TimeNow(timezone ...string) time.Time {
 
 	if zone == "" {
 		if TimeZone == "" {
-			timeNowStr := p9.Conv.Time.ToStr(time.Now(), "yyyy-MM-dd HH:mm:ss.SSSSSS")
-			timeNow, _ := p9.Conv.Time.ToTime("yyyy-MM-dd HH:mm:ss.SSSSSS", timeNowStr)
-			return timeNow
+			return time.UTC
 		}
 		zone = TimeZone
 	}
@@ -42,19 +56,5 @@ func TimeNow(timezone ...string) time.Time {
 		location = loc
 	}
 
-	if len(timezone) > 0 && timezone[0] == "" {
-		format := "yyyy-MM-dd HH:mm:ss.SSSSSS"
-		tm := time.Now().In(location)
-		tmStr := p9.Conv.Time.ToStr(tm, format)
-		tmUtc, _ := p9.Conv.Time.ToTime(format, tmStr)
-		return tmUtc
-	}
-
-	return time.Now().In(location)
-}
-
-func TimeRemoveTimeZone(tm time.Time) time.Time {
-	millis := p9.Conv.Time.ToStrMillis(tm)
-	timeWithoutTimeZone, _ := p9.Conv.Time.ToTimeMillis(millis)
-	return timeWithoutTimeZone
+	return location
 }
