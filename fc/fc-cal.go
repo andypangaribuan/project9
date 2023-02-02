@@ -13,6 +13,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// supported operator: +, -, *, /, %
 func Cal(val ...interface{}) FCT {
 	fcv, err := SCal(val...)
 	if err != nil {
@@ -22,6 +23,7 @@ func Cal(val ...interface{}) FCT {
 	return fcv
 }
 
+// supported operator: +, -, *, /, %
 func SCal(val ...interface{}) (FCT, error) {
 	fv := FCT{
 		V1: "0",
@@ -68,7 +70,7 @@ func SCal(val ...interface{}) (FCT, error) {
 		if i%2 == 0 && i < len(lsv)-1 {
 			operator := lsv[i+1].(string)
 
-			if operator == "*" || operator == "/" {
+			if operator == "*" || operator == "/" || operator == "%" {
 				vd1 := lsv[i].(decimal.Decimal)
 				vd2 := lsv[i+2].(decimal.Decimal)
 
@@ -78,6 +80,9 @@ func SCal(val ...interface{}) (FCT, error) {
 
 				case "/":
 					lsv[i] = vd1.Div(vd2)
+
+				case "%":
+					lsv[i] = vd1.Mod(vd2)
 				}
 
 				lsv = removeIndex(lsv, i+2)

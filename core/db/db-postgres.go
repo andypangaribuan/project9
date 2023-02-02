@@ -159,8 +159,10 @@ func (slf *pqInstance) NewTransaction() (abs.DbTx, error) {
 	}
 
 	ins := &pqInstanceTx{
-		instance: slf,
-		tx:       tx,
+		instance:   slf,
+		tx:         tx,
+		isCommit:   false,
+		isRollback: false,
 	}
 
 	return ins, nil

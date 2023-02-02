@@ -62,7 +62,7 @@ func toDecimal(val interface{}) (decimal.Decimal, error) {
 func isOperation(val interface{}) (string, bool) {
 	switch v := val.(type) {
 	case string:
-		if v == "+" || v == "-" || v == "*" || v == "/" {
+		if v == "+" || v == "-" || v == "*" || v == "/" || v == "%" {
 			return v, true
 		}
 	}

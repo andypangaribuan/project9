@@ -142,11 +142,7 @@ func (slf *FCT) PtrDecimal() *decimal.Decimal {
 }
 
 func (slf FCT) Floor(places ...int) FCT {
-	if len(places) == 0 {
-		return New(slf.vd.Floor())
-	}
-
-	if places[0] < 1 {
+	if len(places) == 0 || places[0] < 1 {
 		return New(slf.vd.Floor())
 	}
 
@@ -179,8 +175,8 @@ func (slf FCT) Floor(places ...int) FCT {
 	return slf
 }
 
-// places parameter using int/int32/int64 type
-// defaultValue using fc.FCT type
+// Places parameter using int/int32/int64 type.
+// DefaultValue using fc.FCT type.
 func (slf *FCT) PtrFloor(opt ...interface{}) *FCT {
 	var (
 		places       = make([]int, 0)
@@ -220,6 +216,102 @@ func (slf *FCT) PtrFloor(opt ...interface{}) *FCT {
 	}
 
 	return nil
+}
+
+func (slf FCT) Ceil(places ...int) FCT {
+	if len(places) == 0 || places[0] < 1 {
+		return New(slf.vd.Ceil())
+	}
+
+	exp := slf.vd.Exponent()
+	if exp < 0 {
+		exp *= -1
+		if exp > int32(places[0]) {
+			sub := int(exp) - places[0]
+			div := "1"
+			thousandDivDecimal := big.NewInt(1)
+
+			for i := 0; i < sub; i++ {
+				div = fmt.Sprintf("%v0", div)
+				v, ok := new(big.Int).SetString(div, 10)
+				if !ok {
+					log.Fatalf("error when converting to big.int, value: %v\n", div)
+				}
+
+				thousandDivDecimal = v
+			}
+
+			currentValue := slf.vd.Coefficient()
+			newValue := new(big.Int).Div(currentValue, thousandDivDecimal)
+			newValue = new(big.Int).Add(newValue, big.NewInt(1))
+
+			return New(decimal.NewFromBigInt(newValue, int32(places[0]*-1)))
+		}
+	}
+
+	return slf
+}
+
+// Places parameter using int/int32/int64 type.
+// DefaultValue using fc.FCT type.
+func (slf *FCT) PtrCeil(opt ...interface{}) *FCT {
+	var (
+		places       = make([]int, 0)
+		defaultValue *FCT
+	)
+
+	for _, o := range opt {
+		switch v := o.(type) {
+		case int:
+			if len(places) == 0 {
+				places = append(places, v)
+			}
+
+		case int32:
+			if len(places) == 0 {
+				places = append(places, int(v))
+			}
+
+		case int64:
+			if len(places) == 0 {
+				places = append(places, int(v))
+			}
+
+		case FCT:
+			if defaultValue == nil {
+				defaultValue = f9.Ptr(v)
+			}
+		}
+	}
+
+	if slf != nil {
+		return f9.Ptr(slf.Ceil(places...))
+	}
+
+	if defaultValue != nil {
+		return f9.Ptr(defaultValue.Ceil(places...))
+	}
+
+	return nil
+}
+
+func (slf FCT) Pow(val interface{}) FCT {
+	var fv FCT
+	p := New(val)
+	fv.set(slf.vd.Pow(p.vd))
+	return fv
+}
+
+func (slf FCT) SPow(val interface{}) (FCT, error) {
+	var fv FCT
+
+	p, err := SNew(val)
+	if err != nil {
+		return fv, err
+	}
+
+	fv.set(slf.vd.Pow(p.vd))
+	return fv, nil
 }
 
 func (slf *FCT) ToString() string {
