@@ -24,7 +24,7 @@ type FuseContext interface {
 	Request() FuseContextRequest
 	Params(key string, defaultValue ...string) string
 	Query(key string, defaultValue ...string) string
-	Parser(cli *clog.Instance, header, body interface{}) (bool, error)
+	Parser(logc *clog.Instance, header, body interface{}) (bool, error)
 	ClientIP() string
 	Path() string
 	Method() string
@@ -34,17 +34,20 @@ type FuseContext interface {
 	AuthZ() interface{}
 	SetAuth(authX, authY, authZ interface{})
 
-	RString(cli *clog.Instance, code int, data string) error
-	RJson(cli *clog.Instance, code int, data interface{}) error
-	RJsonRaw(cli *clog.Instance, code int, data []byte) error
-	R200OK(cli *clog.Instance, data interface{}, opt ...FuseOpt) error
-	R400BadRequest(cli *clog.Instance, message string, opt ...FuseOpt) error
-	R401Unauthorized(cli *clog.Instance, message string, opt ...FuseOpt) error
-	R403Forbidden(cli *clog.Instance, message string, opt ...FuseOpt) error
-	R404NotFound(cli *clog.Instance, message string, opt ...FuseOpt) error
-	R406NotAcceptable(cli *clog.Instance, message string, opt ...FuseOpt) error
-	R428PreconditionRequired(cli *clog.Instance, message string, opt ...FuseOpt) error
-	R500InternalServerError(cli *clog.Instance, err error, opt ...FuseOpt) error
+	SetCLog(logc *clog.Instance)
+	GetCLog() *clog.Instance
+
+	RString(logc *clog.Instance, code int, data string) error
+	RJson(logc *clog.Instance, code int, data interface{}) error
+	RJsonRaw(logc *clog.Instance, code int, data []byte) error
+	R200OK(logc *clog.Instance, data interface{}, opt ...FuseOpt) error
+	R400BadRequest(logc *clog.Instance, message string, opt ...FuseOpt) error
+	R401Unauthorized(logc *clog.Instance, message string, opt ...FuseOpt) error
+	R403Forbidden(logc *clog.Instance, message string, opt ...FuseOpt) error
+	R404NotFound(logc *clog.Instance, message string, opt ...FuseOpt) error
+	R406NotAcceptable(logc *clog.Instance, message string, opt ...FuseOpt) error
+	R428PreconditionRequired(logc *clog.Instance, message string, opt ...FuseOpt) error
+	R500InternalServerError(logc *clog.Instance, err error, opt ...FuseOpt) error
 }
 
 type FuseContextRequest interface {
@@ -116,6 +119,8 @@ type srFuseContext struct {
 	authY     interface{}
 	authZ     interface{}
 	isAuthSet bool
+
+	logc *clog.Instance
 }
 
 type srFuseContextRequest struct {

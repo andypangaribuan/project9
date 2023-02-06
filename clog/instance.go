@@ -18,6 +18,12 @@ func New() *Instance {
 	}
 }
 
+func (slf *Instance) SetId(userId, partnerId, xid *string) {
+	slf.UserId = userId
+	slf.PartnerId = partnerId
+	slf.XID = xid
+}
+
 func (slf *Instance) Info(message string, data ...string) {
 	var logData *string
 	if len(data) > 0 {

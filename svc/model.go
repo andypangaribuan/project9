@@ -10,6 +10,9 @@ import "time"
 
 type CLogRequestInfo struct {
 	Uid       string
+	UserId    *string
+	PartnerId *string
+	XID       *string
 	SvcName   string
 	SvcParent *string
 	Message   string
@@ -22,9 +25,13 @@ type CLogRequestInfo struct {
 
 type CLogRequestService struct {
 	Uid        string
+	UserId     *string
+	PartnerId  *string
+	XID        *string
 	SvcName    string
 	SvcParent  *string
 	Endpoint   string
+	Version    string
 	Message    *string
 	Severity   string
 	Path       string
@@ -45,6 +52,9 @@ type CLogRequestService struct {
 
 type CLogRequestDbq struct {
 	Uid        string
+	UserId     *string
+	PartnerId  *string
+	XID        *string
 	SvcName    string
 	SvcParent  *string
 	SqlQuery   string

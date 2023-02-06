@@ -319,7 +319,7 @@ func (slf *Repo[T]) doExecute(tx abs.DbTx, sqlQuery string, sqlPars ...interface
 	return sql, slf.DbInstance.Execute(sql.query, sql.pars...)
 }
 
-func sendDbq(cli clog.Instance, sqlQuery string, sqlPars []interface{}, execFunc, execPath string, startAt time.Time, err error) {
+func sendDbq(logc clog.Instance, sqlQuery string, sqlPars []interface{}, execFunc, execPath string, startAt time.Time, err error) {
 	var (
 		sqlParsVal *string
 		severity   = clog.Info
@@ -347,5 +347,5 @@ func sendDbq(cli clog.Instance, sqlQuery string, sqlPars []interface{}, execFunc
 		StackTrace: stackTrace,
 	}
 
-	clog.SendDbq(0, cli, severity, m, true)
+	clog.SendDbq(0, logc, severity, m, true)
 }

@@ -9,7 +9,11 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"fmt"
+	"net"
+	"net/mail"
 	"runtime"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/andypangaribuan/project9/f9"
@@ -134,4 +138,83 @@ func (*srUtil) GetExecutionInfo(depth int) (execFunc string, execPath string) {
 	execFunc = runtime.FuncForPC(pc).Name()
 	execPath = fmt.Sprintf("%v:%v", filename, line)
 	return
+}
+
+func (*srUtil) IsNumberOnly(value string, exclude ...string) bool {
+	v := value
+	for _, e := range exclude {
+		v = strings.ReplaceAll(v, e, "")
+	}
+
+	for i := 0; i < len(v); i++ {
+		oneChar := v[i : i+1]
+		_, err := strconv.Atoi(oneChar)
+		if err != nil {
+			return false
+		}
+	}
+
+	return true
+}
+
+// country id:   https://laendercode.net/en/2-letter-list.html
+// country code: https://countrycode.org/
+func (*srUtil) ExtractPhoneNumber(phoneNumber *string) (countryId, countryCode, number string) {
+	if phoneNumber == nil {
+		return
+	}
+
+	v := *phoneNumber
+	if v[:1] == "+" {
+		v = v[1:]
+	}
+
+	if countryCode == "" && v[:1] == "0" {
+		countryId = "ID"
+		countryCode = "62"
+		number = v[1:]
+		return
+	}
+
+	if countryCode == "" {
+		switch v[:2] {
+		case "60": // malaysia
+			countryId = "MY"
+		case "61": // australia
+			countryId = "AU"
+		case "62": // indonesia
+			countryId = "ID"
+		case "63": // philippines
+			countryId = "PH"
+		case "65": // singapore
+			countryId = "SG"
+		case "66": // thailand
+			countryId = "TH"
+		}
+
+		if countryId != "" {
+			countryCode = v[:2]
+			number = v[2:]
+		}
+	}
+
+	return
+}
+
+// verifyDomain default false
+func (*srUtil) IsEmailValid(email string, verifyDomain ...bool) bool {
+	_, err := mail.ParseAddress(email)
+	if err != nil {
+		return false
+	}
+
+	if len(verifyDomain) > 0 && verifyDomain[0] {
+		parts := strings.Split(email, "@")
+		mx, err := net.LookupMX(parts[1])
+		if err != nil || len(mx) == 0 {
+			return false
+		}
+	}
+
+	return true
 }

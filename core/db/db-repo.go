@@ -65,264 +65,264 @@ func (slf *Repo[T]) GenerateParamSigns(columnNames string) (paramSign string) {
 	return
 }
 
-func (slf *Repo[T]) Insert(cli *clog.Instance, sqlPars ...interface{}) error {
+func (slf *Repo[T]) Insert(logc *clog.Instance, sqlPars ...interface{}) error {
 	startAt := f9.TimeNow()
 	sql, err := slf.doInsert(nil, sqlPars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return err
 }
 
-func (slf *Repo[T]) InsertRID(cli *clog.Instance, sqlPars ...interface{}) (*int64, error) {
+func (slf *Repo[T]) InsertRID(logc *clog.Instance, sqlPars ...interface{}) (*int64, error) {
 	startAt := f9.TimeNow()
 	sql, id, err := slf.doInsertRID(nil, sqlPars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return id, err
 }
 
-func (slf *Repo[T]) TxInsert(cli *clog.Instance, tx abs.DbTx, sqlPars ...interface{}) error {
+func (slf *Repo[T]) TxInsert(logc *clog.Instance, tx abs.DbTx, sqlPars ...interface{}) error {
 	startAt := f9.TimeNow()
 	sql, err := slf.doInsert(tx, sqlPars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return err
 }
 
-func (slf *Repo[T]) TxInsertRID(cli *clog.Instance, tx abs.DbTx, sqlPars ...interface{}) (*int64, error) {
+func (slf *Repo[T]) TxInsertRID(logc *clog.Instance, tx abs.DbTx, sqlPars ...interface{}) (*int64, error) {
 	startAt := f9.TimeNow()
 	sql, id, err := slf.doInsertRID(tx, sqlPars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return id, err
 }
 
-func (slf *Repo[T]) Update(cli *clog.Instance, keyVals map[string]interface{}, whereQuery string, wherePars ...interface{}) error {
+func (slf *Repo[T]) Update(logc *clog.Instance, keyVals map[string]interface{}, whereQuery string, wherePars ...interface{}) error {
 	startAt := f9.TimeNow()
 	sql, err := slf.doUpdate(nil, keyVals, whereQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return err
 }
 
-func (slf *Repo[T]) TxUpdate(cli *clog.Instance, tx abs.DbTx, keyVals map[string]interface{}, whereQuery string, wherePars ...interface{}) error {
+func (slf *Repo[T]) TxUpdate(logc *clog.Instance, tx abs.DbTx, keyVals map[string]interface{}, whereQuery string, wherePars ...interface{}) error {
 	startAt := f9.TimeNow()
 	sql, err := slf.doUpdate(tx, keyVals, whereQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return err
 }
 
-func (slf *Repo[T]) GetData(cli *clog.Instance, whereQuery string, endQuery string, wherePars ...interface{}) (*T, error) {
+func (slf *Repo[T]) GetData(logc *clog.Instance, whereQuery string, endQuery string, wherePars ...interface{}) (*T, error) {
 	startAt := f9.TimeNow()
 	sql, models, err := slf.goGetDatas(nil, whereQuery, endQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return slf.first(models), err
 }
 
-func (slf *Repo[T]) GetDatas(cli *clog.Instance, whereQuery string, endQuery string, wherePars ...interface{}) ([]T, error) {
+func (slf *Repo[T]) GetDatas(logc *clog.Instance, whereQuery string, endQuery string, wherePars ...interface{}) ([]T, error) {
 	startAt := f9.TimeNow()
 	sql, models, err := slf.goGetDatas(nil, whereQuery, endQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return models, err
 }
 
-func (slf *Repo[T]) TxGetData(cli *clog.Instance, tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) (*T, error) {
+func (slf *Repo[T]) TxGetData(logc *clog.Instance, tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) (*T, error) {
 	startAt := f9.TimeNow()
 	sql, models, err := slf.goGetDatas(tx, whereQuery, endQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return slf.first(models), err
 }
 
-func (slf *Repo[T]) TxGetDatas(cli *clog.Instance, tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) ([]T, error) {
+func (slf *Repo[T]) TxGetDatas(logc *clog.Instance, tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) ([]T, error) {
 	startAt := f9.TimeNow()
 	sql, models, err := slf.goGetDatas(tx, whereQuery, endQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return models, err
 }
 
-func (slf *Repo[T]) SelectFirst(cli *clog.Instance, query string, args ...interface{}) (*T, error) {
+func (slf *Repo[T]) SelectFirst(logc *clog.Instance, query string, args ...interface{}) (*T, error) {
 	startAt := f9.TimeNow()
 	sql, models, err := slf.doSelect(nil, query, args...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return slf.first(models), err
 }
 
-func (slf *Repo[T]) Select(cli *clog.Instance, query string, args ...interface{}) ([]T, error) {
+func (slf *Repo[T]) Select(logc *clog.Instance, query string, args ...interface{}) ([]T, error) {
 	startAt := f9.TimeNow()
 	sql, models, err := slf.doSelect(nil, query, args...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return models, err
 }
 
-func (slf *Repo[T]) TxSelectFirst(cli *clog.Instance, tx abs.DbTx, query string, args ...interface{}) (*T, error) {
+func (slf *Repo[T]) TxSelectFirst(logc *clog.Instance, tx abs.DbTx, query string, args ...interface{}) (*T, error) {
 	startAt := f9.TimeNow()
 	sql, models, err := slf.doSelect(tx, query, args...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return slf.first(models), err
 }
 
-func (slf *Repo[T]) TxSelect(cli *clog.Instance, tx abs.DbTx, query string, args ...interface{}) ([]T, error) {
+func (slf *Repo[T]) TxSelect(logc *clog.Instance, tx abs.DbTx, query string, args ...interface{}) ([]T, error) {
 	startAt := f9.TimeNow()
 	sql, models, err := slf.doSelect(tx, query, args...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return models, err
 }
 
-func (slf *Repo[T]) Count(cli *clog.Instance, whereQuery, endQuery string, wherePars ...interface{}) (int, error) {
+func (slf *Repo[T]) Count(logc *clog.Instance, whereQuery, endQuery string, wherePars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
 	sql, count, err := slf.doCount(nil, whereQuery, endQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return count, err
 }
 
-func (slf *Repo[T]) RawCount(cli *clog.Instance, query string, pars ...interface{}) (int, error) {
+func (slf *Repo[T]) RawCount(logc *clog.Instance, query string, pars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
 	sql, count, err := slf.doRawCount(nil, query, pars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return count, err
 }
 
-func (slf *Repo[T]) TxCount(cli *clog.Instance, tx abs.DbTx, whereQuery, endQuery string, wherePars ...interface{}) (int, error) {
+func (slf *Repo[T]) TxCount(logc *clog.Instance, tx abs.DbTx, whereQuery, endQuery string, wherePars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
 	sql, count, err := slf.doCount(tx, whereQuery, endQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return count, err
 }
 
-func (slf *Repo[T]) TxRawCount(cli *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (int, error) {
+func (slf *Repo[T]) TxRawCount(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
 	sql, count, err := slf.doRawCount(tx, query, pars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return count, err
 }
 
-func (slf *Repo[T]) Delete(cli *clog.Instance, whereQuery string, wherePars ...interface{}) error {
+func (slf *Repo[T]) Delete(logc *clog.Instance, whereQuery string, wherePars ...interface{}) error {
 	startAt := f9.TimeNow()
 	sql, err := slf.doDelete(nil, whereQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return err
 }
-func (slf *Repo[T]) TxDelete(cli *clog.Instance, tx abs.DbTx, whereQuery string, wherePars ...interface{}) error {
+func (slf *Repo[T]) TxDelete(logc *clog.Instance, tx abs.DbTx, whereQuery string, wherePars ...interface{}) error {
 	startAt := f9.TimeNow()
 	sql, err := slf.doDelete(tx, whereQuery, wherePars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return err
 }
 
-func (slf *Repo[T]) Execute(cli *clog.Instance, sqlQuery string, sqlPars ...interface{}) error {
+func (slf *Repo[T]) Execute(logc *clog.Instance, sqlQuery string, sqlPars ...interface{}) error {
 	startAt := f9.TimeNow()
 	sql, err := slf.doExecute(nil, sqlQuery, sqlPars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return err
 }
 
-func (slf *Repo[T]) TxExecute(cli *clog.Instance, tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) error {
+func (slf *Repo[T]) TxExecute(logc *clog.Instance, tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) error {
 	startAt := f9.TimeNow()
 	sql, err := slf.doExecute(tx, sqlQuery, sqlPars...)
 
-	if cli != nil && sql != nil {
+	if logc != nil && sql != nil {
 		execFunc, execPath := p9.Util.GetExecutionInfo(1)
-		go sendDbq(*cli, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
 	}
 
 	return err

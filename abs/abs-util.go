@@ -6,6 +6,8 @@
 package abs
 
 import (
+	"bytes"
+	"image"
 	"time"
 
 	"github.com/andypangaribuan/project9/act/actenv"
@@ -24,6 +26,11 @@ type Util interface {
 	Base64Encode(data []byte) string
 	Base64Decode(value string) ([]byte, error)
 	GetExecutionInfo(depth int) (execFunc string, execPath string)
+	IsNumberOnly(value string, exclude ...string) bool
+	ExtractPhoneNumber(phoneNumber *string) (countryId, countryCode, number string)
+	IsEmailValid(email string, verifyDomain ...bool) bool
+
+	ImageBase64Decoder(imageBase64 string) (buff bytes.Buffer, config image.Config, format string, err error)
 
 	// ReflectionSet path: core.util.util-reflection-set.go
 	ReflectionSet(obj interface{}, bind map[string]interface{}) error

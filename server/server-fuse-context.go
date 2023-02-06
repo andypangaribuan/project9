@@ -121,16 +121,16 @@ func (slf *srFuseContext) Query(key string, defaultValue ...string) string {
 	}
 }
 
-func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (bool, error) {
+func (slf *srFuseContext) Parser(logc *clog.Instance, header, body interface{}) (bool, error) {
 	mapHeader := slf.getHeader()
 
-	if cli != nil {
+	if logc != nil {
 		if v, ok := mapHeader["x-uid"]; ok {
-			cli.UID = v
+			logc.UID = v
 		}
 
 		if v, ok := mapHeader["x-svcparent"]; ok {
-			cli.SvcParent = v
+			logc.SvcParent = v
 		}
 	}
 
@@ -142,7 +142,7 @@ func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (
 
 		if err != nil {
 			err = p9.Err.WithStack(err, 1)
-			return false, slf.r500InternalServerError(cli, err)
+			return false, slf.r500InternalServerError(logc, err)
 		}
 	}
 
@@ -150,7 +150,7 @@ func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (
 		cType, ok := mapHeader["content-type"]
 		if !ok {
 			err := errors.New("unknown content-type")
-			return false, slf.r500InternalServerError(cli, err)
+			return false, slf.r500InternalServerError(logc, err)
 		}
 
 		if idx := strings.Index(cType, ";"); idx > -1 {
@@ -162,7 +162,7 @@ func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (
 			err := slf.fiberCtx.BodyParser(&body)
 			if err != nil {
 				err = p9.Err.WithStack(err, 1)
-				return false, slf.r500InternalServerError(cli, err)
+				return false, slf.r500InternalServerError(logc, err)
 			}
 
 			if body != nil {
@@ -205,7 +205,7 @@ func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (
 
 			if err != nil {
 				err = p9.Err.WithStack(err, 1)
-				return false, slf.r500InternalServerError(cli, err)
+				return false, slf.r500InternalServerError(logc, err)
 			}
 
 			if body != nil {
@@ -222,7 +222,7 @@ func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (
 
 			if err != nil {
 				err = p9.Err.WithStack(err, 1)
-				return false, slf.r500InternalServerError(cli, err)
+				return false, slf.r500InternalServerError(logc, err)
 			}
 
 			slf.multipartFile = mf.File
@@ -251,7 +251,7 @@ func (slf *srFuseContext) Parser(cli *clog.Instance, header, body interface{}) (
 
 			if err != nil {
 				err = p9.Err.WithStack(err)
-				return false, slf.r500InternalServerError(cli, err)
+				return false, slf.r500InternalServerError(logc, err)
 			}
 		}
 	}
@@ -301,6 +301,19 @@ func (slf *srFuseContext) SetAuth(authX, authY, authZ interface{}) {
 //endregion
 
 // region util
+
+func (slf *srFuseContext) SetCLog(logc *clog.Instance) {
+	slf.logc = logc
+}
+
+func (slf *srFuseContext) GetCLog() *clog.Instance {
+	if slf.logc == nil {
+		slf.logc = clog.New()
+	}
+
+	return slf.logc
+}
+
 func (slf *srFuseContext) wrapError(err error) error {
 	if err != nil {
 		return fmt.Errorf("endpoint-path: %v\n%w", slf.path, err)
@@ -312,93 +325,93 @@ func (slf *srFuseContext) wrapError(err error) error {
 
 //region response
 
-func (slf *srFuseContext) RString(cli *clog.Instance, code int, data string) error {
-	return slf.sendRawA(cli, code, data)
+func (slf *srFuseContext) RString(logc *clog.Instance, code int, data string) error {
+	return slf.sendRawA(logc, code, data)
 }
 
-func (slf *srFuseContext) RJson(cli *clog.Instance, code int, data interface{}) error {
-	return slf.sendRawB(cli, code, data)
+func (slf *srFuseContext) RJson(logc *clog.Instance, code int, data interface{}) error {
+	return slf.sendRawB(logc, code, data)
 }
 
-func (slf *srFuseContext) RJsonRaw(cli *clog.Instance, code int, data []byte) error {
-	return slf.sendRawB(cli, code, f9.ToJsonRaw(data))
+func (slf *srFuseContext) RJsonRaw(logc *clog.Instance, code int, data []byte) error {
+	return slf.sendRawB(logc, code, f9.ToJsonRaw(data))
 }
 
-func (slf *srFuseContext) R200OK(cli *clog.Instance, data interface{}, opt ...FuseOpt) error {
+func (slf *srFuseContext) R200OK(logc *clog.Instance, data interface{}, opt ...FuseOpt) error {
 	fo := FuseOpt{
 		code:   http.StatusOK,
 		Status: fuseDefaultStatus.R200OK,
 		Data:   data,
 	}
 
-	return slf.send(cli, fo, opt...)
+	return slf.send(logc, fo, opt...)
 }
 
-func (slf *srFuseContext) R400BadRequest(cli *clog.Instance, message string, opt ...FuseOpt) error {
+func (slf *srFuseContext) R400BadRequest(logc *clog.Instance, message string, opt ...FuseOpt) error {
 	fo := FuseOpt{
 		code:    http.StatusBadRequest,
 		Status:  fuseDefaultStatus.R400BadRequest,
 		Message: f9.Ternary(message != "", message, fuseDefaultMessage.R400BadRequest),
 	}
 
-	return slf.send(cli, fo, opt...)
+	return slf.send(logc, fo, opt...)
 }
 
-func (slf *srFuseContext) R401Unauthorized(cli *clog.Instance, message string, opt ...FuseOpt) error {
+func (slf *srFuseContext) R401Unauthorized(logc *clog.Instance, message string, opt ...FuseOpt) error {
 	fo := FuseOpt{
 		code:    http.StatusUnauthorized,
 		Status:  fuseDefaultStatus.R401Unauthorized,
 		Message: f9.Ternary(message != "", message, fuseDefaultMessage.R401Unauthorized),
 	}
 
-	return slf.send(cli, fo, opt...)
+	return slf.send(logc, fo, opt...)
 }
 
-func (slf *srFuseContext) R403Forbidden(cli *clog.Instance, message string, opt ...FuseOpt) error {
+func (slf *srFuseContext) R403Forbidden(logc *clog.Instance, message string, opt ...FuseOpt) error {
 	fo := FuseOpt{
 		code:    http.StatusForbidden,
 		Status:  fuseDefaultStatus.R403Forbidden,
 		Message: f9.Ternary(message != "", message, fuseDefaultMessage.R403Forbidden),
 	}
 
-	return slf.send(cli, fo, opt...)
+	return slf.send(logc, fo, opt...)
 }
 
-func (slf *srFuseContext) R404NotFound(cli *clog.Instance, message string, opt ...FuseOpt) error {
+func (slf *srFuseContext) R404NotFound(logc *clog.Instance, message string, opt ...FuseOpt) error {
 	fo := FuseOpt{
 		code:    http.StatusNotFound,
 		Status:  fuseDefaultStatus.R404NotFound,
 		Message: f9.Ternary(message != "", message, fuseDefaultMessage.R404NotFound),
 	}
 
-	return slf.send(cli, fo, opt...)
+	return slf.send(logc, fo, opt...)
 }
 
-func (slf *srFuseContext) R406NotAcceptable(cli *clog.Instance, message string, opt ...FuseOpt) error {
+func (slf *srFuseContext) R406NotAcceptable(logc *clog.Instance, message string, opt ...FuseOpt) error {
 	fo := FuseOpt{
 		code:    http.StatusNotAcceptable,
 		Status:  fuseDefaultStatus.R406NotAcceptable,
 		Message: f9.Ternary(message != "", message, fuseDefaultMessage.R406NotAcceptable),
 	}
 
-	return slf.send(cli, fo, opt...)
+	return slf.send(logc, fo, opt...)
 }
 
-func (slf *srFuseContext) R428PreconditionRequired(cli *clog.Instance, message string, opt ...FuseOpt) error {
+func (slf *srFuseContext) R428PreconditionRequired(logc *clog.Instance, message string, opt ...FuseOpt) error {
 	fo := FuseOpt{
 		code:    http.StatusPreconditionRequired,
 		Status:  fuseDefaultStatus.R428PreconditionRequired,
 		Message: f9.Ternary(message != "", message, fuseDefaultMessage.R428PreconditionRequired),
 	}
 
-	return slf.send(cli, fo, opt...)
+	return slf.send(logc, fo, opt...)
 }
 
-func (slf *srFuseContext) R500InternalServerError(cli *clog.Instance, err error, opt ...FuseOpt) error {
-	return slf.r500InternalServerError(cli, p9.Err.WithStack(slf.wrapError(err), 1), opt...)
+func (slf *srFuseContext) R500InternalServerError(logc *clog.Instance, err error, opt ...FuseOpt) error {
+	return slf.r500InternalServerError(logc, p9.Err.WithStack(slf.wrapError(err), 1), opt...)
 }
 
-func (slf *srFuseContext) r500InternalServerError(cli *clog.Instance, err error, opt ...FuseOpt) error {
+func (slf *srFuseContext) r500InternalServerError(logc *clog.Instance, err error, opt ...FuseOpt) error {
 	fo := FuseOpt{
 		code:    http.StatusInternalServerError,
 		Status:  fuseDefaultStatus.R500InternalServerError,
@@ -406,14 +419,14 @@ func (slf *srFuseContext) r500InternalServerError(cli *clog.Instance, err error,
 		Error:   err,
 	}
 
-	return slf.send(cli, fo, opt...)
+	return slf.send(logc, fo, opt...)
 }
 
 //endregion
 
 //region send response
 
-func (slf *srFuseContext) sendRawA(cli *clog.Instance, code int, data string) error {
+func (slf *srFuseContext) sendRawA(logc *clog.Instance, code int, data string) error {
 	switch {
 	case slf.fiberCtx != nil:
 		return slf.fiberCtx.Status(code).SendString(data)
@@ -431,7 +444,7 @@ func (slf *srFuseContext) sendRawA(cli *clog.Instance, code int, data string) er
 	panic("unimplemented")
 }
 
-func (slf *srFuseContext) sendRawB(cli *clog.Instance, code int, data interface{}) error {
+func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface{}) error {
 	switch {
 	case slf.fiberCtx != nil:
 		return slf.fiberCtx.Status(code).JSON(data)
@@ -456,7 +469,7 @@ func (slf *srFuseContext) sendRawB(cli *clog.Instance, code int, data interface{
 	panic("unimplemented")
 }
 
-func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) error {
+func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) error {
 	type srMeta struct {
 		Code    int         `json:"code"`
 		Status  string      `json:"status,omitempty"`
@@ -566,11 +579,11 @@ func (slf *srFuseContext) send(cli *clog.Instance, fo FuseOpt, opt ...FuseOpt) e
 			ClientIP:   clientIp,
 		}
 
-		clog.SendService(0, *cli, severity, m, false)
+		clog.SendService(0, *logc, severity, m, false)
 	}
 
 	saveLog := func(resCode int, response interface{}) {
-		if cli != nil {
+		if logc != nil {
 			depth := 4
 			execFunc, execPath := p9.Util.GetExecutionInfo(depth)
 

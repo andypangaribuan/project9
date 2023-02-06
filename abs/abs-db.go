@@ -31,6 +31,26 @@ type DbInstance interface {
 	TxGet(tx DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) error
 }
 
+type DbUpdateHelper interface {
+	SetAdd(condition string, param interface{})
+	SetAddIfNoNil(condition string, param interface{})
+	SetAddIfNotNilOrEmpty(condition string, param interface{})
+	Where(condition string, pars ...interface{})
+
+	MapSetAdd(kv map[string]interface{})
+	MapSetAddIfNotNilOrEmpty(kv map[string]interface{})
+	MapWhere(kv map[string]interface{})
+
+	Get() (condition string, pars []interface{})
+}
+
+type DbGetUpdateHelper interface {
+	Add(kv map[string]interface{}) DbGetUpdateHelper
+	AddIfNotNilOrEmpty(kv map[string]interface{}) DbGetUpdateHelper
+	Where(kv map[string]interface{}) DbGetUpdateHelper
+	Get() (condition string, pars []interface{})
+}
+
 type DbPostgresInstance interface {
 	DbInstance
 }

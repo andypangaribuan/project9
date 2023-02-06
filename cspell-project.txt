@@ -17,3 +17,8 @@ jsoniter
 jmoiron
 dbname
 sslmode
+beginx
+actenv
+matoous
+protoc
+logc

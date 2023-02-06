@@ -6,6 +6,7 @@
 package f9
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/andypangaribuan/project9/constraint"
@@ -17,8 +18,18 @@ func IfAllNil(items ...interface{}) bool {
 
 	for _, item := range items {
 		if item != nil {
-			allNil = false
-			break
+			if rv := reflect.ValueOf(item); rv.Kind() == reflect.Ptr {
+				if rv.IsNil() {
+					continue
+				}
+
+				item = rv.Elem().Interface()
+			}
+
+			if item != nil {
+				allNil = false
+				break
+			}
 		}
 	}
 
@@ -29,6 +40,12 @@ func IfHaveNil(items ...interface{}) bool {
 	for _, item := range items {
 		if item == nil {
 			return true
+		} else {
+			if rv := reflect.ValueOf(item); rv.Kind() == reflect.Ptr {
+				if rv.IsNil() {
+					return true
+				}
+			}
 		}
 	}
 

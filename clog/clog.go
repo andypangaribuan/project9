@@ -31,6 +31,9 @@ func SendInfo(depth int, ins Instance, severity Severity, message string, data *
 	execFunc, execPath := p9.Util.GetExecutionInfo(1 + depth)
 	req := psvc.CLogRequestInfo{
 		Uid:       ins.UID,
+		UserId:    ins.UserId,
+		PartnerId: ins.PartnerId,
+		XID:       ins.XID,
 		SvcName:   svcName,
 		SvcParent: f9.Ternary(ins.SvcParent == "", nil, &ins.SvcParent),
 		Message:   message,
@@ -66,9 +69,13 @@ func SendService(depth int, ins Instance, severity Severity, m SendServiceModel,
 
 	req := psvc.CLogRequestService{
 		Uid:        ins.UID,
+		UserId:     ins.UserId,
+		PartnerId:  ins.PartnerId,
+		XID:        ins.XID,
 		SvcName:    svcName,
 		SvcParent:  f9.Ternary(ins.SvcParent == "", nil, &ins.SvcParent),
 		Endpoint:   m.Endpoint,
+		Version:    ins.EndpointVersion,
 		Message:    m.Message,
 		Severity:   severity.String(),
 		Path:       execPath,
@@ -112,6 +119,9 @@ func SendDbq(depth int, ins Instance, severity Severity, m SendDbqModel, onGorou
 
 	req := psvc.CLogRequestDbq{
 		Uid:        ins.UID,
+		UserId:     ins.UserId,
+		PartnerId:  ins.PartnerId,
+		XID:        ins.XID,
 		SvcName:    svcName,
 		SvcParent:  f9.Ternary(ins.SvcParent == "", nil, &ins.SvcParent),
 		SqlQuery:   m.SqlQuery,

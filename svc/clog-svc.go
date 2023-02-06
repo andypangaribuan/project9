@@ -106,6 +106,15 @@ func (slf *srCLog) Info(val CLogRequestInfo) (status string, message string, err
 		CreatedAt: p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
 	}
 
+	if val.UserId != nil {
+		req.UserId = &wrapperspb.StringValue{Value: *val.UserId}
+	}
+	if val.PartnerId != nil {
+		req.PartnerId = &wrapperspb.StringValue{Value: *val.PartnerId}
+	}
+	if val.XID != nil {
+		req.Xid = &wrapperspb.StringValue{Value: *val.XID}
+	}
 	if val.SvcParent != nil {
 		req.SvcParent = &wrapperspb.StringValue{Value: *val.SvcParent}
 	}
@@ -135,6 +144,7 @@ func (slf *srCLog) Service(val CLogRequestService) (status string, message strin
 		Uid:       val.Uid,
 		SvcName:   val.SvcName,
 		Endpoint:  val.Endpoint,
+		Version:   val.Version,
 		Severity:  val.Severity,
 		Path:      val.Path,
 		Function:  val.Function,
@@ -144,6 +154,15 @@ func (slf *srCLog) Service(val CLogRequestService) (status string, message strin
 		CreatedAt: p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
 	}
 
+	if val.UserId != nil {
+		req.UserId = &wrapperspb.StringValue{Value: *val.UserId}
+	}
+	if val.PartnerId != nil {
+		req.PartnerId = &wrapperspb.StringValue{Value: *val.PartnerId}
+	}
+	if val.XID != nil {
+		req.Xid = &wrapperspb.StringValue{Value: *val.XID}
+	}
 	if val.SvcParent != nil {
 		req.SvcParent = &wrapperspb.StringValue{Value: *val.SvcParent}
 	}
@@ -204,6 +223,15 @@ func (slf *srCLog) Dbq(val CLogRequestDbq) (status string, message string, err e
 		CreatedAt: p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
 	}
 
+	if val.UserId != nil {
+		req.UserId = &wrapperspb.StringValue{Value: *val.UserId}
+	}
+	if val.PartnerId != nil {
+		req.PartnerId = &wrapperspb.StringValue{Value: *val.PartnerId}
+	}
+	if val.XID != nil {
+		req.Xid = &wrapperspb.StringValue{Value: *val.XID}
+	}
 	if val.SvcParent != nil {
 		req.SvcParent = &wrapperspb.StringValue{Value: *val.SvcParent}
 	}

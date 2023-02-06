@@ -7,7 +7,7 @@
 package db
 
 func (slf *pqInstanceTx) Commit() error {
-	if slf.isCommit || slf.isRollback {
+	if slf.isCommit || slf.isRollback || slf.tx == nil {
 		return nil
 	}
 
@@ -16,7 +16,7 @@ func (slf *pqInstanceTx) Commit() error {
 }
 
 func (slf *pqInstanceTx) Rollback() error {
-	if slf.isCommit || slf.isRollback {
+	if slf.isCommit || slf.isRollback || slf.tx == nil {
 		return nil
 	}
 

@@ -153,17 +153,18 @@ func (slf *pqInstance) TxGet(tx abs.DbTx, out interface{}, sqlQuery string, sqlP
 }
 
 func (slf *pqInstance) NewTransaction() (abs.DbTx, error) {
-	tx, err := slf.conn.instance.Beginx()
-	if err != nil {
-		return nil, err
-	}
-
 	ins := &pqInstanceTx{
-		instance:   slf,
-		tx:         tx,
 		isCommit:   false,
 		isRollback: false,
 	}
+
+	tx, err := slf.conn.instance.Beginx()
+	if err != nil {
+		return ins, err
+	}
+
+	ins.instance = slf
+	ins.tx = tx
 
 	return ins, nil
 }
