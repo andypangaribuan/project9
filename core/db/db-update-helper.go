@@ -92,12 +92,6 @@ func (slf *srUpdateHelper) MapSetAddIfNotNilOrEmpty(kv map[string]interface{}) {
 	}
 }
 
-func (slf *srUpdateHelper) MapWhere(kv map[string]interface{}) {
-	for condition, param := range kv {
-		slf.Where(condition, param)
-	}
-}
-
 func (slf *srUpdateHelper) Get() (condition string, pars []interface{}) {
 	sqlSet := ""
 	for i, condition := range slf.columnSet {

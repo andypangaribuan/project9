@@ -30,8 +30,8 @@ func (slf *srGetUpdateHelper) AddIfNotNilOrEmpty(kv map[string]interface{}) abs.
 	return slf
 }
 
-func (slf *srGetUpdateHelper) Where(kv map[string]interface{}) abs.DbGetUpdateHelper {
-	slf.uh.MapWhere(kv)
+func (slf *srGetUpdateHelper) Where(condition string, pars ...interface{}) abs.DbGetUpdateHelper {
+	slf.uh.Where(condition, pars...)
 	return slf
 }
 

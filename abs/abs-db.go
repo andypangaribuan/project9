@@ -39,7 +39,6 @@ type DbUpdateHelper interface {
 
 	MapSetAdd(kv map[string]interface{})
 	MapSetAddIfNotNilOrEmpty(kv map[string]interface{})
-	MapWhere(kv map[string]interface{})
 
 	Get() (condition string, pars []interface{})
 }
@@ -47,7 +46,7 @@ type DbUpdateHelper interface {
 type DbGetUpdateHelper interface {
 	Add(kv map[string]interface{}) DbGetUpdateHelper
 	AddIfNotNilOrEmpty(kv map[string]interface{}) DbGetUpdateHelper
-	Where(kv map[string]interface{}) DbGetUpdateHelper
+	Where(condition string, pars ...interface{}) DbGetUpdateHelper
 	Get() (condition string, pars []interface{})
 }
 
