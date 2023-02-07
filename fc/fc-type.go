@@ -327,3 +327,21 @@ func (slf *FCT) ToString() string {
 	format := "%." + strconv.Itoa(exp) + "f"
 	return fmt.Sprintf(format, slf.vd.InexactFloat64())
 }
+
+func (slf FCT) Truncate(places ...int) FCT {
+	precision := 0
+	if len(places) > 0 && places[0] > 0 {
+		precision = places[0]
+	}
+
+	return New(slf.vd.Truncate(int32(precision)))
+}
+
+func (slf *FCT) PtrTruncate(places ...int) *FCT {
+	if slf == nil {
+		return nil
+	}
+
+	v := (*slf).Truncate(places...)
+	return &v
+}
