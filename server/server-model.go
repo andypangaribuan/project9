@@ -25,6 +25,7 @@ type FuseContext interface {
 	Params(key string, defaultValue ...string) string
 	Query(key string, defaultValue ...string) string
 	Parser(logc *clog.Instance, header, body interface{}) (bool, error)
+	GetMultipartFiles() map[string][]*multipart.FileHeader
 	ClientIP() string
 	Path() string
 	Method() string

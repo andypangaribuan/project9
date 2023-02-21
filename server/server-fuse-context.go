@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"reflect"
 	"strings"
@@ -257,6 +258,10 @@ func (slf *srFuseContext) Parser(logc *clog.Instance, header, body interface{}) 
 	}
 
 	return true, nil
+}
+
+func (slf *srFuseContext) GetMultipartFiles() map[string][]*multipart.FileHeader {
+	return slf.multipartFile
 }
 
 func (slf *srFuseContext) ClientIP() string {
