@@ -17,9 +17,9 @@ import (
 var svc psvc.CLogSVC
 var svcName string
 
-func Init(address, serviceName string) {
+func Init(address, serviceName string, usingTLS bool) {
 	svcName = serviceName
-	clogSvc, err := psvc.InitCLogSVC(address)
+	clogSvc, err := psvc.InitCLogSVC(address, usingTLS)
 	if err != nil {
 		log.Fatal(err)
 	}

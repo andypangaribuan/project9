@@ -9,6 +9,7 @@ package svc
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 	"sync"
 	"time"
@@ -17,15 +18,17 @@ import (
 	"github.com/andypangaribuan/project9/proto/clog-svc"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type srCLog struct {
-	address string
-	mutex   sync.RWMutex
-	conn    *grpc.ClientConn
-	client  clog_svc.CLogServiceClient
+	address  string
+	usingTLS bool
+	mutex    sync.RWMutex
+	conn     *grpc.ClientConn
+	client   clog_svc.CLogServiceClient
 }
 
 func (slf *srCLog) getConnection() (*grpc.ClientConn, error) {
@@ -49,7 +52,18 @@ func (slf *srCLog) buildConnection() error {
 		return nil
 	}
 
-	conn, err := grpc.Dial(slf.address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	var (
+		conn *grpc.ClientConn
+		err  error
+	)
+
+	if slf.usingTLS {
+		creds := credentials.NewTLS(&tls.Config{})
+		conn, err = grpc.Dial(slf.address, grpc.WithTransportCredentials(creds))
+	} else {
+		conn, err = grpc.Dial(slf.address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
 	if err != nil {
 		return err
 	} else {

@@ -6,9 +6,10 @@
 
 package svc
 
-func InitCLogSVC(grpcAddress string) (CLogSVC, error) {
+func InitCLogSVC(grpcAddress string, usingTLS bool) (CLogSVC, error) {
 	sr := &srCLog{
-		address: grpcAddress,
+		address:  grpcAddress,
+		usingTLS: usingTLS,
 	}
 
 	err := sr.buildConnection()
