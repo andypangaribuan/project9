@@ -9,18 +9,19 @@ package svc
 import "time"
 
 type CLogRequestInfo struct {
-	Uid       string
-	UserId    *string
-	PartnerId *string
-	XID       *string
-	SvcName   string
-	SvcParent *string
-	Message   string
-	Severity  string
-	Path      string
-	Function  string
-	Data      *string
-	CreatedAt time.Time
+	Uid        string
+	UserId     *string
+	PartnerId  *string
+	XID        *string
+	SvcName    string
+	SvcVersion string
+	SvcParent  *string
+	Message    string
+	Severity   string
+	Path       string
+	Function   string
+	Data       *string
+	CreatedAt  time.Time
 }
 
 type CLogRequestService struct {
@@ -29,6 +30,7 @@ type CLogRequestService struct {
 	PartnerId  *string
 	XID        *string
 	SvcName    string
+	SvcVersion string
 	SvcParent  *string
 	Endpoint   string
 	Version    string
@@ -56,6 +58,7 @@ type CLogRequestDbq struct {
 	PartnerId  *string
 	XID        *string
 	SvcName    string
+	SvcVersion string
 	SvcParent  *string
 	SqlQuery   string
 	SqlPars    *string

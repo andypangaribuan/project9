@@ -111,13 +111,14 @@ func (slf *srCLog) Info(val CLogRequestInfo) (status string, message string, err
 	defer cancel()
 
 	req := &clog_svc.RequestInfoLog{
-		Uid:       val.Uid,
-		SvcName:   val.SvcName,
-		Message:   val.Message,
-		Severity:  val.Severity,
-		Path:      val.Path,
-		Function:  val.Function,
-		CreatedAt: p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
+		Uid:        val.Uid,
+		SvcName:    val.SvcName,
+		SvcVersion: val.SvcVersion,
+		Message:    val.Message,
+		Severity:   val.Severity,
+		Path:       val.Path,
+		Function:   val.Function,
+		CreatedAt:  p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
 	}
 
 	if val.UserId != nil {
@@ -155,17 +156,18 @@ func (slf *srCLog) Service(val CLogRequestService) (status string, message strin
 	defer cancel()
 
 	req := &clog_svc.RequestServiceLog{
-		Uid:       val.Uid,
-		SvcName:   val.SvcName,
-		Endpoint:  val.Endpoint,
-		Version:   val.Version,
-		Severity:  val.Severity,
-		Path:      val.Path,
-		Function:  val.Function,
-		ClientIP:  val.ClientIP,
-		StartAt:   p9.Conv.Time.ToStrRFC3339MilliSecond(val.StartAt),
-		FinishAt:  p9.Conv.Time.ToStrRFC3339MilliSecond(val.FinishAt),
-		CreatedAt: p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
+		Uid:        val.Uid,
+		SvcName:    val.SvcName,
+		SvcVersion: val.SvcVersion,
+		Endpoint:   val.Endpoint,
+		Version:    val.Version,
+		Severity:   val.Severity,
+		Path:       val.Path,
+		Function:   val.Function,
+		ClientIP:   val.ClientIP,
+		StartAt:    p9.Conv.Time.ToStrRFC3339MilliSecond(val.StartAt),
+		FinishAt:   p9.Conv.Time.ToStrRFC3339MilliSecond(val.FinishAt),
+		CreatedAt:  p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
 	}
 
 	if val.UserId != nil {
@@ -226,15 +228,16 @@ func (slf *srCLog) Dbq(val CLogRequestDbq) (status string, message string, err e
 	defer cancel()
 
 	req := &clog_svc.RequestDbqLog{
-		Uid:       val.Uid,
-		SvcName:   val.SvcName,
-		SqlQuery:  val.SqlQuery,
-		Severity:  val.Severity,
-		Path:      val.Path,
-		Function:  val.Function,
-		StartAt:   p9.Conv.Time.ToStrRFC3339MilliSecond(val.StartAt),
-		FinishAt:  p9.Conv.Time.ToStrRFC3339MilliSecond(val.FinishAt),
-		CreatedAt: p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
+		Uid:        val.Uid,
+		SvcName:    val.SvcName,
+		SvcVersion: val.SvcVersion,
+		SqlQuery:   val.SqlQuery,
+		Severity:   val.Severity,
+		Path:       val.Path,
+		Function:   val.Function,
+		StartAt:    p9.Conv.Time.ToStrRFC3339MilliSecond(val.StartAt),
+		FinishAt:   p9.Conv.Time.ToStrRFC3339MilliSecond(val.FinishAt),
+		CreatedAt:  p9.Conv.Time.ToStrRFC3339MilliSecond(val.CreatedAt),
 	}
 
 	if val.UserId != nil {

@@ -14,11 +14,15 @@ import (
 	psvc "github.com/andypangaribuan/project9/svc"
 )
 
-var svc psvc.CLogSVC
-var svcName string
+var (
+	svc        psvc.CLogSVC
+	svcName    string
+	svcVersion string
+)
 
-func Init(address, serviceName string, usingTLS bool) {
+func Init(address, serviceName, serviceVersion string, usingTLS bool) {
 	svcName = serviceName
+	svcVersion = serviceVersion
 	clogSvc, err := psvc.InitCLogSVC(address, usingTLS)
 	if err != nil {
 		log.Fatal(err)
@@ -30,18 +34,19 @@ func Init(address, serviceName string, usingTLS bool) {
 func SendInfo(depth int, ins Instance, severity Severity, message string, data *string, onGoroutine bool) {
 	execFunc, execPath := p9.Util.GetExecutionInfo(1 + depth)
 	req := psvc.CLogRequestInfo{
-		Uid:       ins.UID,
-		UserId:    ins.UserId,
-		PartnerId: ins.PartnerId,
-		XID:       ins.XID,
-		SvcName:   svcName,
-		SvcParent: f9.Ternary(ins.SvcParent == "", nil, &ins.SvcParent),
-		Message:   message,
-		Severity:  severity.String(),
-		Path:      execPath,
-		Function:  execFunc,
-		Data:      data,
-		CreatedAt: f9.TimeNow(),
+		Uid:        ins.UID,
+		UserId:     ins.UserId,
+		PartnerId:  ins.PartnerId,
+		XID:        ins.XID,
+		SvcName:    svcName,
+		SvcVersion: svcVersion,
+		SvcParent:  f9.Ternary(ins.SvcParent == "", nil, &ins.SvcParent),
+		Message:    message,
+		Severity:   severity.String(),
+		Path:       execPath,
+		Function:   execFunc,
+		Data:       data,
+		CreatedAt:  f9.TimeNow(),
 	}
 
 	if onGoroutine {
@@ -73,6 +78,7 @@ func SendService(depth int, ins Instance, severity Severity, m SendServiceModel,
 		PartnerId:  ins.PartnerId,
 		XID:        ins.XID,
 		SvcName:    svcName,
+		SvcVersion: svcVersion,
 		SvcParent:  f9.Ternary(ins.SvcParent == "", nil, &ins.SvcParent),
 		Endpoint:   m.Endpoint,
 		Version:    ins.EndpointVersion,
@@ -123,6 +129,7 @@ func SendDbq(depth int, ins Instance, severity Severity, m SendDbqModel, onGorou
 		PartnerId:  ins.PartnerId,
 		XID:        ins.XID,
 		SvcName:    svcName,
+		SvcVersion: svcVersion,
 		SvcParent:  f9.Ternary(ins.SvcParent == "", nil, &ins.SvcParent),
 		SqlQuery:   m.SqlQuery,
 		SqlPars:    m.SqlPars,

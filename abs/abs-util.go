@@ -34,6 +34,8 @@ type Util interface {
 
 	// ReflectionSet path: core.util.util-reflection-set.go
 	ReflectionSet(obj interface{}, bind map[string]interface{}) error
+
+	ConcurrentProcess(total, max int, fn func(index int))
 }
 
 type UtilEnv interface {
