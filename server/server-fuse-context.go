@@ -87,15 +87,20 @@ func (slf *srFuseContextRequest) Header() map[string]string {
 func (slf *srFuseContext) Params(key string, defaultValue ...string) string {
 	switch {
 	case slf.fiberCtx != nil:
-		return slf.fiberCtx.Params(key, "")
+		return slf.fiberCtx.Params(key, defaultValue...)
 
 	case slf.grpcCtx != nil:
 		val := ""
+		if len(defaultValue) > 0 {
+			val = defaultValue[0]
+		}
+
 		if len(slf.grpcCtx.params) > 0 {
 			if v, ok := slf.grpcCtx.params[key]; ok {
 				val = v
 			}
 		}
+		
 		return val
 
 	default:

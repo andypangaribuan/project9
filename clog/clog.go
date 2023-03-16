@@ -8,6 +8,7 @@ package clog
 
 import (
 	"log"
+	"strings"
 
 	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/p9"
@@ -20,9 +21,18 @@ var (
 	svcVersion string
 )
 
-func Init(address, serviceName, serviceVersion string, usingTLS bool) {
+func Init(address, serviceName, serviceVersion string) {
 	svcName = serviceName
 	svcVersion = serviceVersion
+
+	usingTLS := false
+	arr := strings.Split(address, ":")
+	if len(arr) > 1 {
+		if arr[len(arr)-1] == "443" {
+			usingTLS = true
+		}
+	}
+
 	clogSvc, err := psvc.InitCLogSVC(address, usingTLS)
 	if err != nil {
 		log.Fatal(err)
