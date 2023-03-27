@@ -437,8 +437,85 @@ func (slf *srFuseContext) r500InternalServerError(logc *clog.Instance, err error
 //region send response
 
 func (slf *srFuseContext) sendRawA(logc *clog.Instance, code int, data string) error {
+	doSaveLog := func(resCode int, response interface{}, execFunc, execPath string, header, params map[string]string, endpoint, clientIp string) {
+		var (
+			severity   = clog.Info
+			message    *string
+			reqHeader  *string
+			reqBody    = slf.jsonBody
+			reqParam   *string
+			resData    *string
+			data       *string
+			err        *string
+			stackTrace *string
+		)
+
+		resCodeOne := fmt.Sprintf("%v", resCode)[:1]
+		switch {
+		case resCodeOne == "2":
+			severity = clog.Info
+		case resCodeOne == "4":
+			severity = clog.Warning
+		case resCodeOne == "5":
+			severity = clog.Error
+		}
+
+		if value, err := p9.Json.Encode(header); err == nil && value != "{}" {
+			reqHeader = &value
+		}
+
+		if value, err := p9.Json.Encode(params); err == nil && value != "{}" {
+			reqParam = &value
+		}
+
+		if value, err := p9.Json.Encode(response); err == nil {
+			resData = &value
+		}
+
+		m := clog.SendServiceModel{
+			Endpoint:   endpoint,
+			ExecFunc:   &execFunc,
+			ExecPath:   &execPath,
+			Message:    message,
+			ReqHeader:  reqHeader,
+			ReqBody:    reqBody,
+			ReqParam:   reqParam,
+			ResData:    resData,
+			ResCode:    &resCode,
+			Data:       data,
+			Error:      err,
+			StackTrace: stackTrace,
+			ClientIP:   clientIp,
+		}
+
+		clog.SendService(0, *logc, severity, m, false)
+	}
+
+	saveLog := func(resCode int, response interface{}) {
+		if logc != nil {
+			depth := 3
+			execFunc, execPath := p9.Util.GetExecutionInfo(depth)
+
+			for {
+				if !strings.Contains(execPath, "/project9/server/server-fuse-context.go") {
+					break
+				}
+
+				depth++
+				execFunc, execPath = p9.Util.GetExecutionInfo(depth)
+			}
+
+			header := slf.getHeader()
+			params := slf.fiberCtx.AllParams()
+			clientIp := f9.TernaryFnB(slf.clientIP != "", slf.clientIP, func() string { return cip.getClientIP(slf) })
+			endpoint := strings.ToLower(fmt.Sprintf("%v:%v", slf.fiberCtx.Route().Method, slf.fiberCtx.Route().Path))
+			go doSaveLog(resCode, response, execFunc, execPath, header, params, endpoint, clientIp)
+		}
+	}
+
 	switch {
 	case slf.fiberCtx != nil:
+		saveLog(code, data)
 		return slf.fiberCtx.Status(code).SendString(data)
 
 	case slf.grpcCtx != nil:
@@ -455,8 +532,85 @@ func (slf *srFuseContext) sendRawA(logc *clog.Instance, code int, data string) e
 }
 
 func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface{}) error {
+	doSaveLog := func(resCode int, response interface{}, execFunc, execPath string, header, params map[string]string, endpoint, clientIp string) {
+		var (
+			severity   = clog.Info
+			message    *string
+			reqHeader  *string
+			reqBody    = slf.jsonBody
+			reqParam   *string
+			resData    *string
+			data       *string
+			err        *string
+			stackTrace *string
+		)
+
+		resCodeOne := fmt.Sprintf("%v", resCode)[:1]
+		switch {
+		case resCodeOne == "2":
+			severity = clog.Info
+		case resCodeOne == "4":
+			severity = clog.Warning
+		case resCodeOne == "5":
+			severity = clog.Error
+		}
+
+		if value, err := p9.Json.Encode(header); err == nil && value != "{}" {
+			reqHeader = &value
+		}
+
+		if value, err := p9.Json.Encode(params); err == nil && value != "{}" {
+			reqParam = &value
+		}
+
+		if value, err := p9.Json.Encode(response); err == nil {
+			resData = &value
+		}
+
+		m := clog.SendServiceModel{
+			Endpoint:   endpoint,
+			ExecFunc:   &execFunc,
+			ExecPath:   &execPath,
+			Message:    message,
+			ReqHeader:  reqHeader,
+			ReqBody:    reqBody,
+			ReqParam:   reqParam,
+			ResData:    resData,
+			ResCode:    &resCode,
+			Data:       data,
+			Error:      err,
+			StackTrace: stackTrace,
+			ClientIP:   clientIp,
+		}
+
+		clog.SendService(0, *logc, severity, m, false)
+	}
+
+	saveLog := func(resCode int, response interface{}) {
+		if logc != nil {
+			depth := 3
+			execFunc, execPath := p9.Util.GetExecutionInfo(depth)
+
+			for {
+				if !strings.Contains(execPath, "/project9/server/server-fuse-context.go") {
+					break
+				}
+
+				depth++
+				execFunc, execPath = p9.Util.GetExecutionInfo(depth)
+			}
+
+			header := slf.getHeader()
+			params := slf.fiberCtx.AllParams()
+			clientIp := f9.TernaryFnB(slf.clientIP != "", slf.clientIP, func() string { return cip.getClientIP(slf) })
+			endpoint := strings.ToLower(fmt.Sprintf("%v:%v", slf.fiberCtx.Route().Method, slf.fiberCtx.Route().Path))
+			go doSaveLog(resCode, response, execFunc, execPath, header, params, endpoint, clientIp)
+		}
+	}
+
 	switch {
 	case slf.fiberCtx != nil:
+		saveLog(code, data)
 		return slf.fiberCtx.Status(code).JSON(data)
 
 	case slf.grpcCtx != nil:
