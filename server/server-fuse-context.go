@@ -100,7 +100,7 @@ func (slf *srFuseContext) Params(key string, defaultValue ...string) string {
 				val = v
 			}
 		}
-		
+
 		return val
 
 	default:

@@ -34,6 +34,7 @@ func init() {
 		NanoIdLength:              60,
 		HashIdSalt:                "Project9",
 		HashIdLength:              60,
+		K8sEnvName:                "ZX_ENV",
 		DefaultHttpRequestTimeout: &defaultHttpRequestTimeout,
 	}
 }

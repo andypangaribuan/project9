@@ -9,15 +9,6 @@ Download all dependencies
   $ go mod download
 Remove unused dependencies
   $ go mod tidy
-
-IntelliJ Shortcuts
-✦ opt + (↑ OR ↓)    ︎〉extend selection
-✦ ctrl + opt + I    ︎〉auto-indent lines
-✦ ctrl + shift + E  ︎〉next highlighted error (custom)
-✦ ctrl + tab        ︎〉switcher
-✦ cmd + .  ︎         〉collapse or expand block
-✦ ctrl + shift + -  ︎〉collapse all
-✦ ctrl + shift + +  ︎〉expand all
 -->
 
 # Project 9
@@ -33,7 +24,9 @@ If you need performance and good productivity, you will love Project 9.
 ```sh
 go get github.com/andypangaribuan/project9
 ```
+
 Then do initialization before using the p9.
+
 ```sh
 project9.Initialize()
 ```

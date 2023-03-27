@@ -14,20 +14,51 @@ import (
 
 	"github.com/andypangaribuan/project9/abs"
 	"github.com/andypangaribuan/project9/act/actenv"
+	"github.com/andypangaribuan/project9/p9"
 )
 
-func (slf *srEnv) GetAppEnv(key string) actenv.AppEnv {
-	return &srAppEnv{
-		Value: slf.GetStr(key),
-	}
+var zxEnv map[string]string
+
+func init() {
+	zxEnv = make(map[string]string, 0)
 }
 
-func (*srEnv) getEnv(key string) string {
-	return strings.TrimSpace(os.Getenv(key))
+func getFromZXEnv(key string) string {
+	if len(zxEnv) > 0 {
+		return zxEnv[key]
+	}
+
+	value := os.Getenv(p9.Conf.K8sEnvName)
+	if value == "" {
+		return ""
+	}
+
+	lines := strings.Split(value, "\n")
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		eqIdx := strings.Index(line, "=")
+
+		if line == "" || line[:1] == "#" || eqIdx < 1 {
+			continue
+		}
+
+		key := strings.TrimSpace(line[:eqIdx])
+		val := strings.TrimSpace(line[eqIdx+1:])
+
+		if key != "" && val != "" {
+			zxEnv[key] = val
+		}
+	}
+
+	return zxEnv[key]
 }
 
 func getEnvDefault[T any](key string, defaultValue ...T) (string, *T) {
-	value := strings.TrimSpace(os.Getenv(key))
+	value := getFromZXEnv(key)
+	if value == "" {
+		value = strings.TrimSpace(os.Getenv(key))
+	}
 
 	switch {
 	case value == "" && len(defaultValue) > 0:
@@ -37,6 +68,12 @@ func getEnvDefault[T any](key string, defaultValue ...T) (string, *T) {
 	}
 
 	return value, nil
+}
+
+func (slf *srEnv) GetAppEnv(key string) actenv.AppEnv {
+	return &srAppEnv{
+		Value: slf.GetStr(key),
+	}
 }
 
 func (*srEnv) GetStr(key string, defaultValue ...string) string {

@@ -11,6 +11,7 @@ type srConf struct {
 	NanoIdLength int
 	HashIdSalt   string
 	HashIdLength int
+	K8sEnvName   string
 
 	DefaultHttpRequestTimeout *time.Duration
 }
