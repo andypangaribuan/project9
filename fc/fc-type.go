@@ -331,6 +331,16 @@ func (slf FCT) SPow(val interface{}) (FCT, error) {
 	return fv, nil
 }
 
+func (slf FCT) String() string {
+	switch {
+	case slf.V1 != "":
+		return slf.V1
+
+	default:
+		return slf.ToString()
+	}
+}
+
 func (slf *FCT) ToString() string {
 	exp := int(slf.vd.Exponent())
 	if exp < 0 {

@@ -18,7 +18,8 @@ func Create() *srDb {
 }
 
 type pqInstance struct {
-	conn *srConnection
+	conn     *srConnection
+	connRead *srConnection
 }
 
 type pqInstanceTx struct {
@@ -37,4 +38,5 @@ type srConnection struct {
 	maxOpenConnection     int
 	autoRebind            bool
 	unsafeCompatibility   bool
+	printSql              bool
 }

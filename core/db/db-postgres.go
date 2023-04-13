@@ -10,12 +10,14 @@ import (
 	"sync"
 
 	"github.com/andypangaribuan/project9/abs"
+	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/model"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 var locking sync.Mutex
+var lockingConnRead sync.Mutex
 
 func (slf *pqInstance) getInstance() (*sqlx.DB, error) {
 	locking.Lock()
@@ -33,11 +35,41 @@ func (slf *pqInstance) getInstance() (*sqlx.DB, error) {
 	return instance, err
 }
 
+func (slf *pqInstance) getReadInstance() (*sqlx.DB, error) {
+	if slf.connRead == nil {
+		return slf.getInstance()
+	}
+
+	lockingConnRead.Lock()
+	defer lockingConnRead.Unlock()
+
+	if slf.connRead.instance != nil {
+		return slf.connRead.instance, nil
+	}
+
+	instance, err := getConnection(slf.connRead)
+	if err == nil {
+		slf.connRead.instance = instance
+	}
+
+	return instance, err
+}
+
 func (slf *pqInstance) Ping() error {
 	instance, err := slf.getInstance()
 	if err == nil {
 		err = instance.Ping()
 	}
+
+	return err
+}
+
+func (slf *pqInstance) PingRead() error {
+	instance, err := slf.getReadInstance()
+	if err == nil {
+		err = instance.Ping()
+	}
+
 	return err
 }
 
@@ -48,7 +80,9 @@ func (slf *pqInstance) Execute(sqlQuery string, sqlPars ...interface{}) error {
 	}
 
 	query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
+	startTime := f9.TimeNow()
 	_, err = execute(slf.conn, nil, query, pars...)
+	printSql(slf.conn, startTime, query, pars...)
 	return err
 }
 
@@ -59,28 +93,40 @@ func (slf *pqInstance) ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int
 	}
 
 	query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
-	return executeRID(slf.conn, nil, query, pars...)
+	startTime := f9.TimeNow()
+	rid, err := executeRID(slf.conn, nil, query, pars...)
+	printSql(slf.conn, startTime, query, pars...)
+
+	return rid, err
 }
 
 func (slf *pqInstance) TxExecute(tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) error {
 	query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
+	startTime := f9.TimeNow()
 	_, err := execute(slf.conn, tx, query, pars...)
+	printSql(slf.conn, startTime, query, pars...)
 	return err
 }
 
 func (slf *pqInstance) TxExecuteRID(tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, error) {
 	query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
-	return executeRID(slf.conn, tx, query, pars...)
+	startTime := f9.TimeNow()
+	rid, err := executeRID(slf.conn, tx, query, pars...)
+	printSql(slf.conn, startTime, query, pars...)
+	return rid, err
 }
 
 func (slf *pqInstance) Select(out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error) {
-	instance, err := slf.getInstance()
+	instance, err := slf.getReadInstance()
 	if err != nil {
 		return nil, err
 	}
 
-	query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
+	conn := f9.Ternary(slf.connRead != nil, slf.connRead, slf.conn)
+	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
+	startTime := f9.TimeNow()
 	err = instance.Select(out, query, pars...)
+	printSql(conn, startTime, query, pars...)
 	if err != nil {
 		if slf.conn.unsafeCompatibility {
 			msg := err.Error()
@@ -106,7 +152,9 @@ func (slf *pqInstance) TxSelect(tx abs.DbTx, out interface{}, sqlQuery string, s
 		switch v := tx.(type) {
 		case *pqInstanceTx:
 			query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
+			startTime := f9.TimeNow()
 			err := v.tx.Select(out, query, pars...)
+			printSql(slf.conn, startTime, query, pars...)
 			if err != nil {
 				if slf.conn.unsafeCompatibility {
 					msg := err.Error()
@@ -132,13 +180,17 @@ func (slf *pqInstance) TxSelect(tx abs.DbTx, out interface{}, sqlQuery string, s
 }
 
 func (slf *pqInstance) Get(out interface{}, sqlQuery string, sqlPars ...interface{}) error {
-	instance, err := slf.getInstance()
+	instance, err := slf.getReadInstance()
 	if err != nil {
 		return err
 	}
 
-	query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
-	return instance.Get(out, query, pars...)
+	conn := f9.Ternary(slf.connRead != nil, slf.connRead, slf.conn)
+	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
+	startTime := f9.TimeNow()
+	err = instance.Get(out, query, pars...)
+	printSql(conn, startTime, query, pars...)
+	return err
 }
 
 func (slf *pqInstance) TxGet(tx abs.DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) error {
@@ -146,7 +198,10 @@ func (slf *pqInstance) TxGet(tx abs.DbTx, out interface{}, sqlQuery string, sqlP
 		switch v := tx.(type) {
 		case *pqInstanceTx:
 			query, pars := normalizeSqlQueryParams(slf.conn, sqlQuery, sqlPars)
-			return v.tx.Get(out, query, pars...)
+			startTime := f9.TimeNow()
+			err := v.tx.Get(out, query, pars...)
+			printSql(slf.conn, startTime, query, pars...)
+			return err
 		}
 	}
 	return errors.New("unknown: tx transaction type")

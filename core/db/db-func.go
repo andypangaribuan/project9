@@ -8,14 +8,16 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/andypangaribuan/project9/abs"
+	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/model"
 	"github.com/jmoiron/sqlx"
 )
 
-func (*srDb) NewPostgresInstance(host string, port int, dbName, username, password string, schema *string, config *model.DbConfig, autoRebind, unsafeCompatibility bool, applicationName string) abs.DbPostgresInstance {
+func (*srDb) NewPostgresInstance(host string, port int, dbName, username, password string, schema *string, config *model.DbConfig, autoRebind, unsafeCompatibility bool, applicationName string, printSql bool) abs.DbPostgresInstance {
 	connStr := ""
 	if schema == nil {
 		connStr = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s application_name=%s sslmode=disable", host, port, username, password, dbName, applicationName)
@@ -32,6 +34,7 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 			maxOpenConnection:     100,
 			autoRebind:            autoRebind,
 			unsafeCompatibility:   unsafeCompatibility,
+			printSql:              printSql,
 		},
 	}
 
@@ -39,6 +42,30 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 		instance.conn.maxLifeTimeConnection = config.MaxLifeTimeConnection
 		instance.conn.maxIdleConnection = config.MaxIdleConnection
 		instance.conn.maxOpenConnection = config.MaxOpenConnection
+	}
+
+	return instance
+}
+
+func (*srDb) NewReadWritePostgresInstance(read, write abs.DbPostgresInstance) abs.DbPostgresInstance {
+	var (
+		connRead  *srConnection
+		connWrite *srConnection
+	)
+
+	switch r := read.(type) {
+	case *pqInstance:
+		connRead = r.conn
+	}
+
+	switch w := write.(type) {
+	case *pqInstance:
+		connWrite = w.conn
+	}
+
+	instance := &pqInstance{
+		conn:     connWrite,
+		connRead: connRead,
 	}
 
 	return instance
@@ -52,6 +79,7 @@ func getConnection(conn *srConnection) (*sqlx.DB, error) {
 		instance.SetMaxOpenConns(conn.maxOpenConnection)
 		err = instance.Ping()
 	}
+
 	return instance, err
 }
 
@@ -138,4 +166,15 @@ func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...int
 	}
 
 	return id, err
+}
+
+func printSql(conn *srConnection, startTime time.Time, sqlQuery string, sqlPars ...interface{}) {
+	if conn.printSql {
+		durationMs := f9.TimeNow().Sub(startTime).Milliseconds()
+		if len(sqlPars) == 0 {
+			log.Printf("\nSQL: \"%v\"\nDUR: %vms", sqlQuery, durationMs)
+		} else {
+			log.Printf("\nSQL: \"%v\"\nARG: %v\nDUR: %vms", sqlQuery, sqlPars, durationMs)
+		}
+	}
 }

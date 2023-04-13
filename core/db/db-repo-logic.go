@@ -14,6 +14,7 @@ import (
 	"github.com/andypangaribuan/project9/abs"
 	"github.com/andypangaribuan/project9/clog"
 	"github.com/andypangaribuan/project9/f9"
+	"github.com/andypangaribuan/project9/fc"
 	"github.com/andypangaribuan/project9/model"
 	"github.com/andypangaribuan/project9/p9"
 	"github.com/lib/pq"
@@ -254,27 +255,47 @@ func (slf *Repo[T]) doCount(tx abs.DbTx, whereQuery, endQuery string, wherePars 
 }
 
 func (slf *Repo[T]) doRawCount(tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], int, error) {
+	sql, val, err := slf.doRawFCT(tx, query, pars...)
+	return sql, val.Int(), err
+}
+
+func (slf *Repo[T]) doRawInt(tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], int, error) {
+	sql, val, err := slf.doRawFCT(tx, query, pars...)
+	return sql, val.Int(), err
+}
+
+func (slf *Repo[T]) doRawInt64(tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], int64, error) {
+	sql, val, err := slf.doRawFCT(tx, query, pars...)
+	return sql, val.Int64(), err
+}
+
+func (slf *Repo[T]) doRawFloat64(tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], float64, error) {
+	sql, val, err := slf.doRawFCT(tx, query, pars...)
+	return sql, val.Float64(), err
+}
+
+func (slf *Repo[T]) doRawFCT(tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], fc.FCT, error) {
 	sql := srRepoSql[T]{}.new(``)
+	val := fc.New(-1)
 
 	sql.query = strings.TrimSpace(query)
 	sql.pars = pars
 
 	query, pars, err := transformIn(sql.query, sql.pars...)
 	if err != nil {
-		return sql, -1, err
+		return sql, val, err
 	}
 
 	sql.query = query
 	sql.pars = pars
 
-	var count int
 	if tx != nil {
-		err = slf.DbInstance.TxGet(tx, &count, sql.query, sql.pars...)
+		err = slf.DbInstance.TxGet(tx, &val, sql.query, sql.pars...)
 	} else {
-		err = slf.DbInstance.Get(&count, sql.query, sql.pars...)
+		err = slf.DbInstance.Get(&val, sql.query, sql.pars...)
 	}
 
-	return sql, count, err
+	return sql, val, err
 }
 
 func (slf *Repo[T]) doDelete(tx abs.DbTx, whereQuery string, wherePars ...interface{}) (*srRepoSql[T], error) {

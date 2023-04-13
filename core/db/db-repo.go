@@ -14,6 +14,7 @@ import (
 	"github.com/andypangaribuan/project9/abs"
 	"github.com/andypangaribuan/project9/clog"
 	"github.com/andypangaribuan/project9/f9"
+	"github.com/andypangaribuan/project9/fc"
 	"github.com/andypangaribuan/project9/model"
 	"github.com/andypangaribuan/project9/p9"
 )
@@ -257,6 +258,54 @@ func (slf *Repo[T]) RawCount(logc *clog.Instance, query string, pars ...interfac
 	return count, err
 }
 
+func (slf *Repo[T]) RawInt(logc *clog.Instance, query string, pars ...interface{}) (int, error) {
+	startAt := f9.TimeNow()
+	sql, res, err := slf.doRawInt(nil, query, pars...)
+
+	if logc != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return res, err
+}
+
+func (slf *Repo[T]) RawInt64(logc *clog.Instance, query string, pars ...interface{}) (int64, error) {
+	startAt := f9.TimeNow()
+	sql, res, err := slf.doRawInt64(nil, query, pars...)
+
+	if logc != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return res, err
+}
+
+func (slf *Repo[T]) RawFloat64(logc *clog.Instance, query string, pars ...interface{}) (float64, error) {
+	startAt := f9.TimeNow()
+	sql, res, err := slf.doRawFloat64(nil, query, pars...)
+
+	if logc != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return res, err
+}
+
+func (slf *Repo[T]) RawFCT(logc *clog.Instance, query string, pars ...interface{}) (fc.FCT, error) {
+	startAt := f9.TimeNow()
+	sql, res, err := slf.doRawFCT(nil, query, pars...)
+
+	if logc != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return res, err
+}
+
 func (slf *Repo[T]) TxCount(logc *clog.Instance, tx abs.DbTx, whereQuery, endQuery string, wherePars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
 	sql, count, err := slf.doCount(tx, whereQuery, endQuery, wherePars...)
@@ -279,6 +328,54 @@ func (slf *Repo[T]) TxRawCount(logc *clog.Instance, tx abs.DbTx, query string, p
 	}
 
 	return count, err
+}
+
+func (slf *Repo[T]) TxRawInt(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (int, error) {
+	startAt := f9.TimeNow()
+	sql, res, err := slf.doRawInt(tx, query, pars...)
+
+	if logc != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return res, err
+}
+
+func (slf *Repo[T]) TxRawInt64(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (int64, error) {
+	startAt := f9.TimeNow()
+	sql, res, err := slf.doRawInt64(tx, query, pars...)
+
+	if logc != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return res, err
+}
+
+func (slf *Repo[T]) TxRawFloat64(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (float64, error) {
+	startAt := f9.TimeNow()
+	sql, res, err := slf.doRawFloat64(tx, query, pars...)
+
+	if logc != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return res, err
+}
+
+func (slf *Repo[T]) TxRawFCT(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (fc.FCT, error) {
+	startAt := f9.TimeNow()
+	sql, res, err := slf.doRawFCT(tx, query, pars...)
+
+	if logc != nil && sql != nil {
+		execFunc, execPath := p9.Util.GetExecutionInfo(1)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+	}
+
+	return res, err
 }
 
 func (slf *Repo[T]) Delete(logc *clog.Instance, whereQuery string, wherePars ...interface{}) error {
