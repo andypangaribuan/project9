@@ -65,6 +65,23 @@ func (slf *FCT) set(vd decimal.Decimal) {
 	slf.V2 = printer.Sprintf(format, slf.vd.InexactFloat64())
 }
 
+func (slf *FCT) GetDefault(val interface{}) FCT {
+	if slf != nil {
+		return *slf
+	}
+
+	if val != nil {
+		switch v := val.(type) {
+		case *FCT:
+			return *v
+		case FCT:
+			return v
+		}
+	}
+
+	return New(val)
+}
+
 func (slf FCT) Float64() float64 {
 	return slf.vd.InexactFloat64()
 }
