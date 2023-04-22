@@ -12,6 +12,7 @@ import (
 	"log"
 	"math/big"
 	"strconv"
+	"strings"
 
 	"github.com/andypangaribuan/project9/f9"
 	"github.com/shopspring/decimal"
@@ -331,6 +332,24 @@ func (slf FCT) SPow(val interface{}) (FCT, error) {
 	return fv, nil
 }
 
+func (slf FCT) Truncate(places ...int) FCT {
+	precision := 0
+	if len(places) > 0 && places[0] > 0 {
+		precision = places[0]
+	}
+
+	return New(slf.vd.Truncate(int32(precision)))
+}
+
+func (slf *FCT) PtrTruncate(places ...int) *FCT {
+	if slf == nil {
+		return nil
+	}
+
+	v := (*slf).Truncate(places...)
+	return &v
+}
+
 func (slf FCT) String() string {
 	switch {
 	case slf.V1 != "":
@@ -355,20 +374,26 @@ func (slf *FCT) ToString() string {
 	return fmt.Sprintf(format, slf.vd.InexactFloat64())
 }
 
-func (slf FCT) Truncate(places ...int) FCT {
-	precision := 0
-	if len(places) > 0 && places[0] > 0 {
-		precision = places[0]
-	}
+func (slf *FCT) ToStringF1() string {
+	v := slf.ToStringF2()
+	
+	v = strings.ReplaceAll(v, ".", "#")
+	v = strings.ReplaceAll(v, ",", ".")
+	v = strings.ReplaceAll(v, "#", ",")
 
-	return New(slf.vd.Truncate(int32(precision)))
+	return v
 }
 
-func (slf *FCT) PtrTruncate(places ...int) *FCT {
-	if slf == nil {
-		return nil
+func (slf *FCT) ToStringF2() string {
+	v := slf.V2
+	
+	ls := strings.Split(v, ".")
+	if len(ls) > 1 {
+		decimal := ls[1]
+		if Compare(0, "==", decimal) {
+			v = ls[0]
+		}
 	}
 
-	v := (*slf).Truncate(places...)
-	return &v
+	return v
 }
