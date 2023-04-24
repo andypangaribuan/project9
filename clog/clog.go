@@ -9,8 +9,10 @@ package clog
 import (
 	"log"
 	"strings"
+	"time"
 
 	"github.com/andypangaribuan/project9/f9"
+	"github.com/andypangaribuan/project9/fc"
 	"github.com/andypangaribuan/project9/p9"
 	psvc "github.com/andypangaribuan/project9/svc"
 )
@@ -19,11 +21,22 @@ var (
 	svc        psvc.CLogSVC
 	svcName    string
 	svcVersion string
+	retryCount int           = 1
+	retryAfter time.Duration = time.Second
 )
 
-func Init(address, serviceName, serviceVersion string) {
+type srSvcResultHandler struct {
+	status  string
+	message string
+}
+
+func Init(address, serviceName, serviceVersion string, retries int, retryDelay time.Duration) {
 	svcName = serviceName
 	svcVersion = serviceVersion
+	if retries >= 0 {
+		retryCount = retries
+		retryAfter = retryDelay
+	}
 
 	usingTLS := false
 	arr := strings.Split(address, ":")
@@ -59,13 +72,7 @@ func SendInfo(depth int, ins Instance, severity Severity, message string, data *
 		CreatedAt:  f9.TimeNow(),
 	}
 
-	if onGoroutine {
-		go func() {
-			svcResult(svc.Info(req))
-		}()
-	} else {
-		svcResult(svc.Info(req))
-	}
+	send(&req, nil, nil, onGoroutine)
 }
 
 func SendService(depth int, ins Instance, severity Severity, m SendServiceModel, onGoroutine bool) {
@@ -110,13 +117,7 @@ func SendService(depth int, ins Instance, severity Severity, m SendServiceModel,
 		CreatedAt:  timeNow,
 	}
 
-	if onGoroutine {
-		go func() {
-			svcResult(svc.Service(req))
-		}()
-	} else {
-		svcResult(svc.Service(req))
-	}
+	send(nil, &req, nil, onGoroutine)
 }
 
 func SendDbq(depth int, ins Instance, severity Severity, m SendDbqModel, onGoroutine bool) {
@@ -153,22 +154,55 @@ func SendDbq(depth int, ins Instance, severity Severity, m SendDbqModel, onGorou
 		CreatedAt:  timeNow,
 	}
 
-	if onGoroutine {
-		go func() {
-			svcResult(svc.Dbq(req))
-		}()
-	} else {
-		svcResult(svc.Dbq(req))
-	}
+	send(nil, nil, &req, onGoroutine)
 }
 
-func svcResult(status string, message string, err error) {
+func send(infoData *psvc.CLogRequestInfo, serviceData *psvc.CLogRequestService, dbqData *psvc.CLogRequestDbq, onGoroutine bool) {
+	if onGoroutine {
+		go func() {
+			send(infoData, serviceData, dbqData, false)
+		}()
+		return
+	}
+
+	exec := func() (*srSvcResultHandler, error) {
+		var (
+			status  string
+			message string
+			err     error
+		)
+
+		switch {
+		case infoData != nil:
+			status, message, err = svc.Info(*infoData)
+
+		case serviceData != nil:
+			status, message, err = svc.Service(*serviceData)
+
+		case dbqData != nil:
+			status, message, err = svc.Dbq(*dbqData)
+		}
+
+		res := &srSvcResultHandler{status: status, message: message}
+		return res, err
+	}
+
+	res, err := fc.Retry(exec, retryCount, retryAfter)
+	svcResult(res, err)
+}
+
+func svcResult(res *srSvcResultHandler, err error) {
 	if err != nil {
 		log.Printf("clog error: %+v\n", err)
 		return
 	}
 
-	if status != "success" {
-		log.Printf("clog failed, status: %v, message: %v\n", status, message)
+	if res == nil {
+		log.Printf("unavailable on retry action")
+		return
+	}
+
+	if res.status != "success" {
+		log.Printf("clog failed, status: %v, message: %v\n", res.status, res.message)
 	}
 }
