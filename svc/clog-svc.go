@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/resolver"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -57,11 +58,14 @@ func (slf *srCLog) buildConnection() error {
 		err  error
 	)
 
+	resolver.SetDefaultScheme("dns")
+	const grpcServiceConfig = `{"loadBalancingPolicy":"round_robin"}`
+
 	if slf.usingTLS {
 		creds := credentials.NewTLS(&tls.Config{})
-		conn, err = grpc.Dial(slf.address, grpc.WithTransportCredentials(creds))
+		conn, err = grpc.Dial(slf.address, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(grpcServiceConfig))
 	} else {
-		conn, err = grpc.Dial(slf.address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err = grpc.Dial(slf.address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultServiceConfig(grpcServiceConfig))
 	}
 
 	if err != nil {
