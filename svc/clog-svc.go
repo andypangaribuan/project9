@@ -10,6 +10,7 @@ package svc
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -60,12 +61,13 @@ func (slf *srCLog) buildConnection() error {
 
 	resolver.SetDefaultScheme("dns")
 	const grpcServiceConfig = `{"loadBalancingPolicy":"round_robin"}`
+	address := fmt.Sprintf("dns:///%v", slf.address)
 
 	if slf.usingTLS {
 		creds := credentials.NewTLS(&tls.Config{})
-		conn, err = grpc.Dial(slf.address, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+		conn, err = grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(grpcServiceConfig))
 	} else {
-		conn, err = grpc.Dial(slf.address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+		conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultServiceConfig(grpcServiceConfig))
 	}
 
 	if err != nil {
