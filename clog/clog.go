@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/andypangaribuan/project9/f9"
-	"github.com/andypangaribuan/project9/fc"
 	"github.com/andypangaribuan/project9/p9"
 	psvc "github.com/andypangaribuan/project9/svc"
 )
@@ -187,7 +186,7 @@ func send(infoData *psvc.CLogRequestInfo, serviceData *psvc.CLogRequestService, 
 		return res, err
 	}
 
-	res, err := fc.Retry(exec, retryCount, retryAfter)
+	res, err := f9.Retry(exec, retryCount, retryAfter)
 	svcResult(res, err)
 }
 

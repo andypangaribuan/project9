@@ -93,6 +93,18 @@ func (slf *srTime) ToTimeMicro(value string) (time.Time, error) {
 	return time.Parse(layoutTimeMicro, value)
 }
 
+func (slf *srTime) ToTimeRFC3339(value string) (time.Time, error) {
+	return time.Parse(time.RFC3339, value)
+}
+
+func (slf *srTime) ToTimeRFC3339MilliSecond(value string) (time.Time, error) {
+	return time.Parse("2006-01-02T15:04:05.000Z07:00", value)
+}
+
+func (slf *srTime) ToTimeRFC3339MicroSecond(value string) (time.Time, error) {
+	return time.Parse("2006-01-02T15:04:05.000000Z07:00", value)
+}
+
 func (slf *srTime) GetTimeZone(tm time.Time) string {
 	hour := 3600 // second
 	minute := 60 // second

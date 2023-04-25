@@ -32,6 +32,10 @@ type ConvTime interface {
 	ToTimeMillis(value string) (time.Time, error)
 	ToTimeMicro(value string) (time.Time, error)
 
+	ToTimeRFC3339(value string) (time.Time, error)
+	ToTimeRFC3339MilliSecond(value string) (time.Time, error)
+	ToTimeRFC3339MicroSecond(value string) (time.Time, error)
+
 	GetTimeZone(tm time.Time) string
 	RemovePart(tm time.Time, part ...string) time.Time
 }

@@ -58,6 +58,10 @@ func SetFuseStatusMessage(call func(status *FuseDefaultStatus, message *FuseDefa
 }
 
 func Fuse(restfulPort, grpcPort int, autoRecover bool, withErr bool, routes func(router FuseRouter)) {
+	Fuse2(restfulPort, grpcPort, autoRecover, withErr, routes)
+}
+
+func Fuse2(restfulPort, grpcPort int, autoRecover bool, withErr bool, routes func(router FuseRouter), grpcRegister ...func(svc *grpc.Server)) {
 	if restfulPort == grpcPort {
 		panic("restfulPort and grpcPort cannot have same value")
 	}
@@ -92,10 +96,17 @@ func Fuse(restfulPort, grpcPort int, autoRecover bool, withErr bool, routes func
 
 	if grpcPort != -1 {
 		go func() {
-			register := func(server *grpc.Server) {
-				grf.RegisterRestfulServiceServer(server, router.fuseGrpc)
+			var register func(svc *grpc.Server)
+
+			if len(grpcRegister) > 0 {
+				register = grpcRegister[0]
+			} else {
+				register = func(server *grpc.Server) {
+					grf.RegisterRestfulServiceServer(server, router.fuseGrpc)
+				}
 			}
 
+			time.Sleep(time.Millisecond * 10)
 			p9.Server.StartGRPC(grpcPort, autoRecover, register, 3)
 		}()
 	}

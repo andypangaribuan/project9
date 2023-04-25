@@ -376,7 +376,7 @@ func (slf *FCT) ToString() string {
 
 func (slf *FCT) ToStringF1() string {
 	v := slf.ToStringF2()
-	
+
 	v = strings.ReplaceAll(v, ".", "#")
 	v = strings.ReplaceAll(v, ",", ".")
 	v = strings.ReplaceAll(v, "#", ",")
@@ -386,7 +386,7 @@ func (slf *FCT) ToStringF1() string {
 
 func (slf *FCT) ToStringF2() string {
 	v := slf.V2
-	
+
 	ls := strings.Split(v, ".")
 	if len(ls) > 1 {
 		decimal := ls[1]
