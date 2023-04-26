@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/andypangaribuan/project9/fc"
+	"github.com/andypangaribuan/project9/f9"
 )
 
 func TestRetry(t *testing.T) {
@@ -29,7 +29,7 @@ func TestRetry(t *testing.T) {
 		return nil, fmt.Errorf("invalid i : %v", i)
 	}
 
-	r, err := fc.Retry(f, 4, time.Second)
+	r, err := f9.Retry(f, 4, time.Second)
 	if err != nil {
 		log.Printf("error: %v\n", err)
 		t.Error(err)

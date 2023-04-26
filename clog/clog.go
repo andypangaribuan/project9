@@ -29,7 +29,7 @@ type srSvcResultHandler struct {
 	message string
 }
 
-func Init(address, serviceName, serviceVersion string, retries int, retryDelay time.Duration) {
+func Init(address, serviceName, serviceVersion string, retries int, retryDelay time.Duration, usingClientLoadBalancing bool) {
 	svcName = serviceName
 	svcVersion = serviceVersion
 	if retries >= 0 {
@@ -45,7 +45,7 @@ func Init(address, serviceName, serviceVersion string, retries int, retryDelay t
 		}
 	}
 
-	clogSvc, err := psvc.InitCLogSVC(address, usingTLS)
+	clogSvc, err := psvc.InitCLogSVC(address, usingTLS, usingClientLoadBalancing)
 	if err != nil {
 		log.Fatal(err)
 	}

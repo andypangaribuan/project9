@@ -6,13 +6,14 @@
 
 package svc
 
-func InitCLogSVC(grpcAddress string, usingTLS bool) (CLogSVC, error) {
+func InitCLogSVC(grpcAddress string, usingTLS bool, usingClientLoadBalancing bool) (CLogSVC, error) {
 	sr := &srCLog{
-		address:  grpcAddress,
-		usingTLS: usingTLS,
+		address:                  grpcAddress,
+		usingTLS:                 usingTLS,
+		usingClientLoadBalancing: usingClientLoadBalancing,
 	}
 
-	err := sr.buildConnection()
+	err := sr.buildConnection(usingClientLoadBalancing)
 	if err != nil {
 		return nil, err
 	}

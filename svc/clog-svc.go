@@ -26,16 +26,17 @@ import (
 )
 
 type srCLog struct {
-	address  string
-	usingTLS bool
-	mutex    sync.RWMutex
-	conn     *grpc.ClientConn
-	client   clog_svc.CLogServiceClient
+	address                  string
+	usingTLS                 bool
+	usingClientLoadBalancing bool
+	mutex                    sync.RWMutex
+	conn                     *grpc.ClientConn
+	client                   clog_svc.CLogServiceClient
 }
 
 func (slf *srCLog) getConnection() (*grpc.ClientConn, error) {
 	if slf.conn == nil {
-		err := slf.buildConnection()
+		err := slf.buildConnection(slf.usingClientLoadBalancing)
 		if err != nil {
 			return nil, err
 		}
@@ -43,7 +44,7 @@ func (slf *srCLog) getConnection() (*grpc.ClientConn, error) {
 	return slf.conn, nil
 }
 
-func (slf *srCLog) buildConnection() error {
+func (slf *srCLog) buildConnection(usingClientLoadBalancing bool) error {
 	if slf.address == "" {
 		return errors.New("clog address is empty")
 	}
@@ -59,15 +60,28 @@ func (slf *srCLog) buildConnection() error {
 		err  error
 	)
 
-	resolver.SetDefaultScheme("dns")
-	const grpcServiceConfig = `{"loadBalancingPolicy":"round_robin"}`
-	address := fmt.Sprintf("dns:///%v", slf.address)
+	address := slf.address
+	grpcServiceConfig := ""
+
+	if usingClientLoadBalancing {
+		resolver.SetDefaultScheme("dns")
+		grpcServiceConfig = `{"loadBalancingPolicy":"round_robin"}`
+		address = fmt.Sprintf("dns:///%v", address)
+	}
 
 	if slf.usingTLS {
 		creds := credentials.NewTLS(&tls.Config{})
-		conn, err = grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+		if usingClientLoadBalancing {
+			conn, err = grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+		} else {
+			conn, err = grpc.Dial(address, grpc.WithTransportCredentials(creds))
+		}
 	} else {
-		conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+		if usingClientLoadBalancing {
+			conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+		} else {
+			conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		}
 	}
 
 	if err != nil {
