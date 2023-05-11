@@ -34,6 +34,7 @@ type srConnection struct {
 	driverName            string
 	instance              *sqlx.DB
 	maxLifeTimeConnection time.Duration
+	maxIdleTimeConnection time.Duration
 	maxIdleConnection     int
 	maxOpenConnection     int
 	autoRebind            bool

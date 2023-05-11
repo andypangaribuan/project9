@@ -29,7 +29,8 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 		conn: &srConnection{
 			connStr:               connStr,
 			driverName:            "postgres",
-			maxLifeTimeConnection: time.Minute * 5,
+			maxLifeTimeConnection: time.Second * 10,
+			maxIdleTimeConnection: time.Second,
 			maxIdleConnection:     5,
 			maxOpenConnection:     100,
 			autoRebind:            autoRebind,
@@ -42,6 +43,10 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 		instance.conn.maxLifeTimeConnection = config.MaxLifeTimeConnection
 		instance.conn.maxIdleConnection = config.MaxIdleConnection
 		instance.conn.maxOpenConnection = config.MaxOpenConnection
+
+		if config.MaxIdleTimeConnection > time.Second {
+			instance.conn.maxIdleConnection = config.MaxIdleConnection
+		}
 	}
 
 	return instance
@@ -75,6 +80,7 @@ func getConnection(conn *srConnection) (*sqlx.DB, error) {
 	instance, err := sqlx.Connect(conn.driverName, conn.connStr)
 	if err == nil {
 		instance.SetConnMaxLifetime(conn.maxLifeTimeConnection)
+		instance.SetConnMaxIdleTime(conn.maxIdleTimeConnection)
 		instance.SetMaxIdleConns(conn.maxIdleConnection)
 		instance.SetMaxOpenConns(conn.maxOpenConnection)
 		err = instance.Ping()

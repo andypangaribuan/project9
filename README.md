@@ -9,6 +9,8 @@ Download all dependencies
   $ go mod download
 Remove unused dependencies
   $ go mod tidy
+Check code format
+  $ gofmt -l .
 -->
 
 # Project 9

@@ -9,6 +9,7 @@ import "time"
 
 type DbConfig struct {
 	MaxLifeTimeConnection time.Duration
+	MaxIdleTimeConnection time.Duration
 	MaxIdleConnection     int
 	MaxOpenConnection     int
 }
