@@ -70,7 +70,7 @@ type UtilMutex interface {
 	Sleep(duration ...time.Duration)
 	Lock(timeout ...time.Duration) (isTimeout bool)
 	Unlock()
-	Exec(timeout *time.Duration, fn func()) (executed bool)
+	Exec(timeout *time.Duration, fn func()) (executed bool, panicErr error)
 	FExec(timeoutLock *time.Duration, timeoutFunc time.Duration, fn func()) (executed bool, isTimeout bool, panicErr error)
 	Func(timeout time.Duration, fn func()) (isTimeout bool, panicErr error)
 }

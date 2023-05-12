@@ -65,7 +65,7 @@ func (slf *srMutex) Lock(timeout ...time.Duration) (isTimeout bool) {
 	return
 }
 
-func (slf *srMutex) Exec(timeout *time.Duration, fn func()) (executed bool) {
+func (slf *srMutex) Exec(timeout *time.Duration, fn func()) (executed bool, panicErr error) {
 	var (
 		isUnlock        = false
 		timeoutDuration = make([]time.Duration, 0)
@@ -81,6 +81,10 @@ func (slf *srMutex) Exec(timeout *time.Duration, fn func()) (executed bool) {
 	}
 
 	defer func() {
+		if r := recover(); r != nil {
+			panicErr = fmt.Errorf("panic error: %+v", r)
+		}
+
 		if !isUnlock {
 			slf.Unlock()
 		}
@@ -96,7 +100,7 @@ func (slf *srMutex) Exec(timeout *time.Duration, fn func()) (executed bool) {
 }
 
 func (slf *srMutex) FExec(timeoutLock *time.Duration, timeoutFunc time.Duration, fn func()) (executed bool, isTimeout bool, panicErr error) {
-	executed = slf.Exec(timeoutLock, func() {
+	executed, panicErr = slf.Exec(timeoutLock, func() {
 		isTimeout, panicErr = slf.Func(timeoutFunc, fn)
 	})
 
