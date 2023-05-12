@@ -6,16 +6,24 @@
 package f9
 
 import (
+	"sync"
 	"time"
 
 	"github.com/andypangaribuan/project9/p9"
 )
 
-var TimeZone string
-var timeZones map[string]*time.Location
+// var TimeZone string
+// var timeZones map[string]*time.Location
+
+var (
+	TimeZone  string
+	timeZones map[string]*time.Location
+	mx        *sync.Mutex
+)
 
 func init() {
 	timeZones = make(map[string]*time.Location, 0)
+	mx = &sync.Mutex{}
 }
 
 func TimeNow(timezone ...string) time.Time {
@@ -47,14 +55,20 @@ func getTimeLocation(timezone ...string) *time.Location {
 		zone = TimeZone
 	}
 
-	var location *time.Location
-	if loc, ok := timeZones[zone]; !ok {
-		_loc, _ := time.LoadLocation(zone)
-		location = _loc
-		timeZones[zone] = _loc
-	} else {
-		location = loc
+	loc, ok := timeZones[zone]
+	if ok {
+		return loc
 	}
 
-	return location
+	mx.Lock()
+	defer mx.Unlock()
+
+	loc, ok = timeZones[zone]
+	if ok {
+		return loc
+	}
+
+	loc, _ = time.LoadLocation(zone)
+	timeZones[zone] = loc
+	return loc
 }

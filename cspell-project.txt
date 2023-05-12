@@ -24,3 +24,4 @@ matoous
 protoc
 logc
 wrapperspb
+nsec
