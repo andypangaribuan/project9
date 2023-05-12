@@ -5,6 +5,8 @@
 
 package util
 
+import "sync"
+
 type srEnvBase64 struct {
 	key  string
 	data []byte
@@ -12,4 +14,8 @@ type srEnvBase64 struct {
 
 type srAppEnv struct {
 	Value string
+}
+
+type srMutex struct {
+	mtx *sync.Mutex
 }

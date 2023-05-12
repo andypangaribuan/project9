@@ -36,6 +36,7 @@ type Util interface {
 	ReflectionSet(obj interface{}, bind map[string]interface{}) error
 
 	ConcurrentProcess(total, max int, fn func(index int))
+	NewMutex() UtilMutex
 }
 
 type UtilEnv interface {
@@ -63,4 +64,13 @@ type UtilHashId interface {
 	DecodeInt64(hashed string) ([]int64, error)
 	Add(key, salt string, length int)
 	Get(key string) UtilHashId
+}
+
+type UtilMutex interface {
+	Sleep(duration ...time.Duration)
+	Lock(timeout ...time.Duration) (isTimeout bool)
+	Unlock()
+	Exec(timeout *time.Duration, fn func()) (executed bool)
+	FExec(timeoutLock *time.Duration, timeoutFunc time.Duration, fn func()) (executed bool, isTimeout bool, panicErr error)
+	Func(timeout time.Duration, fn func()) (isTimeout bool, panicErr error)
 }
