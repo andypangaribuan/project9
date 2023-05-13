@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"reflect"
@@ -673,7 +674,7 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 		timeNow := p9.Conv.Time.ToStrFull(f9.TimeNow())
 		response.Meta.Error = fmt.Sprintf("[ERROR] %v\n---------------------------\n%+v", timeNow, fo.Error)
 
-		fmt.Printf("\n\n%v\n", response.Meta.Error)
+		log.Printf("\n\n%v\n", response.Meta.Error)
 	}
 
 	doSaveLog := func(resCode int, response interface{}, execFunc, execPath string, header, params map[string]string, endpoint, clientIp string) {

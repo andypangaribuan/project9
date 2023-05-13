@@ -37,5 +37,5 @@ func TestRetry(t *testing.T) {
 	}
 
 	log.Printf("done: %v\n", *r)
-	fmt.Printf("%v", *r)
+	log.Printf("%v", *r)
 }

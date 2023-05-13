@@ -7,7 +7,7 @@
 package test
 
 import (
-	"fmt"
+	"log"
 	"testing"
 
 	"github.com/andypangaribuan/project9/fc"
@@ -21,9 +21,9 @@ func TestPerimeter(t *testing.T) {
 	fc1 := fc.New("0.1234567890123456789012345")
 	fc1 = fc1.Floor(5)
 	fc2 := fc.New("98.00")
-	fmt.Printf("%.10f | %v\n", fc1.Float64(), fc2.ToString())
+	log.Printf("%.10f | %v\n", fc1.Float64(), fc2.ToString())
 
-	fmt.Println(printer.Sprintf("%.0f", 123456789.1001))
+	log.Println(printer.Sprintf("%.0f", 123456789.1001))
 
 	fcv := fc.Cal(0.1, "*", 0.2, "/", 0.2) //, "+", 0.3, "+", 0.2, "*", 0.3)
 	fcv = fc.Cal(fcv, "+", 0.3)
@@ -36,7 +36,7 @@ func TestPerimeter(t *testing.T) {
 	d6 := decimal.NewFromFloat(0.3)
 	d := d1.Mul(d2).Div(d3).Add(d4).Add(d5.Mul(d6))
 
-	fmt.Printf("v: %.20f, e: %.20f, r: %.20f\n", fcv.Float64(), d.InexactFloat64(), 0.1*0.2/0.2+0.3+0.2*0.3)
+	log.Printf("v: %.20f, e: %.20f, r: %.20f\n", fcv.Float64(), d.InexactFloat64(), 0.1*0.2/0.2+0.3+0.2*0.3)
 
 	v1 := 0.3
 	v2 := 0.1
@@ -44,7 +44,7 @@ func TestPerimeter(t *testing.T) {
 	d = deci(v1).Div(deci(v2)).Mul(deci(v3))
 	v := v1 / v2 * v3
 	f := fc.Cal(v1, "/", v2, "*", v3)
-	fmt.Printf("d: %.20f, f: %.20f, v: %.20f, r: %.20f, r1: %.20f\n", d.InexactFloat64(), f.Float64(), v, 0.3/0.1*10000, 3.0)
+	log.Printf("d: %.20f, f: %.20f, v: %.20f, r: %.20f, r1: %.20f\n", d.InexactFloat64(), f.Float64(), v, 0.3/0.1*10000, 3.0)
 }
 
 func deci(v interface{}) decimal.Decimal {

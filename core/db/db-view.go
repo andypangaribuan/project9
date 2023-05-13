@@ -7,6 +7,7 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/andypangaribuan/project9/abs"
@@ -29,7 +30,7 @@ func (slf *View) New(db abs.DbInstance, printUnsafeErr bool) *View {
 
 func (slf *View) onUnsafe(unsafe *model.DbUnsafeSelectError) {
 	if unsafe != nil && slf.printUnsafeErr {
-		fmt.Printf("[%v] db.unsafe.select.error:\nerror: %v\nsql-query: %v\nsql-pars: %v\ntrace: %v\n",
+		log.Printf("[%v] db.unsafe.select.error:\nerror: %v\nsql-query: %v\nsql-pars: %v\ntrace: %v\n",
 			p9.Conv.Time.ToStrFull(f9.TimeNow()),
 			f9.TernaryFnB(unsafe.LogMessage == nil, "nil", func() string { return *unsafe.LogMessage }),
 			unsafe.SqlQuery,

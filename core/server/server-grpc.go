@@ -47,7 +47,7 @@ func (*srServer) StartGRPC(port int, autoRecover bool, register func(svc *grpc.S
 
 	register(server)
 
-	fmt.Printf("\nGRPC PORT: %v\n", port)
+	log.Printf("\nGRPC PORT: %v\n", port)
 	if err := server.Serve(listener); err != nil {
 		log.Fatal(err.Error())
 	}
@@ -96,9 +96,9 @@ func (slf *srGrpcServerHandler) printPanic(r interface{}) {
 		return
 	}
 
-	fmt.Printf("## recovered from panic\n")
-	fmt.Printf("## detail\n[[%#v]]\n", r)
-	fmt.Printf("## stacktrace:\n")
+	log.Printf("## recovered from panic\n")
+	log.Printf("## detail\n[[%#v]]\n", r)
+	log.Printf("## stacktrace:\n")
 
 	startIndex := 0
 	if slf.stackTraceSkipLevel > 0 {
@@ -108,7 +108,7 @@ func (slf *srGrpcServerHandler) printPanic(r interface{}) {
 	}
 
 	for i := startIndex; len(callers) > i; i++ {
-		fmt.Printf(" %v", callers[i])
+		log.Printf(" %v", callers[i])
 	}
 
 	fmt.Println()

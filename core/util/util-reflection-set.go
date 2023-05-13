@@ -31,7 +31,7 @@ func (slf *srUtil) ReflectionSet(obj interface{}, bind map[string]interface{}) e
 
 		if bindValue, ok := bind[fieldName]; ok {
 			if !rf.IsValid() {
-				return errors.New(fmt.Sprintf("invalid field: %v", fieldName))
+				return fmt.Errorf("invalid field: %v", fieldName)
 			}
 
 			err := slf.reflectionSet(rs, rf, bindValue)
