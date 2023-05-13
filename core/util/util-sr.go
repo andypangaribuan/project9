@@ -5,7 +5,9 @@
 
 package util
 
-import "sync"
+import (
+	"github.com/viney-shih/go-lock"
+)
 
 type srEnvBase64 struct {
 	key  string
@@ -17,5 +19,6 @@ type srAppEnv struct {
 }
 
 type srMutex struct {
-	mtx *sync.Mutex
+	mux  lock.Mutex
+	name string
 }

@@ -10,19 +10,19 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"sync"
 	"time"
 
 	"github.com/andypangaribuan/project9/abs"
-	"github.com/andypangaribuan/project9/f9"
+	"github.com/viney-shih/go-lock"
 )
 
 const min int64 = 10
 const max int64 = 2000
 
-func (*srUtil) NewMutex() abs.UtilMutex {
+func (*srUtil) NewMutex(name string) abs.UtilMutex {
 	return &srMutex{
-		mtx: &sync.Mutex{},
+		mux:  lock.NewChanMutex(),
+		name: name,
 	}
 }
 
@@ -36,32 +36,23 @@ func (slf *srMutex) Sleep(duration ...time.Duration) {
 }
 
 func (slf *srMutex) Unlock() {
-	slf.mtx.Unlock()
+	slf.mux.Unlock()
 }
 
 func (slf *srMutex) Lock(timeout ...time.Duration) (isTimeout bool) {
-	var startTime *time.Time
-	if len(timeout) > 0 {
-		startTime = f9.Ptr(f9.TimeNow().Add(timeout[0]))
-	}
+	if len(timeout) > 0 && timeout[0] > 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), timeout[0])
+		defer cancel()
 
-	for {
-		if slf.mtx.TryLock() {
-			break
+		locked := slf.mux.TryLockWithContext(ctx)
+		if !locked {
+			isTimeout = true
 		}
 
-		slf.Sleep()
-		if startTime != nil {
-			diff := f9.TimeNow().Sub(*startTime)
-			if diff > 0 {
-				isTimeout = true
-				break
-			}
-
-			time.Sleep(time.Microsecond * 10)
-		}
+		return
 	}
 
+	slf.mux.Lock()
 	return
 }
 
@@ -75,6 +66,7 @@ func (slf *srMutex) Exec(timeout *time.Duration, fn func()) (executed bool, pani
 		timeoutDuration = append(timeoutDuration, *timeout)
 	}
 
+	// log.Printf("u-mtx: %v", slf.name)
 	isTimeout := slf.Lock(timeoutDuration...)
 	if isTimeout {
 		return

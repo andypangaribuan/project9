@@ -36,7 +36,7 @@ type Util interface {
 	ReflectionSet(obj interface{}, bind map[string]interface{}) error
 
 	ConcurrentProcess(total, max int, fn func(index int))
-	NewMutex() UtilMutex
+	NewMutex(name string) UtilMutex
 }
 
 type UtilEnv interface {
