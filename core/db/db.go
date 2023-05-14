@@ -23,10 +23,12 @@ type pqInstance struct {
 }
 
 type pqInstanceTx struct {
-	instance   *pqInstance
-	tx         *sqlx.Tx
-	isCommit   bool
-	isRollback bool
+	instance    *pqInstance
+	tx          *sqlx.Tx
+	isCommit    bool
+	isRollback  bool
+	errCommit   error
+	errRollback error
 }
 
 type srConnection struct {

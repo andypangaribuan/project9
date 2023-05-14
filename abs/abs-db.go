@@ -25,6 +25,7 @@ type DbInstance interface {
 	Get(out interface{}, sqlQuery string, sqlPars ...interface{}) error
 
 	NewTransaction() (DbTx, error)
+	EmptyTransaction() DbTx
 
 	TxExecute(tx DbTx, sqlQuery string, sqlPars ...interface{}) error
 	TxExecuteRID(tx DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, error)

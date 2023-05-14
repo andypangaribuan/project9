@@ -6,6 +6,8 @@
 package project9
 
 import (
+	gLog "log"
+
 	"github.com/andypangaribuan/project9/core/check"
 	"github.com/andypangaribuan/project9/core/conv"
 	"github.com/andypangaribuan/project9/core/crypto"
@@ -20,6 +22,8 @@ import (
 )
 
 func Initialize() {
+	gLog.SetFlags(gLog.LstdFlags | gLog.Lmicroseconds)
+	
 	p9.Init().
 		Check(check.Create()).
 		Conv(conv.Create()).

@@ -17,7 +17,7 @@ import (
 )
 
 const min int64 = 10
-const max int64 = 2000
+const max int64 = 500
 
 func (*srUtil) NewMutex(name string) abs.UtilMutex {
 	return &srMutex{

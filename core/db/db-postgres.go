@@ -223,3 +223,13 @@ func (slf *pqInstance) NewTransaction() (abs.DbTx, error) {
 
 	return ins, nil
 }
+
+func (slf *pqInstance) EmptyTransaction() abs.DbTx {
+	ins := &pqInstanceTx{
+		instance:   slf,
+		isCommit:   false,
+		isRollback: false,
+	}
+
+	return ins
+}
