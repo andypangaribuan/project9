@@ -18,6 +18,7 @@ type Util interface {
 	GetNanoID(length ...int) string
 	GetID25() string
 	GetRandom(length int, value string) (string, error)
+	GetRandomNumber(min, max int) int
 	BuildJwtToken(privateKey []byte, claims jwt.Claims) (string, error)
 	BuildJwtTokenWithPassword(privateKey []byte, password string, claims jwt.Claims) (string, error)
 	CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte) (string, error)

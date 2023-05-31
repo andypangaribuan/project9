@@ -103,13 +103,26 @@ func (slf FCT) Round(places int) FCT {
 	return New(slf.vd.Round(int32(places)))
 }
 
-func (slf *FCT) PtrRound(places int, defaultValue ...FCT) *FCT {
+func (slf *FCT) PtrRound(places int, defaultValue ...interface{}) *FCT {
 	if slf != nil {
 		return f9.Ptr(New(slf.vd.Round(int32(places))))
 	}
 
 	if len(defaultValue) > 0 {
-		return &defaultValue[0]
+		val := defaultValue[0]
+
+		if val != nil {
+			switch v := val.(type) {
+			case *FCT:
+				return v
+			case FCT:
+				return &v
+			}
+
+			v := New(val)
+			return &v
+		}
+		// return &defaultValue[0]
 	}
 
 	return nil

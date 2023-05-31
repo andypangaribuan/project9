@@ -254,6 +254,42 @@ func (slf *Repo[T]) doCount(tx abs.DbTx, whereQuery, endQuery string, wherePars 
 	return sql, count, err
 }
 
+func (slf *Repo[T]) doSum(tx abs.DbTx, column, whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], fc.FCT, error) {
+	sql := srRepoSql[T]{}.new(fmt.Sprintf("SELECT COALESCE(SUM(%v), 0) FROM ::tableName", column))
+
+	query := strings.TrimSpace(whereQuery)
+	if query != "" {
+		wq := strings.ToLower(query)
+		if (len(wq) <= 6) || (len(wq) > 6 && wq[:6] != "where ") {
+			query = fmt.Sprintf("WHERE %v", query)
+		}
+	}
+
+	endQuery = strings.TrimSpace(endQuery)
+	if endQuery != "" {
+		query += " " + endQuery
+		query = strings.TrimSpace(query)
+	}
+
+	sql.query += " " + query
+	sql.pars = wherePars
+
+	sumValue := fc.New(0)
+
+	err := sql.transform(slf)
+	if err != nil {
+		return nil, sumValue, err
+	}
+
+	if tx != nil {
+		err = slf.DbInstance.TxGet(tx, &sumValue, sql.query, sql.pars...)
+	} else {
+		err = slf.DbInstance.Get(&sumValue, sql.query, sql.pars...)
+	}
+
+	return sql, sumValue, err
+}
+
 func (slf *Repo[T]) doRawCount(tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], int, error) {
 	sql, val, err := slf.doRawFCT(tx, query, pars...)
 	return sql, val.Int(), err

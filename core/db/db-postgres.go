@@ -208,6 +208,11 @@ func (slf *pqInstance) TxGet(tx abs.DbTx, out interface{}, sqlQuery string, sqlP
 }
 
 func (slf *pqInstance) NewTransaction() (abs.DbTx, error) {
+	_, err := slf.getInstance()
+	if err != nil {
+		return nil, err
+	}
+	
 	ins := &pqInstanceTx{
 		isCommit:   false,
 		isRollback: false,
