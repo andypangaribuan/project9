@@ -11,6 +11,8 @@ type srCryptoMD5 struct{}
 
 type srCryptoSHA256 struct{}
 
-func Create() (*srCryptoAES, *srCryptoMD5, *srCryptoSHA256) {
-	return &srCryptoAES{}, &srCryptoMD5{}, &srCryptoSHA256{}
+type srCryptoSHA512 struct{}
+
+func Create() (*srCryptoAES, *srCryptoMD5, *srCryptoSHA256, *srCryptoSHA512) {
+	return &srCryptoAES{}, &srCryptoMD5{}, &srCryptoSHA256{}, &srCryptoSHA512{}
 }

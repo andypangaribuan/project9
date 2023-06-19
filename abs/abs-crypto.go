@@ -20,3 +20,7 @@ type CryptoMD5 interface {
 type CryptoSHA256 interface {
 	Generate(data string) string
 }
+
+type CryptoSHA512 interface {
+	Generate(data string) string
+}

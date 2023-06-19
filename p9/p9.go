@@ -59,11 +59,12 @@ func (slf *srInit) Conv(fnConv abs.Conv, fnTime abs.ConvTime, fnProto abs.ConvPr
 	return slf
 }
 
-func (slf *srInit) Crypto(fnAES abs.CryptoAES, fnMD5 abs.CryptoMD5, fnSHA256 abs.CryptoSHA256) *srInit {
+func (slf *srInit) Crypto(fnAES abs.CryptoAES, fnMD5 abs.CryptoMD5, fnSHA256 abs.CryptoSHA256, fnSHA512 abs.CryptoSHA512) *srInit {
 	Crypto = &srCrypto{
 		AES:    &srCryptoAES{fnAES},
 		MD5:    &srCryptoMD5{fnMD5},
 		SHA256: &srCryptoSHA256{fnSHA256},
+		SHA512: &srCryptoSHA512{fnSHA512},
 	}
 	return slf
 }
