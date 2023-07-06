@@ -59,7 +59,7 @@ func (*srUtil) GetRandom(length int, value string) (string, error) {
 
 func (*srUtil) GetRandomNumber(min, max int) int {
 	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max - min) + min
+	return rand.Intn(max-min) + min
 }
 
 func (slf *srUtil) BuildJwtToken(privateKey []byte, claims jwt.Claims) (string, error) {

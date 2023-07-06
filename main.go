@@ -23,7 +23,7 @@ import (
 
 func Initialize() {
 	gLog.SetFlags(gLog.LstdFlags | gLog.Lmicroseconds)
-	
+
 	p9.Init().
 		Check(check.Create()).
 		Conv(conv.Create()).

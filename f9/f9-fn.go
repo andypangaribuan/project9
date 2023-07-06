@@ -16,7 +16,7 @@ func FnIfPtrNotNil[T any](val *T, fn ...func(v T)) {
 }
 
 func FnGO(funcs ...func() error) (err error) {
-	defer func ()  {
+	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("FnGO recover, error: %+v", r)
 		}

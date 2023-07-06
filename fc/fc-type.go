@@ -42,7 +42,7 @@ func SNew(val interface{}) (FCT, error) {
 
 	dv, err := toDecimal(val)
 	if err != nil {
-		return fv, nil
+		return fv, err
 	}
 
 	fv.set(dv)

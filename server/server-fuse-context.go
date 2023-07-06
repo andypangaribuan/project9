@@ -77,12 +77,30 @@ func (slf *srFuseContext) mpfDecoder() *schema.Decoder {
 	return mpfDecoderInstance
 }
 
+func (slf *srFuseContext) SetSendResponse(send bool) {
+	slf.sendResponse = send
+}
+
+func (slf *srFuseContext) GetUnSendResponse() *FuseResponse {
+	return slf.unSendResponse
+}
+
+func (slf *srFuseContext) GetUnSendResponseOpt() []FuseOpt {
+	return slf.unSendResponseOpt
+}
+
 func (slf *srFuseContext) Request() FuseContextRequest {
 	return slf.reqCtx
 }
 
 func (slf *srFuseContextRequest) Header() map[string]string {
 	return slf.fuseCtx.fiberCtx.GetReqHeaders()
+}
+
+func (slf *srFuseContextRequest) SetHeader(key, value string) {
+	if len(slf.fuseCtx.header) > 0 {
+		slf.fuseCtx.header[strings.ToLower(key)] = value
+	}
 }
 
 func (slf *srFuseContext) Params(key string, defaultValue ...string) string {
@@ -154,89 +172,97 @@ func (slf *srFuseContext) Parser(logc *clog.Instance, header, body interface{}) 
 	}
 
 	if body != nil && slf.fiberCtx != nil {
-		cType, ok := mapHeader["content-type"]
-		if !ok {
-			err := errors.New("unknown content-type")
-			return false, slf.r500InternalServerError(logc, err)
-		}
-
-		if idx := strings.Index(cType, ";"); idx > -1 {
-			cType = cType[0:idx]
-		}
-
-		switch cType {
-		case "application/json":
-			err := slf.fiberCtx.BodyParser(&body)
+		xP9BodyJson, ok := mapHeader["x-p9-body-json"]
+		if ok && xP9BodyJson != "" {
+			err := p9.Json.Decode(xP9BodyJson, &body)
 			if err != nil {
-				err = p9.Err.WithStack(err, 1)
+				return false, slf.r500InternalServerError(logc, err)
+			}
+		} else {
+			cType, ok := mapHeader["content-type"]
+			if !ok {
+				err := errors.New("unknown content-type")
 				return false, slf.r500InternalServerError(logc, err)
 			}
 
-			if body != nil {
-				if json, err := p9.Json.Encode(body); err == nil {
-					slf.jsonBody = &json
-				}
+			if idx := strings.Index(cType, ";"); idx > -1 {
+				cType = cType[0:idx]
 			}
 
-		case "application/x-www-form-urlencoded":
-			var (
-				err  error
-				res  interface{}
-				data []byte
-			)
-
-			res, err = reTagAny(body, func(structureType reflect.Type, fieldIndex int) reflect.StructTag {
-				f := structureType.Field(fieldIndex)
-				tag := f.Tag
-				jsonTag := tag.Get("json")
-				formTag := tag.Get("form")
-
-				if jsonTag != "" && formTag == "" {
-					newTag := fmt.Sprintf(`%v form:"%v"`, tag, jsonTag)
-					st := reflect.StructTag(newTag)
-					return reflect.StructTag(st)
+			switch cType {
+			case "application/json":
+				err := slf.fiberCtx.BodyParser(&body)
+				if err != nil {
+					err = p9.Err.WithStack(err, 1)
+					return false, slf.r500InternalServerError(logc, err)
 				}
 
-				return ""
-			})
-
-			if err == nil {
-				err = slf.fiberCtx.BodyParser(res)
-			}
-			if err == nil {
-				data, err = p9.Json.Marshal(res)
-			}
-			if err == nil {
-				err = p9.Json.UnMarshal(data, body)
-			}
-
-			if err != nil {
-				err = p9.Err.WithStack(err, 1)
-				return false, slf.r500InternalServerError(logc, err)
-			}
-
-			if body != nil {
-				if json, err := p9.Json.Encode(body); err == nil {
-					slf.jsonBody = &json
+				if body != nil {
+					if json, err := p9.Json.Encode(body); err == nil {
+						slf.jsonBody = &json
+					}
 				}
-			}
 
-		case "multipart/form-data":
-			mf, err := slf.fiberCtx.MultipartForm()
-			if err == nil {
-				err = slf.mpfDecoder().Decode(body, mf.Value)
-			}
+			case "application/x-www-form-urlencoded":
+				var (
+					err  error
+					res  interface{}
+					data []byte
+				)
 
-			if err != nil {
-				err = p9.Err.WithStack(err, 1)
-				return false, slf.r500InternalServerError(logc, err)
-			}
+				res, err = reTagAny(body, func(structureType reflect.Type, fieldIndex int) reflect.StructTag {
+					f := structureType.Field(fieldIndex)
+					tag := f.Tag
+					jsonTag := tag.Get("json")
+					formTag := tag.Get("form")
 
-			slf.multipartFile = mf.File
+					if jsonTag != "" && formTag == "" {
+						newTag := fmt.Sprintf(`%v form:"%v"`, tag, jsonTag)
+						st := reflect.StructTag(newTag)
+						return reflect.StructTag(st)
+					}
 
-			if body != nil {
-				if json, err := p9.Json.Encode(body); err == nil {
-					slf.jsonBody = &json
+					return ""
+				})
+
+				if err == nil {
+					err = slf.fiberCtx.BodyParser(res)
+				}
+				if err == nil {
+					data, err = p9.Json.Marshal(res)
+				}
+				if err == nil {
+					err = p9.Json.UnMarshal(data, body)
+				}
+
+				if err != nil {
+					err = p9.Err.WithStack(err, 1)
+					return false, slf.r500InternalServerError(logc, err)
+				}
+
+				if body != nil {
+					if json, err := p9.Json.Encode(body); err == nil {
+						slf.jsonBody = &json
+					}
+				}
+
+			case "multipart/form-data":
+				mf, err := slf.fiberCtx.MultipartForm()
+				if err == nil {
+					err = slf.mpfDecoder().Decode(body, mf.Value)
+				}
+
+				if err != nil {
+					err = p9.Err.WithStack(err, 1)
+					return false, slf.r500InternalServerError(logc, err)
+				}
+
+				slf.multipartFile = mf.File
+
+				if body != nil {
+					if json, err := p9.Json.Encode(body); err == nil {
+						slf.jsonBody = &json
+					}
 				}
 			}
 		}
@@ -635,19 +661,19 @@ func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface
 }
 
 func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) error {
-	type srMeta struct {
-		Code    int         `json:"code"`
-		Status  string      `json:"status,omitempty"`
-		Message string      `json:"message,omitempty"`
-		Address string      `json:"address,omitempty"`
-		Error   string      `json:"error,omitempty"`
-		Data    interface{} `json:"data,omitempty"`
-	}
+	// type srMeta struct {
+	// 	Code    int         `json:"code"`
+	// 	Status  string      `json:"status,omitempty"`
+	// 	Message string      `json:"message,omitempty"`
+	// 	Address string      `json:"address,omitempty"`
+	// 	Error   string      `json:"error,omitempty"`
+	// 	Data    interface{} `json:"data,omitempty"`
+	// }
 
-	type srResponse struct {
-		Meta srMeta      `json:"meta"`
-		Data interface{} `json:"data,omitempty"`
-	}
+	// type srResponse struct {
+	// 	Meta srMeta      `json:"meta"`
+	// 	Data interface{} `json:"data,omitempty"`
+	// }
 
 	if len(opt) > 0 {
 		o := opt[0]
@@ -659,8 +685,8 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 		fo.Data = f9.Ternary(o.Data != nil, o.Data, fo.Data)
 	}
 
-	response := srResponse{
-		Meta: srMeta{
+	response := FuseResponse{
+		Meta: FuseResponseMeta{
 			Code:    fo.code,
 			Status:  fo.Status,
 			Message: fo.Message,
@@ -772,7 +798,13 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 	restResponse := func() error {
 		if len(opt) == 0 {
 			saveLog(fo.code, response)
-			return slf.fiberCtx.Status(fo.code).JSON(response)
+
+			if slf.sendResponse {
+				return slf.fiberCtx.Status(fo.code).JSON(response)
+			}
+
+			slf.unSendResponse = &response
+			return nil
 		}
 
 		var newMeta interface{} = response.Meta
@@ -809,7 +841,13 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 		}
 
 		saveLog(fo.code, newResponse)
-		return slf.fiberCtx.Status(fo.code).JSON(newResponse)
+		if slf.sendResponse {
+			return slf.fiberCtx.Status(fo.code).JSON(newResponse)
+		}
+
+		slf.unSendResponse = &response
+		slf.unSendResponseOpt = opt
+		return nil
 	}
 
 	grpcResponse := func() error {

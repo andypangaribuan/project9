@@ -22,7 +22,8 @@ func (slf *srFuseGrpc) Restful(c context.Context, req *grf.Request) (*grf.Respon
 	var (
 		err error
 		ctx = &srFuseContext{
-			path: req.Action,
+			sendResponse: true,
+			path:         req.Action,
 			grpcCtx: &srFuseGrpcContext{
 				ctx:     c,
 				request: req,

@@ -212,7 +212,7 @@ func (slf *pqInstance) NewTransaction() (abs.DbTx, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	ins := &pqInstanceTx{
 		isCommit:   false,
 		isRollback: false,

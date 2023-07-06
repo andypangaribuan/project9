@@ -49,10 +49,15 @@ type FuseContext interface {
 	R406NotAcceptable(logc *clog.Instance, message string, opt ...FuseOpt) error
 	R428PreconditionRequired(logc *clog.Instance, message string, opt ...FuseOpt) error
 	R500InternalServerError(logc *clog.Instance, err error, opt ...FuseOpt) error
+
+	SetSendResponse(send bool)
+	GetUnSendResponse() *FuseResponse
+	GetUnSendResponseOpt() []FuseOpt
 }
 
 type FuseContextRequest interface {
 	Header() map[string]string
+	SetHeader(key, value string)
 }
 
 type FuseOpt struct {
@@ -95,6 +100,20 @@ type FuseDefaultStatus struct {
 	R500InternalServerError  string
 }
 
+type FuseResponse struct {
+	Meta FuseResponseMeta `json:"meta"`
+	Data interface{}      `json:"data,omitempty"`
+}
+
+type FuseResponseMeta struct {
+	Code    int         `json:"code"`
+	Status  string      `json:"status,omitempty"`
+	Message string      `json:"message,omitempty"`
+	Address string      `json:"address,omitempty"`
+	Error   string      `json:"error,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
 type srFuseGrpcContext struct {
 	ctx      context.Context
 	request  *grf.Request
@@ -121,7 +140,10 @@ type srFuseContext struct {
 	authZ     interface{}
 	isAuthSet bool
 
-	logc *clog.Instance
+	logc              *clog.Instance
+	sendResponse      bool
+	unSendResponse    *FuseResponse
+	unSendResponseOpt []FuseOpt
 }
 
 type srFuseContextRequest struct {
