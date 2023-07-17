@@ -93,6 +93,10 @@ func (slf *srFuseContext) Request() FuseContextRequest {
 	return slf.reqCtx
 }
 
+func (slf *srFuseContextRequest) Body() []byte {
+	return slf.fuseCtx.fiberCtx.Body()
+}
+
 func (slf *srFuseContextRequest) Header() map[string]string {
 	return slf.fuseCtx.fiberCtx.GetReqHeaders()
 }
