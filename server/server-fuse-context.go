@@ -77,6 +77,10 @@ func (slf *srFuseContext) mpfDecoder() *schema.Decoder {
 	return mpfDecoderInstance
 }
 
+func (slf *srFuseContext) URI() string {
+	return string(slf.fiberCtx.Request().URI().RequestURI())
+}
+
 func (slf *srFuseContext) SetSendResponse(send bool) {
 	slf.sendResponse = send
 }
@@ -370,8 +374,8 @@ func (slf *srFuseContext) RString(logc *clog.Instance, code int, data string) er
 	return slf.sendRawA(logc, code, data)
 }
 
-func (slf *srFuseContext) RJson(logc *clog.Instance, code int, data interface{}) error {
-	return slf.sendRawB(logc, code, data)
+func (slf *srFuseContext) RJson(logc *clog.Instance, code int, data interface{}, opt ...FuseOpt) error {
+	return slf.sendRawB(logc, code, data, opt...)
 }
 
 func (slf *srFuseContext) RJsonRaw(logc *clog.Instance, code int, data []byte) error {
@@ -562,7 +566,7 @@ func (slf *srFuseContext) sendRawA(logc *clog.Instance, code int, data string) e
 	panic("unimplemented")
 }
 
-func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface{}) error {
+func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface{}, opt ...FuseOpt) error {
 	doSaveLog := func(resCode int, response interface{}, execFunc, execPath string, header, params map[string]string, endpoint, clientIp string) {
 		var (
 			severity   = clog.Info
@@ -620,6 +624,14 @@ func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface
 	saveLog := func(resCode int, response interface{}) {
 		if logc != nil {
 			depth := 3
+			if len(opt) > 0 {
+				for _, v := range opt {
+					if v.LogDepthAdd > 0 {
+						depth += v.LogDepthAdd
+					}
+				}
+			}
+
 			execFunc, execPath := p9.Util.GetExecutionInfo(depth)
 
 			for {

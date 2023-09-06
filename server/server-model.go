@@ -21,6 +21,7 @@ import (
 )
 
 type FuseContext interface {
+	URI() string
 	Request() FuseContextRequest
 	Params(key string, defaultValue ...string) string
 	Query(key string, defaultValue ...string) string
@@ -39,7 +40,7 @@ type FuseContext interface {
 	GetCLog() *clog.Instance
 
 	RString(logc *clog.Instance, code int, data string) error
-	RJson(logc *clog.Instance, code int, data interface{}) error
+	RJson(logc *clog.Instance, code int, data interface{}, opt ...FuseOpt) error
 	RJsonRaw(logc *clog.Instance, code int, data []byte) error
 	R200OK(logc *clog.Instance, data interface{}, opt ...FuseOpt) error
 	R400BadRequest(logc *clog.Instance, message string, opt ...FuseOpt) error
@@ -62,17 +63,18 @@ type FuseContextRequest interface {
 }
 
 type FuseOpt struct {
-	code       int
-	Status     string
-	Message    string
-	Address    string
-	Error      error
-	MetaData   interface{}
-	Data       interface{}
-	NewMeta    map[string]interface{}
-	NewHeader  map[string]interface{}
-	LogMessage string
-	LogData    string
+	code        int
+	Status      string
+	Message     string
+	Address     string
+	Error       error
+	MetaData    interface{}
+	Data        interface{}
+	NewMeta     map[string]interface{}
+	NewHeader   map[string]interface{}
+	LogMessage  string
+	LogData     string
+	LogDepthAdd int
 }
 
 type FuseRouter interface {
