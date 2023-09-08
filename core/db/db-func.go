@@ -26,7 +26,7 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 	}
 
 	instance := &pqInstance{
-		conn: &srConnection{
+		connRW: &srConnection{
 			connStr:               connStr,
 			driverName:            "postgres",
 			maxLifeTimeConnection: time.Second * 10,
@@ -40,12 +40,12 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 	}
 
 	if config != nil {
-		instance.conn.maxLifeTimeConnection = config.MaxLifeTimeConnection
-		instance.conn.maxIdleConnection = config.MaxIdleConnection
-		instance.conn.maxOpenConnection = config.MaxOpenConnection
+		instance.connRW.maxLifeTimeConnection = config.MaxLifeTimeConnection
+		instance.connRW.maxIdleConnection = config.MaxIdleConnection
+		instance.connRW.maxOpenConnection = config.MaxOpenConnection
 
 		if config.MaxIdleTimeConnection > time.Second {
-			instance.conn.maxIdleConnection = config.MaxIdleConnection
+			instance.connRW.maxIdleConnection = config.MaxIdleConnection
 		}
 	}
 
@@ -60,17 +60,17 @@ func (*srDb) NewReadWritePostgresInstance(read, write abs.DbPostgresInstance) ab
 
 	switch r := read.(type) {
 	case *pqInstance:
-		connRead = r.conn
+		connRead = r.connRW
 	}
 
 	switch w := write.(type) {
 	case *pqInstance:
-		connWrite = w.conn
+		connWrite = w.connRW
 	}
 
 	instance := &pqInstance{
-		conn:     connWrite,
-		connRead: connRead,
+		connRW: connWrite,
+		connRO: connRead,
 	}
 
 	return instance

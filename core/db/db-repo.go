@@ -554,6 +554,6 @@ func (slf *Repo[T]) getExecFuncPath() (string, string) {
 
 		break
 	}
-	
+
 	return execFunc, execPath
 }

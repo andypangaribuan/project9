@@ -18,17 +18,16 @@ func Create() *srDb {
 }
 
 type pqInstance struct {
-	conn     *srConnection
-	connRead *srConnection
+	connRW *srConnection
+	connRO *srConnection
 }
 
 type pqInstanceTx struct {
-	instance    *pqInstance
-	tx          *sqlx.Tx
-	isCommit    bool
-	isRollback  bool
-	errCommit   error
-	errRollback error
+	instance   *pqInstance
+	tx         *sqlx.Tx
+	isCommit   bool
+	isRollback bool
+	errCommit  error
 }
 
 type srConnection struct {

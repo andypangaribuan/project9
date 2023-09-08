@@ -131,6 +131,25 @@ func (slf *Repo[T]) doUpdate(tx abs.DbTx, keyVals map[string]interface{}, whereQ
 }
 
 func (slf *Repo[T]) goGetDatas(tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) (*srRepoSql[T], []T, error) {
+	var (
+		loop   = f9.Ternary(tx != nil, 1, 2)
+		sql    *srRepoSql[T]
+		models []T
+		err    error
+	)
+
+	for i := 0; i < loop; i++ {
+		rw_force := i == 1
+		sql, models, err = slf.directGoGetDatas(rw_force, tx, whereQuery, endQuery, wherePars...)
+		if err != nil || len(models) > 0 {
+			break
+		}
+	}
+
+	return sql, models, err
+}
+
+func (slf *Repo[T]) directGoGetDatas(rw_force bool, tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) (*srRepoSql[T], []T, error) {
 	var models []T
 	sql := srRepoSql[T]{}.new(`SELECT * FROM ::tableName`)
 
@@ -160,7 +179,7 @@ func (slf *Repo[T]) goGetDatas(tx abs.DbTx, whereQuery string, endQuery string, 
 	if tx != nil {
 		unsafe, err = slf.DbInstance.TxSelect(tx, &models, sql.query, sql.pars)
 	} else {
-		unsafe, err = slf.DbInstance.Select(&models, sql.query, sql.pars)
+		unsafe, err = slf.DbInstance.Select(rw_force, &models, sql.query, sql.pars)
 	}
 
 	slf.OnUnsafe(unsafe)
@@ -181,6 +200,25 @@ func (slf *Repo[T]) goGetDatas(tx abs.DbTx, whereQuery string, endQuery string, 
 }
 
 func (slf *Repo[T]) doSelect(tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], []T, error) {
+	var (
+		loop   = f9.Ternary(tx != nil, 1, 2)
+		sql    *srRepoSql[T]
+		models []T
+		err    error
+	)
+
+	for i := 0; i < loop; i++ {
+		rw_force := i == 1
+		sql, models, err = slf.directDoSelect(rw_force, tx, query, pars...)
+		if err != nil || len(models) > 0 {
+			break
+		}
+	}
+
+	return sql, models, err
+}
+
+func (slf *Repo[T]) directDoSelect(rw_force bool, tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], []T, error) {
 	var models []T
 	sql := srRepoSql[T]{}.new("")
 
@@ -199,7 +237,7 @@ func (slf *Repo[T]) doSelect(tx abs.DbTx, query string, pars ...interface{}) (*s
 	if tx != nil {
 		unsafe, err = slf.DbInstance.TxSelect(tx, &models, sql.query, sql.pars...)
 	} else {
-		unsafe, err = slf.DbInstance.Select(&models, sql.query, sql.pars...)
+		unsafe, err = slf.DbInstance.Select(rw_force, &models, sql.query, sql.pars...)
 	}
 	slf.OnUnsafe(unsafe)
 
@@ -220,6 +258,25 @@ func (slf *Repo[T]) doSelect(tx abs.DbTx, query string, pars ...interface{}) (*s
 }
 
 func (slf *Repo[T]) doCount(tx abs.DbTx, whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], int, error) {
+	var (
+		loop  = f9.Ternary(tx != nil, 1, 2)
+		sql   *srRepoSql[T]
+		count int
+		err   error
+	)
+
+	for i := 0; i < loop; i++ {
+		rw_force := i == 1
+		sql, count, err = slf.directDoCount(rw_force, tx, whereQuery, endQuery, wherePars...)
+		if err != nil || count > 0 {
+			break
+		}
+	}
+
+	return sql, count, err
+}
+
+func (slf *Repo[T]) directDoCount(rw_force bool, tx abs.DbTx, whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], int, error) {
 	sql := srRepoSql[T]{}.new(`SELECT COUNT(1) FROM ::tableName`)
 
 	query := strings.TrimSpace(whereQuery)
@@ -248,13 +305,32 @@ func (slf *Repo[T]) doCount(tx abs.DbTx, whereQuery, endQuery string, wherePars 
 	if tx != nil {
 		err = slf.DbInstance.TxGet(tx, &count, sql.query, sql.pars...)
 	} else {
-		err = slf.DbInstance.Get(&count, sql.query, sql.pars...)
+		err = slf.DbInstance.Get(rw_force, &count, sql.query, sql.pars...)
 	}
 
 	return sql, count, err
 }
 
 func (slf *Repo[T]) doSum(tx abs.DbTx, column, whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], fc.FCT, error) {
+	var (
+		loop = f9.Ternary(tx != nil, 1, 2)
+		sql  *srRepoSql[T]
+		sum  fc.FCT
+		err  error
+	)
+
+	for i := 0; i < loop; i++ {
+		rw_force := i == 1
+		sql, sum, err = slf.directDoSum(rw_force, tx, column, whereQuery, endQuery, wherePars...)
+		if err != nil || fc.Compare(sum, ">", 0) {
+			break
+		}
+	}
+
+	return sql, sum, err
+}
+
+func (slf *Repo[T]) directDoSum(rw_force bool, tx abs.DbTx, column, whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], fc.FCT, error) {
 	sql := srRepoSql[T]{}.new(fmt.Sprintf("SELECT COALESCE(SUM(%v), 0) FROM ::tableName", column))
 
 	query := strings.TrimSpace(whereQuery)
@@ -284,7 +360,7 @@ func (slf *Repo[T]) doSum(tx abs.DbTx, column, whereQuery, endQuery string, wher
 	if tx != nil {
 		err = slf.DbInstance.TxGet(tx, &sumValue, sql.query, sql.pars...)
 	} else {
-		err = slf.DbInstance.Get(&sumValue, sql.query, sql.pars...)
+		err = slf.DbInstance.Get(rw_force, &sumValue, sql.query, sql.pars...)
 	}
 
 	return sql, sumValue, err
@@ -311,6 +387,25 @@ func (slf *Repo[T]) doRawFloat64(tx abs.DbTx, query string, pars ...interface{})
 }
 
 func (slf *Repo[T]) doRawFCT(tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], fc.FCT, error) {
+	var (
+		loop = f9.Ternary(tx != nil, 1, 2)
+		sql  *srRepoSql[T]
+		val  fc.FCT
+		err  error
+	)
+
+	for i := 0; i < loop; i++ {
+		rw_force := i == 1
+		sql, val, err = slf.directDoRawFCT(rw_force, tx, query, pars...)
+		if err != nil || fc.Compare(val, ">", 0) {
+			break
+		}
+	}
+
+	return sql, val, err
+}
+
+func (slf *Repo[T]) directDoRawFCT(rw_force bool, tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], fc.FCT, error) {
 	sql := srRepoSql[T]{}.new(``)
 	val := fc.New(-1)
 
@@ -328,7 +423,7 @@ func (slf *Repo[T]) doRawFCT(tx abs.DbTx, query string, pars ...interface{}) (*s
 	if tx != nil {
 		err = slf.DbInstance.TxGet(tx, &val, sql.query, sql.pars...)
 	} else {
-		err = slf.DbInstance.Get(&val, sql.query, sql.pars...)
+		err = slf.DbInstance.Get(rw_force, &val, sql.query, sql.pars...)
 	}
 
 	return sql, val, err

@@ -21,8 +21,8 @@ type DbInstance interface {
 	Ping() error
 	Execute(sqlQuery string, sqlPars ...interface{}) error
 	ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int64, error)
-	Select(out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error)
-	Get(out interface{}, sqlQuery string, sqlPars ...interface{}) error
+	Select(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error)
+	Get(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) error
 
 	NewTransaction() (DbTx, error)
 	EmptyTransaction() DbTx
