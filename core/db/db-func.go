@@ -27,6 +27,7 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 
 	instance := &pqInstance{
 		connRW: &srConnection{
+			host:                  host,
 			connStr:               connStr,
 			driverName:            "postgres",
 			maxLifeTimeConnection: time.Second * 10,
@@ -76,7 +77,7 @@ func (*srDb) NewReadWritePostgresInstance(read, write abs.DbPostgresInstance) ab
 	return instance
 }
 
-func getConnection(conn *srConnection) (*sqlx.DB, error) {
+func getConnection(conn *srConnection) (*sqlx.DB, string, error) {
 	instance, err := sqlx.Connect(conn.driverName, conn.connStr)
 	if err == nil {
 		instance.SetConnMaxLifetime(conn.maxLifeTimeConnection)
@@ -86,7 +87,7 @@ func getConnection(conn *srConnection) (*sqlx.DB, error) {
 		err = instance.Ping()
 	}
 
-	return instance, err
+	return instance, conn.host, err
 }
 
 func normalizeSqlQueryParams(conn *srConnection, sqlQuery string, sqlPars []interface{}) (string, []interface{}) {
@@ -106,7 +107,7 @@ func normalizeSqlQueryParams(conn *srConnection, sqlQuery string, sqlPars []inte
 	return query, pars
 }
 
-func execute(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (sql.Result, error) {
+func execute(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (sql.Result, string, error) {
 	if conn.driverName == "postgres" && conn.autoRebind && len(sqlPars) > 0 {
 		sqlQuery = sqlx.Rebind(sqlx.DOLLAR, sqlQuery)
 	}
@@ -116,26 +117,26 @@ func execute(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interf
 		case *pqInstanceTx:
 			stmt, err := v.tx.Prepare(sqlQuery)
 			if err != nil {
-				return nil, err
+				return nil, conn.host, err
 			}
 			defer stmt.Close()
 
 			res, err := stmt.Exec(sqlPars...)
-			return res, err
+			return res, conn.host, err
 		}
 	}
 
 	stmt, err := conn.instance.Prepare(sqlQuery)
 	if err != nil {
-		return nil, err
+		return nil, conn.host, err
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(sqlPars...)
-	return res, err
+	return res, conn.host, err
 }
 
-func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, error) {
+func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, string, error) {
 	if conn.driverName == "postgres" && conn.autoRebind && len(sqlPars) > 0 {
 		sqlQuery = sqlx.Rebind(sqlx.DOLLAR, sqlQuery)
 	}
@@ -145,42 +146,42 @@ func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...int
 		case *pqInstanceTx:
 			stmt, err := v.tx.Prepare(sqlQuery)
 			if err != nil {
-				return nil, err
+				return nil, conn.host, err
 			}
 			defer stmt.Close()
 
 			var id *int64
 			err = stmt.QueryRow(sqlPars...).Scan(&id)
 			if err != nil {
-				return nil, err
+				return nil, conn.host, err
 			}
 
-			return id, err
+			return id, conn.host, err
 		}
 	}
 
 	stmt, err := conn.instance.Prepare(sqlQuery)
 	if err != nil {
-		return nil, err
+		return nil, conn.host, err
 	}
 	defer stmt.Close()
 
 	var id *int64
 	err = stmt.QueryRow(sqlPars...).Scan(&id)
 	if err != nil {
-		return nil, err
+		return nil, conn.host, err
 	}
 
-	return id, err
+	return id, conn.host, err
 }
 
 func printSql(conn *srConnection, startTime time.Time, sqlQuery string, sqlPars ...interface{}) {
 	if conn.printSql {
 		durationMs := f9.TimeNow().Sub(startTime).Milliseconds()
 		if len(sqlPars) == 0 {
-			log.Printf("\nSQL: \"%v\"\nDUR: %vms", sqlQuery, durationMs)
+			log.Printf("\nHOST: \"%v\"\nSQL: \"%v\"\nDUR: %vms", conn.host, sqlQuery, durationMs)
 		} else {
-			log.Printf("\nSQL: \"%v\"\nARG: %v\nDUR: %vms", sqlQuery, sqlPars, durationMs)
+			log.Printf("\nHOST: \"%v\"\nSQL: \"%v\"\nARG: %v\nDUR: %vms", conn.host, sqlQuery, sqlPars, durationMs)
 		}
 	}
 }

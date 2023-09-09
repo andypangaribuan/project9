@@ -19,44 +19,44 @@ import (
 var locking sync.Mutex
 var lockingConnRead sync.Mutex
 
-func (slf *pqInstance) getInstance() (*sqlx.DB, error) {
+func (slf *pqInstance) getRWInstance() (*srConnection, *sqlx.DB, string, error) {
 	locking.Lock()
 	defer locking.Unlock()
 
 	if slf.connRW.instance != nil {
-		return slf.connRW.instance, nil
+		return slf.connRW, slf.connRW.instance, slf.connRW.host, nil
 	}
 
-	instance, err := getConnection(slf.connRW)
+	instance, dbHost, err := getConnection(slf.connRW)
 	if err == nil {
 		slf.connRW.instance = instance
 	}
 
-	return instance, err
+	return slf.connRW, instance, dbHost, err
 }
 
-func (slf *pqInstance) getReadInstance() (*sqlx.DB, error) {
-	if slf.connRO == nil {
-		return slf.getInstance()
+func (slf *pqInstance) getROInstance(rw_force ...bool) (*srConnection, *sqlx.DB, string, error) {
+	if slf.connRO == nil || (len(rw_force) > 0 && rw_force[0]) {
+		return slf.getRWInstance()
 	}
 
 	lockingConnRead.Lock()
 	defer lockingConnRead.Unlock()
 
 	if slf.connRO.instance != nil {
-		return slf.connRO.instance, nil
+		return slf.connRO, slf.connRO.instance, slf.connRO.host, nil
 	}
 
-	instance, err := getConnection(slf.connRO)
+	instance, dbHost, err := getConnection(slf.connRO)
 	if err == nil {
 		slf.connRO.instance = instance
 	}
 
-	return instance, err
+	return slf.connRO, instance, dbHost, err
 }
 
 func (slf *pqInstance) Ping() error {
-	instance, err := slf.getInstance()
+	_, instance, _, err := slf.getRWInstance()
 	if err == nil {
 		err = instance.Ping()
 	}
@@ -65,7 +65,7 @@ func (slf *pqInstance) Ping() error {
 }
 
 func (slf *pqInstance) PingRead() error {
-	instance, err := slf.getReadInstance()
+	_, instance, _, err := slf.getROInstance()
 	if err == nil {
 		err = instance.Ping()
 	}
@@ -73,64 +73,64 @@ func (slf *pqInstance) PingRead() error {
 	return err
 }
 
-func (slf *pqInstance) Execute(sqlQuery string, sqlPars ...interface{}) error {
-	_, err := slf.getInstance()
+func (slf *pqInstance) Execute(sqlQuery string, sqlPars ...interface{}) (string, error) {
+	conn, _, dbHost, err := slf.getRWInstance()
 	if err != nil {
-		return err
+		return dbHost, err
 	}
 
-	query, pars := normalizeSqlQueryParams(slf.connRW, sqlQuery, sqlPars)
+	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
 	startTime := f9.TimeNow()
-	_, err = execute(slf.connRW, nil, query, pars...)
-	printSql(slf.connRW, startTime, query, pars...)
-	return err
+	_, dbHost, err = execute(conn, nil, query, pars...)
+	printSql(conn, startTime, query, pars...)
+	return dbHost, err
 }
 
-func (slf *pqInstance) ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int64, error) {
-	_, err := slf.getInstance()
+func (slf *pqInstance) ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int64, string, error) {
+	conn, _, dbHost, err := slf.getRWInstance()
 	if err != nil {
-		return nil, err
+		return nil, dbHost, err
 	}
 
-	query, pars := normalizeSqlQueryParams(slf.connRW, sqlQuery, sqlPars)
+	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
 	startTime := f9.TimeNow()
-	rid, err := executeRID(slf.connRW, nil, query, pars...)
-	printSql(slf.connRW, startTime, query, pars...)
+	rid, dbHost, err := executeRID(conn, nil, query, pars...)
+	printSql(conn, startTime, query, pars...)
 
-	return rid, err
+	return rid, dbHost, err
 }
 
-func (slf *pqInstance) TxExecute(tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) error {
+func (slf *pqInstance) TxExecute(tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (string, error) {
 	query, pars := normalizeSqlQueryParams(slf.connRW, sqlQuery, sqlPars)
 	startTime := f9.TimeNow()
-	_, err := execute(slf.connRW, tx, query, pars...)
+	_, dbHost, err := execute(slf.connRW, tx, query, pars...)
 	printSql(slf.connRW, startTime, query, pars...)
-	return err
+	return dbHost, err
 }
 
-func (slf *pqInstance) TxExecuteRID(tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, error) {
+func (slf *pqInstance) TxExecuteRID(tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, string, error) {
 	query, pars := normalizeSqlQueryParams(slf.connRW, sqlQuery, sqlPars)
 	startTime := f9.TimeNow()
-	rid, err := executeRID(slf.connRW, tx, query, pars...)
+	rid, dbHost, err := executeRID(slf.connRW, tx, query, pars...)
 	printSql(slf.connRW, startTime, query, pars...)
-	return rid, err
+	return rid, dbHost, err
 }
 
-func (slf *pqInstance) Select(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error) {
-	instance, err := slf.getReadInstance()
+func (slf *pqInstance) Select(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error) {
+	conn, instance, dbHost, err := slf.getROInstance(rw_force)
 	if err != nil {
-		return nil, err
+		return nil, dbHost, err
 	}
 
-	var conn *srConnection
-	switch {
-	case rw_force:
-		conn = slf.connRW
-	case slf.connRO != nil:
-		conn = slf.connRO
-	default:
-		conn = slf.connRW
-	}
+	// var conn *srConnection
+	// switch {
+	// case rw_force:
+	// 	conn = slf.connRW
+	// case slf.connRO != nil:
+	// 	conn = slf.connRO
+	// default:
+	// 	conn = slf.connRW
+	// }
 
 	// conn := f9.Ternary(slf.connRO != nil, slf.connRO, slf.connRW)
 	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
@@ -150,14 +150,14 @@ func (slf *pqInstance) Select(rw_force bool, out interface{}, sqlQuery string, s
 			}
 
 			err = instance.Unsafe().Select(out, query, pars...)
-			return &unsafe, err
+			return &unsafe, dbHost, err
 		}
 	}
 
-	return nil, err
+	return nil, dbHost, err
 }
 
-func (slf *pqInstance) TxSelect(tx abs.DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error) {
+func (slf *pqInstance) TxSelect(tx abs.DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error) {
 	if tx != nil {
 		switch v := tx.(type) {
 		case *pqInstanceTx:
@@ -178,42 +178,42 @@ func (slf *pqInstance) TxSelect(tx abs.DbTx, out interface{}, sqlQuery string, s
 					}
 
 					err = v.tx.Unsafe().Select(out, query, pars...)
-					return &unsafe, err
+					return &unsafe, tx.Host(), err
 				}
 			}
 
-			return nil, err
+			return nil, tx.Host(), err
 		}
 	}
 
-	return nil, errors.New("unknown: tx transaction type")
+	return nil, tx.Host(), errors.New("unknown: tx transaction type")
 }
 
-func (slf *pqInstance) Get(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) error {
-	instance, err := slf.getReadInstance()
+func (slf *pqInstance) Get(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error) {
+	conn, instance, dbHost, err := slf.getROInstance(rw_force)
 	if err != nil {
-		return err
+		return dbHost, err
 	}
 
-	var conn *srConnection
-	switch {
-	case rw_force:
-		conn = slf.connRW
-	case slf.connRO != nil:
-		conn = slf.connRO
-	default:
-		conn = slf.connRW
-	}
+	// var conn *srConnection
+	// switch {
+	// case rw_force:
+	// 	conn = slf.connRW
+	// case slf.connRO != nil:
+	// 	conn = slf.connRO
+	// default:
+	// 	conn = slf.connRW
+	// }
 
 	// conn := f9.Ternary(slf.connRO != nil, slf.connRO, slf.connRW)
 	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
 	startTime := f9.TimeNow()
 	err = instance.Get(out, query, pars...)
 	printSql(conn, startTime, query, pars...)
-	return err
+	return dbHost, err
 }
 
-func (slf *pqInstance) TxGet(tx abs.DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) error {
+func (slf *pqInstance) TxGet(tx abs.DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error) {
 	if tx != nil {
 		switch v := tx.(type) {
 		case *pqInstanceTx:
@@ -221,16 +221,16 @@ func (slf *pqInstance) TxGet(tx abs.DbTx, out interface{}, sqlQuery string, sqlP
 			startTime := f9.TimeNow()
 			err := v.tx.Get(out, query, pars...)
 			printSql(slf.connRW, startTime, query, pars...)
-			return err
+			return tx.Host(), err
 		}
 	}
-	return errors.New("unknown: tx transaction type")
+	return tx.Host(), errors.New("unknown: tx transaction type")
 }
 
-func (slf *pqInstance) NewTransaction() (abs.DbTx, error) {
-	_, err := slf.getInstance()
+func (slf *pqInstance) NewTransaction() (abs.DbTx, string, error) {
+	conn, _, dbHost, err := slf.getRWInstance()
 	if err != nil {
-		return nil, err
+		return nil, dbHost, err
 	}
 
 	ins := &pqInstanceTx{
@@ -238,23 +238,23 @@ func (slf *pqInstance) NewTransaction() (abs.DbTx, error) {
 		isRollback: false,
 	}
 
-	tx, err := slf.connRW.instance.Beginx()
+	tx, err := conn.instance.Beginx()
 	if err != nil {
-		return ins, err
+		return ins, dbHost, err
 	}
 
 	ins.instance = slf
 	ins.tx = tx
 
-	return ins, nil
+	return ins, dbHost, nil
 }
 
-func (slf *pqInstance) EmptyTransaction() abs.DbTx {
+func (slf *pqInstance) EmptyTransaction() (abs.DbTx, string) {
 	ins := &pqInstanceTx{
 		instance:   slf,
 		isCommit:   false,
 		isRollback: false,
 	}
 
-	return ins
+	return ins, slf.connRW.host
 }

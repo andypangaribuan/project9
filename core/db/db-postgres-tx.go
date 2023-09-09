@@ -117,3 +117,7 @@ func (slf *pqInstanceTx) Rollback() (err error) {
 
 	// return
 }
+
+func (slf *pqInstanceTx) Host() string {
+	return slf.instance.connRW.host
+}

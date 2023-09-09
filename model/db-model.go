@@ -21,3 +21,7 @@ type DbUnsafeSelectError struct {
 	LogMessage *string
 	LogTrace   *string
 }
+
+type DbExec struct {
+	Host string
+}

@@ -31,6 +31,7 @@ type pqInstanceTx struct {
 }
 
 type srConnection struct {
+	host                  string
 	connStr               string
 	driverName            string
 	instance              *sqlx.DB

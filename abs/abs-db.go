@@ -15,22 +15,23 @@ type Db interface {
 type DbTx interface {
 	Commit() error
 	Rollback() error
+	Host() string
 }
 
 type DbInstance interface {
 	Ping() error
-	Execute(sqlQuery string, sqlPars ...interface{}) error
-	ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int64, error)
-	Select(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error)
-	Get(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) error
+	Execute(sqlQuery string, sqlPars ...interface{}) (string, error)
+	ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int64, string, error)
+	Select(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error)
+	Get(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error)
 
-	NewTransaction() (DbTx, error)
-	EmptyTransaction() DbTx
+	NewTransaction() (DbTx, string, error)
+	EmptyTransaction() (DbTx, string)
 
-	TxExecute(tx DbTx, sqlQuery string, sqlPars ...interface{}) error
-	TxExecuteRID(tx DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, error)
-	TxSelect(tx DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, error)
-	TxGet(tx DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) error
+	TxExecute(tx DbTx, sqlQuery string, sqlPars ...interface{}) (string, error)
+	TxExecuteRID(tx DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, string, error)
+	TxSelect(tx DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error)
+	TxGet(tx DbTx, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error)
 }
 
 type DbUpdateHelper interface {

@@ -68,11 +68,12 @@ func (slf *Repo[T]) GenerateParamSigns(columnNames string) (paramSign string) {
 
 func (slf *Repo[T]) Insert(logc *clog.Instance, sqlPars ...interface{}) error {
 	startAt := f9.TimeNow()
-	sql, err := slf.doInsert(nil, sqlPars...)
+	sql, dbHost, err := slf.doInsert(nil, sqlPars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return err
@@ -80,11 +81,12 @@ func (slf *Repo[T]) Insert(logc *clog.Instance, sqlPars ...interface{}) error {
 
 func (slf *Repo[T]) InsertRID(logc *clog.Instance, sqlPars ...interface{}) (*int64, error) {
 	startAt := f9.TimeNow()
-	sql, id, err := slf.doInsertRID(nil, sqlPars...)
+	sql, id, dbHost, err := slf.doInsertRID(nil, sqlPars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return id, err
@@ -92,11 +94,12 @@ func (slf *Repo[T]) InsertRID(logc *clog.Instance, sqlPars ...interface{}) (*int
 
 func (slf *Repo[T]) TxInsert(logc *clog.Instance, tx abs.DbTx, sqlPars ...interface{}) error {
 	startAt := f9.TimeNow()
-	sql, err := slf.doInsert(tx, sqlPars...)
+	sql, dbHost, err := slf.doInsert(tx, sqlPars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return err
@@ -104,11 +107,12 @@ func (slf *Repo[T]) TxInsert(logc *clog.Instance, tx abs.DbTx, sqlPars ...interf
 
 func (slf *Repo[T]) TxInsertRID(logc *clog.Instance, tx abs.DbTx, sqlPars ...interface{}) (*int64, error) {
 	startAt := f9.TimeNow()
-	sql, id, err := slf.doInsertRID(tx, sqlPars...)
+	sql, id, dbHost, err := slf.doInsertRID(tx, sqlPars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return id, err
@@ -154,11 +158,12 @@ func (slf *Repo[T]) TxUpdateBy(logc *clog.Instance, tx abs.DbTx, set, condition 
 
 func (slf *Repo[T]) Update(logc *clog.Instance, keyVals map[string]interface{}, whereQuery string, wherePars ...interface{}) error {
 	startAt := f9.TimeNow()
-	sql, err := slf.doUpdate(nil, keyVals, whereQuery, wherePars...)
+	sql, dbHost, err := slf.doUpdate(nil, keyVals, whereQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return err
@@ -166,11 +171,12 @@ func (slf *Repo[T]) Update(logc *clog.Instance, keyVals map[string]interface{}, 
 
 func (slf *Repo[T]) TxUpdate(logc *clog.Instance, tx abs.DbTx, keyVals map[string]interface{}, whereQuery string, wherePars ...interface{}) error {
 	startAt := f9.TimeNow()
-	sql, err := slf.doUpdate(tx, keyVals, whereQuery, wherePars...)
+	sql, dbHost, err := slf.doUpdate(tx, keyVals, whereQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return err
@@ -189,11 +195,11 @@ func (slf *Repo[T]) GetsBy(logc *clog.Instance, condition, end string, pars ...i
 
 func (slf *Repo[T]) GetData(logc *clog.Instance, whereQuery string, endQuery string, wherePars ...interface{}) (*T, error) {
 	startAt := f9.TimeNow()
-	sql, models, err := slf.goGetDatas(nil, whereQuery, endQuery, wherePars...)
+	sql, models, dbe, err := slf.goGetDatas(nil, whereQuery, endQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return slf.first(models), err
@@ -201,11 +207,11 @@ func (slf *Repo[T]) GetData(logc *clog.Instance, whereQuery string, endQuery str
 
 func (slf *Repo[T]) GetDatas(logc *clog.Instance, whereQuery string, endQuery string, wherePars ...interface{}) ([]T, error) {
 	startAt := f9.TimeNow()
-	sql, models, err := slf.goGetDatas(nil, whereQuery, endQuery, wherePars...)
+	sql, models, dbe, err := slf.goGetDatas(nil, whereQuery, endQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return models, err
@@ -224,11 +230,11 @@ func (slf *Repo[T]) TxGetsBy(logc *clog.Instance, tx abs.DbTx, condition, end st
 
 func (slf *Repo[T]) TxGetData(logc *clog.Instance, tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) (*T, error) {
 	startAt := f9.TimeNow()
-	sql, models, err := slf.goGetDatas(tx, whereQuery, endQuery, wherePars...)
+	sql, models, dbe, err := slf.goGetDatas(tx, whereQuery, endQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return slf.first(models), err
@@ -236,11 +242,11 @@ func (slf *Repo[T]) TxGetData(logc *clog.Instance, tx abs.DbTx, whereQuery strin
 
 func (slf *Repo[T]) TxGetDatas(logc *clog.Instance, tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) ([]T, error) {
 	startAt := f9.TimeNow()
-	sql, models, err := slf.goGetDatas(tx, whereQuery, endQuery, wherePars...)
+	sql, models, dbe, err := slf.goGetDatas(tx, whereQuery, endQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return models, err
@@ -248,11 +254,11 @@ func (slf *Repo[T]) TxGetDatas(logc *clog.Instance, tx abs.DbTx, whereQuery stri
 
 func (slf *Repo[T]) SelectFirst(logc *clog.Instance, query string, args ...interface{}) (*T, error) {
 	startAt := f9.TimeNow()
-	sql, models, err := slf.doSelect(nil, query, args...)
+	sql, models, dbe, err := slf.doSelect(nil, query, args...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return slf.first(models), err
@@ -260,11 +266,11 @@ func (slf *Repo[T]) SelectFirst(logc *clog.Instance, query string, args ...inter
 
 func (slf *Repo[T]) Select(logc *clog.Instance, query string, args ...interface{}) ([]T, error) {
 	startAt := f9.TimeNow()
-	sql, models, err := slf.doSelect(nil, query, args...)
+	sql, models, dbe, err := slf.doSelect(nil, query, args...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return models, err
@@ -272,11 +278,11 @@ func (slf *Repo[T]) Select(logc *clog.Instance, query string, args ...interface{
 
 func (slf *Repo[T]) TxSelectFirst(logc *clog.Instance, tx abs.DbTx, query string, args ...interface{}) (*T, error) {
 	startAt := f9.TimeNow()
-	sql, models, err := slf.doSelect(tx, query, args...)
+	sql, models, dbe, err := slf.doSelect(tx, query, args...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return slf.first(models), err
@@ -284,11 +290,11 @@ func (slf *Repo[T]) TxSelectFirst(logc *clog.Instance, tx abs.DbTx, query string
 
 func (slf *Repo[T]) TxSelect(logc *clog.Instance, tx abs.DbTx, query string, args ...interface{}) ([]T, error) {
 	startAt := f9.TimeNow()
-	sql, models, err := slf.doSelect(tx, query, args...)
+	sql, models, dbe, err := slf.doSelect(tx, query, args...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return models, err
@@ -301,11 +307,11 @@ func (slf *Repo[T]) CountBy(logc *clog.Instance, condition, end string, pars ...
 
 func (slf *Repo[T]) Count(logc *clog.Instance, whereQuery, endQuery string, wherePars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
-	sql, count, err := slf.doCount(nil, whereQuery, endQuery, wherePars...)
+	sql, count, dbe, err := slf.doCount(nil, whereQuery, endQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return count, err
@@ -313,11 +319,11 @@ func (slf *Repo[T]) Count(logc *clog.Instance, whereQuery, endQuery string, wher
 
 func (slf *Repo[T]) RawCount(logc *clog.Instance, query string, pars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
-	sql, count, err := slf.doRawCount(nil, query, pars...)
+	sql, count, dbe, err := slf.doRawCount(nil, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return count, err
@@ -325,11 +331,11 @@ func (slf *Repo[T]) RawCount(logc *clog.Instance, query string, pars ...interfac
 
 func (slf *Repo[T]) RawInt(logc *clog.Instance, query string, pars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
-	sql, res, err := slf.doRawInt(nil, query, pars...)
+	sql, res, dbe, err := slf.doRawInt(nil, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return res, err
@@ -337,11 +343,11 @@ func (slf *Repo[T]) RawInt(logc *clog.Instance, query string, pars ...interface{
 
 func (slf *Repo[T]) RawInt64(logc *clog.Instance, query string, pars ...interface{}) (int64, error) {
 	startAt := f9.TimeNow()
-	sql, res, err := slf.doRawInt64(nil, query, pars...)
+	sql, res, dbe, err := slf.doRawInt64(nil, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return res, err
@@ -349,11 +355,11 @@ func (slf *Repo[T]) RawInt64(logc *clog.Instance, query string, pars ...interfac
 
 func (slf *Repo[T]) RawFloat64(logc *clog.Instance, query string, pars ...interface{}) (float64, error) {
 	startAt := f9.TimeNow()
-	sql, res, err := slf.doRawFloat64(nil, query, pars...)
+	sql, res, dbe, err := slf.doRawFloat64(nil, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return res, err
@@ -361,11 +367,11 @@ func (slf *Repo[T]) RawFloat64(logc *clog.Instance, query string, pars ...interf
 
 func (slf *Repo[T]) RawFCT(logc *clog.Instance, query string, pars ...interface{}) (fc.FCT, error) {
 	startAt := f9.TimeNow()
-	sql, res, err := slf.doRawFCT(nil, query, pars...)
+	sql, res, dbe, err := slf.doRawFCT(nil, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return res, err
@@ -378,11 +384,11 @@ func (slf *Repo[T]) SumBy(logc *clog.Instance, column, condition, end string, pa
 
 func (slf *Repo[T]) Sum(logc *clog.Instance, column, whereQuery, endQuery string, wherePars ...interface{}) (fc.FCT, error) {
 	startAt := f9.TimeNow()
-	sql, val, err := slf.doSum(nil, column, whereQuery, endQuery, wherePars...)
+	sql, val, dbe, err := slf.doSum(nil, column, whereQuery, endQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return val, err
@@ -395,11 +401,11 @@ func (slf *Repo[T]) TxCountBy(logc *clog.Instance, tx abs.DbTx, condition, end s
 
 func (slf *Repo[T]) TxCount(logc *clog.Instance, tx abs.DbTx, whereQuery, endQuery string, wherePars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
-	sql, count, err := slf.doCount(tx, whereQuery, endQuery, wherePars...)
+	sql, count, dbe, err := slf.doCount(tx, whereQuery, endQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return count, err
@@ -407,11 +413,11 @@ func (slf *Repo[T]) TxCount(logc *clog.Instance, tx abs.DbTx, whereQuery, endQue
 
 func (slf *Repo[T]) TxRawCount(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
-	sql, count, err := slf.doRawCount(tx, query, pars...)
+	sql, count, dbe, err := slf.doRawCount(tx, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return count, err
@@ -419,11 +425,11 @@ func (slf *Repo[T]) TxRawCount(logc *clog.Instance, tx abs.DbTx, query string, p
 
 func (slf *Repo[T]) TxRawInt(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (int, error) {
 	startAt := f9.TimeNow()
-	sql, res, err := slf.doRawInt(tx, query, pars...)
+	sql, res, dbe, err := slf.doRawInt(tx, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return res, err
@@ -431,11 +437,11 @@ func (slf *Repo[T]) TxRawInt(logc *clog.Instance, tx abs.DbTx, query string, par
 
 func (slf *Repo[T]) TxRawInt64(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (int64, error) {
 	startAt := f9.TimeNow()
-	sql, res, err := slf.doRawInt64(tx, query, pars...)
+	sql, res, dbe, err := slf.doRawInt64(tx, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return res, err
@@ -443,11 +449,11 @@ func (slf *Repo[T]) TxRawInt64(logc *clog.Instance, tx abs.DbTx, query string, p
 
 func (slf *Repo[T]) TxRawFloat64(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (float64, error) {
 	startAt := f9.TimeNow()
-	sql, res, err := slf.doRawFloat64(tx, query, pars...)
+	sql, res, dbe, err := slf.doRawFloat64(tx, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return res, err
@@ -455,11 +461,11 @@ func (slf *Repo[T]) TxRawFloat64(logc *clog.Instance, tx abs.DbTx, query string,
 
 func (slf *Repo[T]) TxRawFCT(logc *clog.Instance, tx abs.DbTx, query string, pars ...interface{}) (fc.FCT, error) {
 	startAt := f9.TimeNow()
-	sql, res, err := slf.doRawFCT(tx, query, pars...)
+	sql, res, dbe, err := slf.doRawFCT(tx, query, pars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return res, err
@@ -472,11 +478,11 @@ func (slf *Repo[T]) TxSumBy(logc *clog.Instance, tx abs.DbTx, column, condition,
 
 func (slf *Repo[T]) TxSum(logc *clog.Instance, tx abs.DbTx, column, whereQuery, endQuery string, wherePars ...interface{}) (fc.FCT, error) {
 	startAt := f9.TimeNow()
-	sql, val, err := slf.doSum(tx, column, whereQuery, endQuery, wherePars...)
+	sql, val, dbe, err := slf.doSum(tx, column, whereQuery, endQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return val, err
@@ -494,11 +500,12 @@ func (slf *Repo[T]) TxDeleteBy(logc *clog.Instance, tx abs.DbTx, condition strin
 
 func (slf *Repo[T]) Delete(logc *clog.Instance, whereQuery string, wherePars ...interface{}) error {
 	startAt := f9.TimeNow()
-	sql, err := slf.doDelete(nil, whereQuery, wherePars...)
+	sql, dbHost, err := slf.doDelete(nil, whereQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return err
@@ -506,11 +513,12 @@ func (slf *Repo[T]) Delete(logc *clog.Instance, whereQuery string, wherePars ...
 
 func (slf *Repo[T]) TxDelete(logc *clog.Instance, tx abs.DbTx, whereQuery string, wherePars ...interface{}) error {
 	startAt := f9.TimeNow()
-	sql, err := slf.doDelete(tx, whereQuery, wherePars...)
+	sql, dbHost, err := slf.doDelete(tx, whereQuery, wherePars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return err
@@ -518,11 +526,12 @@ func (slf *Repo[T]) TxDelete(logc *clog.Instance, tx abs.DbTx, whereQuery string
 
 func (slf *Repo[T]) Execute(logc *clog.Instance, sqlQuery string, sqlPars ...interface{}) error {
 	startAt := f9.TimeNow()
-	sql, err := slf.doExecute(nil, sqlQuery, sqlPars...)
+	sql, dbHost, err := slf.doExecute(nil, sqlQuery, sqlPars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return err
@@ -530,11 +539,12 @@ func (slf *Repo[T]) Execute(logc *clog.Instance, sqlQuery string, sqlPars ...int
 
 func (slf *Repo[T]) TxExecute(logc *clog.Instance, tx abs.DbTx, sqlQuery string, sqlPars ...interface{}) error {
 	startAt := f9.TimeNow()
-	sql, err := slf.doExecute(tx, sqlQuery, sqlPars...)
+	sql, dbHost, err := slf.doExecute(tx, sqlQuery, sqlPars...)
 
 	if logc != nil && sql != nil {
 		execFunc, execPath := slf.getExecFuncPath()
-		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, err)
+		dbe := &model.DbExec{Host: dbHost}
+		go sendDbq(*logc, sql.query, sql.pars, execFunc, execPath, startAt, dbe, err)
 	}
 
 	return err
