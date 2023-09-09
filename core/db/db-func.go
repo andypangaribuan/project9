@@ -27,7 +27,7 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 
 	instance := &pqInstance{
 		connRW: &srConnection{
-			host:                  host,
+			host:                  fmt.Sprintf("%v:%v", host, port),
 			connStr:               connStr,
 			driverName:            "postgres",
 			maxLifeTimeConnection: time.Second * 10,

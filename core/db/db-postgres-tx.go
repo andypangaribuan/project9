@@ -25,31 +25,40 @@ func (slf *pqInstanceTx) Commit() (err error) {
 		return nil
 	}
 
-	iteration := 0
-	const maxTry = 3
-
-	for {
-		iteration++
-		err = slf.tx.Commit()
-
-		if err == nil {
-			break
-		}
-
-		if err == sql.ErrTxDone {
-			err = nil
-			break
-		}
-
-		if iteration >= maxTry {
-			break
-		}
-
-		time.Sleep(time.Microsecond * time.Duration(rand.Int63n(max-min)+min))
-	}
-
+	err = slf.tx.Commit()
 	slf.isCommit = err == nil
 	return
+
+
+	// iteration := 0
+	// const maxTry = 3
+
+	// for {
+	// 	iteration++
+	// 	err = slf.tx.Commit()
+
+	// 	if err == nil {
+	// 		break
+	// 	}
+
+	// 	if err == sql.ErrConnDone {
+	// 		break
+	// 	}
+
+	// 	if err == sql.ErrTxDone {
+	// 		err = nil
+	// 		break
+	// 	}
+
+	// 	if iteration >= maxTry {
+	// 		break
+	// 	}
+
+	// 	time.Sleep(time.Microsecond * time.Duration(rand.Int63n(max-min)+min))
+	// }
+
+	// slf.isCommit = err == nil
+	// return
 
 	// slf.isCommit = true
 	// err = slf.tx.Commit()
