@@ -7,9 +7,7 @@
 package db
 
 import (
-	"log"
 	"strings"
-	"time"
 
 	"github.com/andypangaribuan/project9/abs"
 	"github.com/andypangaribuan/project9/clog"
@@ -26,7 +24,6 @@ type Repo[T any] struct {
 	InsertColumnNames string // if empty then use columnNames
 	ParamSigns        string
 	InsertParamSign   string // if empty then use paramSigns
-	PrintUnsafeErr    bool
 }
 
 func (slf *Repo[T]) SetColumnNames(names string) {
@@ -35,18 +32,6 @@ func (slf *Repo[T]) SetColumnNames(names string) {
 
 func (slf *Repo[T]) SetInsertColumnNames(names string) {
 	slf.InsertColumnNames = slf.normalizeColumnNames(names)
-}
-
-func (slf *Repo[T]) OnUnsafe(unsafe *model.DbUnsafeSelectError) {
-	if unsafe != nil && slf.PrintUnsafeErr {
-		log.Printf("[%v] db.unsafe.select.error:\nerror: %v\nsql-query: %v\nsql-pars: %v\ntrace: %v\n",
-			p9.Conv.Time.ToStrFull(time.Now()),
-			f9.TernaryFnB(unsafe.LogMessage == nil, "nil", func() string { return *unsafe.LogMessage }),
-			unsafe.SqlQuery,
-			unsafe.SqlPars,
-			f9.TernaryFnB(unsafe.LogTrace == nil, "nil", func() string { return *unsafe.LogTrace }),
-		)
-	}
 }
 
 func (slf *Repo[T]) GenerateParamSigns(columnNames string) (paramSign string) {

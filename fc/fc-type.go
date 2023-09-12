@@ -122,7 +122,6 @@ func (slf *FCT) PtrRound(places int, defaultValue ...interface{}) *FCT {
 			v := New(val)
 			return &v
 		}
-		// return &defaultValue[0]
 	}
 
 	return nil

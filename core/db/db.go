@@ -42,4 +42,5 @@ type srConnection struct {
 	autoRebind            bool
 	unsafeCompatibility   bool
 	printSql              bool
+	printUnsafeError      bool
 }

@@ -7,11 +7,15 @@ package db
 
 import (
 	"errors"
+	"log"
+	"reflect"
 	"sync"
+	"time"
 
 	"github.com/andypangaribuan/project9/abs"
 	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/model"
+	"github.com/andypangaribuan/project9/p9"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -116,29 +120,62 @@ func (slf *pqInstance) TxExecuteRID(tx abs.DbTx, sqlQuery string, sqlPars ...int
 	return rid, dbHost, err
 }
 
-func (slf *pqInstance) Select(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error) {
+func (slf *pqInstance) Select(out interface{}, sqlQuery string, sqlPars ...interface{}) error {
+	var (
+		dbe    = new(model.DbExec)
+		loop   = 2
+		unsafe *model.DbUnsafeSelectError
+		err    error
+	)
+
+	for i := 0; i < loop; i++ {
+		var (
+			rw_force = i == 1
+			dbHost   = ""
+		)
+
+		unsafe, dbHost, err = slf.DirectSelect(rw_force, out, sqlQuery, sqlPars...)
+		if err != nil {
+			return err
+		}
+
+		if dbe.Host != "" {
+			dbe.Host += ", "
+		}
+		dbe.Host += dbHost
+
+		if out != nil {
+			kind := reflect.TypeOf(out).Kind()
+			if kind == reflect.Pointer {
+				val := reflect.ValueOf(out)
+				val = val.Elem()
+				kind = val.Kind()
+				if kind == reflect.Slice {
+					length := val.Len()
+					if length > 0 {
+						break
+					}
+				}
+			}
+		}
+	}
+
+	slf.OnUnsafe(unsafe)
+	return err
+}
+
+func (slf *pqInstance) DirectSelect(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error) {
 	conn, instance, dbHost, err := slf.getROInstance(rw_force)
 	if err != nil {
 		return nil, dbHost, err
 	}
 
-	// var conn *srConnection
-	// switch {
-	// case rw_force:
-	// 	conn = slf.connRW
-	// case slf.connRO != nil:
-	// 	conn = slf.connRO
-	// default:
-	// 	conn = slf.connRW
-	// }
-
-	// conn := f9.Ternary(slf.connRO != nil, slf.connRO, slf.connRW)
 	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
 	startTime := f9.TimeNow()
 	err = instance.Select(out, query, pars...)
 	printSql(conn, startTime, query, pars...)
 	if err != nil {
-		if slf.connRW.unsafeCompatibility {
+		if conn.unsafeCompatibility {
 			msg := err.Error()
 			// TODO: implement LogTrace
 			unsafe := model.DbUnsafeSelectError{
@@ -195,17 +232,6 @@ func (slf *pqInstance) Get(rw_force bool, out interface{}, sqlQuery string, sqlP
 		return dbHost, err
 	}
 
-	// var conn *srConnection
-	// switch {
-	// case rw_force:
-	// 	conn = slf.connRW
-	// case slf.connRO != nil:
-	// 	conn = slf.connRO
-	// default:
-	// 	conn = slf.connRW
-	// }
-
-	// conn := f9.Ternary(slf.connRO != nil, slf.connRO, slf.connRW)
 	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
 	startTime := f9.TimeNow()
 	err = instance.Get(out, query, pars...)
@@ -257,4 +283,18 @@ func (slf *pqInstance) EmptyTransaction() (abs.DbTx, string) {
 	}
 
 	return ins, slf.connRW.host
+}
+
+func (slf *pqInstance) OnUnsafe(unsafe *model.DbUnsafeSelectError) {
+	if unsafe != nil {
+		if (slf.connRW != nil && slf.connRW.printUnsafeError) || (slf.connRO != nil && slf.connRO.printUnsafeError) {
+			log.Printf("[%v] db.unsafe.select.error:\nerror: %v\nsql-query: %v\nsql-pars: %v\ntrace: %v\n",
+				p9.Conv.Time.ToStrFull(time.Now()),
+				f9.TernaryFnB(unsafe.LogMessage == nil, "nil", func() string { return *unsafe.LogMessage }),
+				unsafe.SqlQuery,
+				unsafe.SqlPars,
+				f9.TernaryFnB(unsafe.LogTrace == nil, "nil", func() string { return *unsafe.LogTrace }),
+			)
+		}
+	}
 }

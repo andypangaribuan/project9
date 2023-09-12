@@ -41,7 +41,7 @@ func (slf *View) onUnsafe(unsafe *model.DbUnsafeSelectError) {
 }
 
 func (slf *View) Select(out interface{}, sqlQuery string, sqlPars ...interface{}) error {
-	unsafe, _, err := slf.dbInstance.Select(true, out, sqlQuery, sqlPars...)
+	unsafe, _, err := slf.dbInstance.DirectSelect(true, out, sqlQuery, sqlPars...)
 	slf.onUnsafe(unsafe)
 	if err != nil {
 		if e, ok := err.(*pq.Error); ok {

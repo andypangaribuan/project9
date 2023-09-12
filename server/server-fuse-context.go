@@ -677,20 +677,6 @@ func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface
 }
 
 func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) error {
-	// type srMeta struct {
-	// 	Code    int         `json:"code"`
-	// 	Status  string      `json:"status,omitempty"`
-	// 	Message string      `json:"message,omitempty"`
-	// 	Address string      `json:"address,omitempty"`
-	// 	Error   string      `json:"error,omitempty"`
-	// 	Data    interface{} `json:"data,omitempty"`
-	// }
-
-	// type srResponse struct {
-	// 	Meta srMeta      `json:"meta"`
-	// 	Data interface{} `json:"data,omitempty"`
-	// }
-
 	if len(opt) > 0 {
 		o := opt[0]
 		fo.Status = f9.Ternary(o.Status != "", o.Status, fo.Status)

@@ -8,7 +8,7 @@ package abs
 import "github.com/andypangaribuan/project9/model"
 
 type Db interface {
-	NewPostgresInstance(host string, port int, dbName, username, password string, schema *string, config *model.DbConfig, autoRebind, unsafeCompatibility bool, applicationName string, printSql bool) DbPostgresInstance
+	NewPostgresInstance(host string, port int, dbName, username, password string, schema *string, config *model.DbConfig, autoRebind, unsafeCompatibility bool, applicationName string, printSql bool, printUnsafeError bool) DbPostgresInstance
 	NewReadWritePostgresInstance(read, write DbPostgresInstance) DbPostgresInstance
 }
 
@@ -22,11 +22,13 @@ type DbInstance interface {
 	Ping() error
 	Execute(sqlQuery string, sqlPars ...interface{}) (string, error)
 	ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int64, string, error)
-	Select(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error)
+	Select(out interface{}, sqlQuery string, sqlPars ...interface{}) error
+	DirectSelect(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error)
 	Get(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error)
 
 	NewTransaction() (DbTx, string, error)
 	EmptyTransaction() (DbTx, string)
+	OnUnsafe(unsafe *model.DbUnsafeSelectError)
 
 	TxExecute(tx DbTx, sqlQuery string, sqlPars ...interface{}) (string, error)
 	TxExecuteRID(tx DbTx, sqlQuery string, sqlPars ...interface{}) (*int64, string, error)

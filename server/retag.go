@@ -23,10 +23,6 @@ type result struct {
 
 type reTagProcessor func(structureType reflect.Type, fieldIndex int) reflect.StructTag
 
-// func reTag(p interface{}, processor reTagProcessor) (interface{}, error) {
-// 	return convert(p, processor, false)
-// }
-
 func reTagAny(p interface{}, processor reTagProcessor) (interface{}, error) {
 	return convert(p, processor, true)
 }

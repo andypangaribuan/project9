@@ -17,7 +17,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func (*srDb) NewPostgresInstance(host string, port int, dbName, username, password string, schema *string, config *model.DbConfig, autoRebind, unsafeCompatibility bool, applicationName string, printSql bool) abs.DbPostgresInstance {
+func (*srDb) NewPostgresInstance(host string, port int, dbName, username, password string, schema *string, config *model.DbConfig, autoRebind, unsafeCompatibility bool, applicationName string, printSql bool, printUnsafeError bool) abs.DbPostgresInstance {
 	connStr := ""
 	if schema == nil {
 		connStr = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s application_name=%s sslmode=disable", host, port, username, password, dbName, applicationName)
@@ -37,6 +37,7 @@ func (*srDb) NewPostgresInstance(host string, port int, dbName, username, passwo
 			autoRebind:            autoRebind,
 			unsafeCompatibility:   unsafeCompatibility,
 			printSql:              printSql,
+			printUnsafeError:      printUnsafeError,
 		},
 	}
 

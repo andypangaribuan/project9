@@ -198,12 +198,12 @@ func (slf *Repo[T]) directGoGetDatas(rw_force bool, tx abs.DbTx, whereQuery stri
 	if tx != nil {
 		unsafe, dbHost, err = slf.DbInstance.TxSelect(tx, &models, sql.query, sql.pars)
 	} else {
-		unsafe, dbHost, err = slf.DbInstance.Select(rw_force, &models, sql.query, sql.pars)
+		unsafe, dbHost, err = slf.DbInstance.DirectSelect(rw_force, &models, sql.query, sql.pars)
 	}
 
 	dbe.Host = dbHost
+	slf.DbInstance.OnUnsafe(unsafe)
 
-	slf.OnUnsafe(unsafe)
 	if err != nil {
 		if e, ok := err.(*pq.Error); ok {
 			msg := strings.TrimSpace(e.Message)
@@ -273,11 +273,11 @@ func (slf *Repo[T]) directDoSelect(rw_force bool, tx abs.DbTx, query string, par
 	if tx != nil {
 		unsafe, dbHost, err = slf.DbInstance.TxSelect(tx, &models, sql.query, sql.pars...)
 	} else {
-		unsafe, dbHost, err = slf.DbInstance.Select(rw_force, &models, sql.query, sql.pars...)
+		unsafe, dbHost, err = slf.DbInstance.DirectSelect(rw_force, &models, sql.query, sql.pars...)
 	}
 
 	dbe.Host = dbHost
-	slf.OnUnsafe(unsafe)
+	slf.DbInstance.OnUnsafe(unsafe)
 
 	if err != nil {
 		if e, ok := err.(*pq.Error); ok {

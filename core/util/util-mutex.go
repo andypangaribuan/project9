@@ -66,7 +66,6 @@ func (slf *srMutex) Exec(timeout *time.Duration, fn func()) (executed bool, pani
 		timeoutDuration = append(timeoutDuration, *timeout)
 	}
 
-	// log.Printf("u-mtx: %v", slf.name)
 	isTimeout := slf.Lock(timeoutDuration...)
 	if isTimeout {
 		return

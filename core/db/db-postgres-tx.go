@@ -28,46 +28,6 @@ func (slf *pqInstanceTx) Commit() (err error) {
 	err = slf.tx.Commit()
 	slf.isCommit = err == nil
 	return
-
-
-	// iteration := 0
-	// const maxTry = 3
-
-	// for {
-	// 	iteration++
-	// 	err = slf.tx.Commit()
-
-	// 	if err == nil {
-	// 		break
-	// 	}
-
-	// 	if err == sql.ErrConnDone {
-	// 		break
-	// 	}
-
-	// 	if err == sql.ErrTxDone {
-	// 		err = nil
-	// 		break
-	// 	}
-
-	// 	if iteration >= maxTry {
-	// 		break
-	// 	}
-
-	// 	time.Sleep(time.Microsecond * time.Duration(rand.Int63n(max-min)+min))
-	// }
-
-	// slf.isCommit = err == nil
-	// return
-
-	// slf.isCommit = true
-	// err = slf.tx.Commit()
-	// if err != nil {
-	// 	log.Printf("db.tx.commit error: %+v\n", err)
-	// }
-
-	// slf.errCommit = err
-	// return
 }
 
 func (slf *pqInstanceTx) Rollback() (err error) {
@@ -83,10 +43,6 @@ func (slf *pqInstanceTx) Rollback() (err error) {
 		if slf.isRollback {
 			log.Printf("db.tx.rollback cant commit: isRollback = %v\n", slf.isRollback)
 		}
-
-		// if slf.tx == nil {
-		// 	log.Printf("db.tx.rollback cant commit: tx = nil\n")
-		// }
 
 		return nil
 	}
@@ -116,15 +72,6 @@ func (slf *pqInstanceTx) Rollback() (err error) {
 
 	slf.isRollback = err == nil
 	return
-
-	// slf.isRollback = true
-	// err = slf.tx.Rollback()
-	// if err != nil {
-	// 	log.Printf("db.tx.rollback error: %+v\n", err)
-	// }
-	// slf.errRollback = err
-
-	// return
 }
 
 func (slf *pqInstanceTx) Host() string {
