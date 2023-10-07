@@ -185,6 +185,49 @@ func (slf *srEnv) GetBase64(key string) abs.UtilEnvBase64 {
 	}
 }
 
+func (slf *srEnv) GetStrArr(key string, separator string, defaultValue ...[]string) []string {
+	strVal, val := getEnvDefault(key, defaultValue...)
+	if val != nil {
+		return *val
+	}
+
+	if key == "" {
+		log.Fatalf("Env GetStrArr: invalid separator")
+	}
+
+	return strings.Split(strVal, separator)
+}
+
+func (slf *srEnv) GetMapStrStr(key string, keyValSeparator string, itemSeparator string, defaultValue ...map[string]string) map[string]string {
+	strVal, val := getEnvDefault(key, defaultValue...)
+	if val != nil {
+		return *val
+	}
+
+	if keyValSeparator == "" {
+		log.Fatalf("Env GetMapStrStr: invalid keyValSeparator")
+	}
+
+	if itemSeparator == "" {
+		log.Fatalf("Env GetMapStrStr: invalid itemSeparator")
+	}
+
+	if keyValSeparator == itemSeparator {
+		log.Fatalf("Env GetMapStrStr: keyValSeparator and itemSeparator cannot be same")
+	}
+
+	dictio := map[string]string{}
+	items := strings.Split(strVal, itemSeparator)
+	for _, item := range items {
+		keyVal := strings.Split(item, keyValSeparator)
+		if len(keyVal) == 2 {
+			dictio[keyVal[0]] = keyVal[1]
+		}
+	}
+
+	return dictio
+}
+
 func (slf *srEnvBase64) Key() string {
 	return slf.key
 }

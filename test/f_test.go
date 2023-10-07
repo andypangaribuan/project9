@@ -12,7 +12,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/andypangaribuan/project9"
 	"github.com/andypangaribuan/project9/f9"
+	"github.com/andypangaribuan/project9/p9"
 )
 
 func TestRetry(t *testing.T) {
@@ -38,4 +40,19 @@ func TestRetry(t *testing.T) {
 
 	log.Printf("done: %v\n", *r)
 	log.Printf("%v", *r)
+}
+
+func TestXID(t *testing.T) {
+	project9.Initialize()
+	// tm := f9.TimeNow()
+
+	// t.Log(tm.Unix())
+	// t.Log(tm.UnixMilli())
+	// t.Log(tm.UnixMicro())
+	// t.Log(tm.UnixNano())
+
+	hex := fmt.Sprintf("%v", f9.TimeNow().UnixMicro())
+	nine := p9.Util.GetRandomAlphabetNumber(9)
+	xid := hex + nine
+	log.Println(xid)
 }

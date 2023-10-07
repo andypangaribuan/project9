@@ -17,8 +17,15 @@ import (
 type Util interface {
 	GetNanoID(length ...int) string
 	GetID25() string
+	GetXID25() string
+	GetXID30() string
+	GetXID40() string
 	GetRandom(length int, value string) (string, error)
 	GetRandomNumber(min, max int) int
+	GetRandomAlphabet(length int) string
+	GetRandomAlphabetLower(length int) string
+	GetRandomAlphabetUpper(length int) string
+	GetRandomAlphabetNumber(length int) string
 	BuildJwtToken(privateKey []byte, claims jwt.Claims) (string, error)
 	BuildJwtTokenWithPassword(privateKey []byte, password string, claims jwt.Claims) (string, error)
 	CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte) (string, error)
@@ -35,6 +42,7 @@ type Util interface {
 
 	// ReflectionSet path: core.util.util-reflection-set.go
 	ReflectionSet(obj interface{}, bind map[string]interface{}) error
+	ReflectionGet(obj interface{}, fieldName string) (interface{}, error)
 
 	ConcurrentProcess(total, max int, fn func(index int))
 	NewMutex(name string) UtilMutex
@@ -50,6 +58,8 @@ type UtilEnv interface {
 	GetFloat64(key string, defaultValue ...float64) float64
 	GetBool(key string, defaultValue ...bool) bool
 	GetBase64(key string) UtilEnvBase64
+	GetStrArr(key string, separator string, defaultValue ...[]string) []string
+	GetMapStrStr(key string, keyValSeparator string, itemSeparator string, defaultValue ...map[string]string) map[string]string
 }
 
 type UtilEnvBase64 interface {

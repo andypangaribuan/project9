@@ -29,3 +29,11 @@ func PtrValue[T any](val *T, defaultValue T) T {
 
 	return *val
 }
+
+func PtrEqual[T comparable](val *T, compare T) bool {
+	if val == nil {
+		return false
+	}
+
+	return *val == compare
+}

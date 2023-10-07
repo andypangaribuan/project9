@@ -44,6 +44,29 @@ func (slf *srUtil) ReflectionSet(obj interface{}, bind map[string]interface{}) e
 	return nil
 }
 
+func (slf *srUtil) ReflectionGet(obj interface{}, fieldName string) (interface{}, error) {
+	objVal := reflect.ValueOf(obj)
+	if objVal.Kind() != reflect.Ptr {
+		return nil, errors.New("obj must be a pointer")
+	}
+
+	objVal = objVal.Elem()
+	objType := objVal.Type()
+
+	for i := 0; i < objType.NumField(); i++ {
+		rs := objType.Field(i)
+		rf := objVal.Field(i)
+
+		if rs.Name == fieldName {
+			if rf.IsValid() {
+				return rf.Interface(), nil
+			}
+		}
+	}
+
+	return nil, errors.New("not found")
+}
+
 func (slf *srUtil) reflectionSet(sf reflect.StructField, rv reflect.Value, obj interface{}) (err error) {
 	switch rv.CanSet() {
 	case true:

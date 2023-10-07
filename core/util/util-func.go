@@ -53,6 +53,27 @@ func (slf *srUtil) GetID25() string {
 	return fmt.Sprintf("%v%v%v", n1, id, n2)
 }
 
+func (slf *srUtil) GetXID25() string {
+	hex := fmt.Sprintf("%v", f9.TimeNow().UnixMicro())
+	nine := slf.GetRandomAlphabetNumber(9)
+	xid := hex + nine
+	return xid
+}
+
+func (slf *srUtil) GetXID30() string {
+	hex := fmt.Sprintf("%v", f9.TimeNow().UnixMicro())
+	nine := slf.GetRandomAlphabetNumber(14)
+	xid := hex + nine
+	return xid
+}
+
+func (slf *srUtil) GetXID40() string {
+	hex := fmt.Sprintf("%v", f9.TimeNow().UnixMicro())
+	nine := slf.GetRandomAlphabetNumber(24)
+	xid := hex + nine
+	return xid
+}
+
 func (*srUtil) GetRandom(length int, value string) (string, error) {
 	return gonanoid.Generate(value, length)
 }
@@ -60,6 +81,42 @@ func (*srUtil) GetRandom(length int, value string) (string, error) {
 func (*srUtil) GetRandomNumber(min, max int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
+}
+
+func (*srUtil) GetRandomAlphabet(length int) string {
+	if length <= 0 {
+		return ""
+	}
+
+	val, _ := gonanoid.Generate(idAlphabetLower+idAlphabetUpper, length)
+	return val
+}
+
+func (*srUtil) GetRandomAlphabetLower(length int) string {
+	if length <= 0 {
+		return ""
+	}
+
+	val, _ := gonanoid.Generate(idAlphabetLower, length)
+	return val
+}
+
+func (*srUtil) GetRandomAlphabetUpper(length int) string {
+	if length <= 0 {
+		return ""
+	}
+
+	val, _ := gonanoid.Generate(idAlphabetUpper, length)
+	return val
+}
+
+func (*srUtil) GetRandomAlphabetNumber(length int) string {
+	if length <= 0 {
+		return ""
+	}
+
+	val, _ := gonanoid.Generate(idAlphabetLower+idAlphabetUpper+idNumeric, length)
+	return val
 }
 
 func (slf *srUtil) BuildJwtToken(privateKey []byte, claims jwt.Claims) (string, error) {

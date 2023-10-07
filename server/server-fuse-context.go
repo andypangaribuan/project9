@@ -17,9 +17,11 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/andypangaribuan/project9/clog"
 	"github.com/andypangaribuan/project9/f9"
+	"github.com/andypangaribuan/project9/model"
 	"github.com/andypangaribuan/project9/p9"
 	"github.com/andypangaribuan/project9/server/proto/gen/grf"
 	"github.com/gorilla/schema"
@@ -176,6 +178,39 @@ func (slf *srFuseContext) Parser(logc *clog.Instance, header, body interface{}) 
 		if err != nil {
 			err = p9.Err.WithStack(err, 1)
 			return false, slf.r500InternalServerError(logc, err)
+		}
+
+		switch h := header.(type) {
+		case *model.RequestHeader:
+			if h.RFTimeRaw != "" {
+				tm, err := time.Parse(time.RFC3339, h.RFTimeRaw)
+				if err != nil {
+					rfc3339 := "2006-01-02 15:04:05Z07:00"
+					tm, err = time.Parse(rfc3339, h.RFTimeRaw)
+				}
+
+				if err == nil {
+					h.RFTime = &tm
+				}
+			}
+
+		default:
+			v, err := p9.Util.ReflectionGet(header, "RequestHeader")
+			if err == nil && v != nil {
+				if h, ok := v.(model.RequestHeader); ok {
+					tm, err := time.Parse(time.RFC3339, h.RFTimeRaw)
+					if err != nil {
+						rfc3339 := "2006-01-02 15:04:05Z07:00"
+						tm, err = time.Parse(rfc3339, h.RFTimeRaw)
+					}
+
+					if err == nil {
+						h.RFTime = &tm
+
+						p9.Util.ReflectionSet(header, map[string]interface{}{"RequestHeader": h})
+					}
+				}
+			}
 		}
 	}
 
@@ -370,6 +405,53 @@ func (slf *srFuseContext) wrapError(err error) error {
 
 //region response
 
+func (slf *srFuseContext) GetResCode() (int, string) {
+	return slf.resCode, slf.resSubCode
+}
+
+func (slf *srFuseContext) GetResObject() interface{} {
+	return slf.resObject
+}
+
+func (slf *srFuseContext) SetResponse(code int, subCode string, obj interface{}) error {
+	slf.resCode = code
+	slf.resSubCode = subCode
+	slf.resObject = obj
+	return nil
+}
+
+func (slf *srFuseContext) SR200OK(subCode string, obj interface{}) error {
+	return slf.SetResponse(http.StatusOK, subCode, obj)
+}
+
+func (slf *srFuseContext) SR400BadRequest(subCode string, obj interface{}) error {
+	return slf.SetResponse(http.StatusBadRequest, subCode, obj)
+}
+
+func (slf *srFuseContext) SR401Unauthorized(subCode string, obj interface{}) error {
+	return slf.SetResponse(http.StatusUnauthorized, subCode, obj)
+}
+
+func (slf *srFuseContext) SR403Forbidden(subCode string, obj interface{}) error {
+	return slf.SetResponse(http.StatusForbidden, subCode, obj)
+}
+
+func (slf *srFuseContext) SR404NotFound(subCode string, obj interface{}) error {
+	return slf.SetResponse(http.StatusNotFound, subCode, obj)
+}
+
+func (slf *srFuseContext) SR406NotAcceptable(subCode string, obj interface{}) error {
+	return slf.SetResponse(http.StatusNotAcceptable, subCode, obj)
+}
+
+func (slf *srFuseContext) SR428PreconditionRequired(subCode string, obj interface{}) error {
+	return slf.SetResponse(http.StatusPreconditionRequired, subCode, obj)
+}
+
+func (slf *srFuseContext) SR500InternalServerError(subCode string, obj interface{}) error {
+	return slf.SetResponse(http.StatusInternalServerError, subCode, obj)
+}
+
 func (slf *srFuseContext) RString(logc *clog.Instance, code int, data string) error {
 	return slf.sendRawA(logc, code, data)
 }
@@ -380,6 +462,16 @@ func (slf *srFuseContext) RJson(logc *clog.Instance, code int, data interface{},
 
 func (slf *srFuseContext) RJsonRaw(logc *clog.Instance, code int, data []byte) error {
 	return slf.sendRawB(logc, code, f9.ToJsonRaw(data))
+}
+
+func (slf *srFuseContext) RXXX(logc *clog.Instance, code int, status string, data interface{}, opt ...FuseOpt) error {
+	fo := FuseOpt{
+		code:   code,
+		Status: status,
+		Data:   data,
+	}
+
+	return slf.send(logc, fo, opt...)
 }
 
 func (slf *srFuseContext) R200OK(logc *clog.Instance, data interface{}, opt ...FuseOpt) error {
@@ -679,6 +771,7 @@ func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface
 func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) error {
 	if len(opt) > 0 {
 		o := opt[0]
+		fo.SubCode = f9.Ternary(o.SubCode != "", o.SubCode, fo.SubCode)
 		fo.Status = f9.Ternary(o.Status != "", o.Status, fo.Status)
 		fo.Message = f9.Ternary(o.Message != "", o.Message, fo.Message)
 		fo.Address = f9.Ternary(o.Address != "", o.Address, fo.Address)
@@ -690,6 +783,7 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 	response := FuseResponse{
 		Meta: FuseResponseMeta{
 			Code:    fo.code,
+			SubCode: fo.SubCode,
 			Status:  fo.Status,
 			Message: fo.Message,
 			Address: fo.Address,
@@ -747,8 +841,19 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 			reqParam = &value
 		}
 
-		if value, err := p9.Json.Encode(response); err == nil {
-			resData = &value
+		if len(opt) > 0 && opt[0].StringCustomOutput {
+			switch v := response.(type) {
+			case string:
+				resData = &v
+			case *string:
+				resData = v
+			}
+		}
+
+		if resData == nil {
+			if value, err := p9.Json.Encode(response); err == nil {
+				resData = &value
+			}
 		}
 
 		if fo.Error != nil {
@@ -797,8 +902,23 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 		}
 	}
 
+	restResponseRaw := func() error {
+		saveLog(fo.code, fo.Data)
+
+		if len(opt) > 0 && opt[0].StringCustomOutput {
+			switch v := fo.Data.(type) {
+			case string:
+				return slf.fiberCtx.Status(fo.code).SendString(v)
+			case *string:
+				return slf.fiberCtx.Status(fo.code).SendString(*v)
+			}
+		}
+
+		return slf.fiberCtx.Status(fo.code).JSON(fo.Data)
+	}
+
 	restResponse := func() error {
-		if len(opt) == 0 {
+		if len(opt) == 0 || (len(opt) > 0 && len(opt[0].NewHeader) == 0 && len(opt[0].NewMeta) == 0) {
 			saveLog(fo.code, response)
 
 			if slf.sendResponse {
@@ -836,10 +956,8 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 			}
 		}
 
-		if len(opt[0].NewHeader) > 0 {
-			for k, v := range opt[0].NewHeader {
-				newResponse[k] = v
-			}
+		for k, v := range opt[0].NewHeader {
+			newResponse[k] = v
 		}
 
 		saveLog(fo.code, newResponse)
@@ -889,6 +1007,8 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 	}
 
 	switch {
+	case slf.fiberCtx != nil && len(opt) > 0 && (opt[0].JsonCustomOutput || opt[0].StringCustomOutput):
+		return restResponseRaw()
 	case slf.fiberCtx != nil:
 		return restResponse()
 	case slf.grpcCtx != nil:

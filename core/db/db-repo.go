@@ -103,6 +103,20 @@ func (slf *Repo[T]) TxInsertRID(logc *clog.Instance, tx abs.DbTx, sqlPars ...int
 	return id, err
 }
 
+func (slf *Repo[T]) Update(logc *clog.Instance, sr Update) error {
+	var (
+		ls      = strings.Split(sr.Set, ",")
+		keyVals = make(map[string]interface{}, 0)
+	)
+
+	for i, v := range ls {
+		key := strings.TrimSpace(strings.Split(v, "=")[0])
+		keyVals[key] = sr.SetPars[i]
+	}
+
+	return slf.DoUpdate(logc, keyVals, sr.Where, sr.WherePars...)
+}
+
 func (slf *Repo[T]) UpdateBy(logc *clog.Instance, set, condition string, pars ...interface{}) error {
 	var (
 		ls            = strings.Split(set, ",")
@@ -119,7 +133,7 @@ func (slf *Repo[T]) UpdateBy(logc *clog.Instance, set, condition string, pars ..
 		conditionPars = append(conditionPars, pars[i])
 	}
 
-	return slf.Update(logc, keyVals, condition, conditionPars...)
+	return slf.DoUpdate(logc, keyVals, condition, conditionPars...)
 }
 
 func (slf *Repo[T]) TxUpdateBy(logc *clog.Instance, tx abs.DbTx, set, condition string, pars ...interface{}) error {
@@ -141,7 +155,7 @@ func (slf *Repo[T]) TxUpdateBy(logc *clog.Instance, tx abs.DbTx, set, condition 
 	return slf.TxUpdate(logc, tx, keyVals, condition, conditionPars...)
 }
 
-func (slf *Repo[T]) Update(logc *clog.Instance, keyVals map[string]interface{}, whereQuery string, wherePars ...interface{}) error {
+func (slf *Repo[T]) DoUpdate(logc *clog.Instance, keyVals map[string]interface{}, whereQuery string, wherePars ...interface{}) error {
 	startAt := f9.TimeNow()
 	sql, dbHost, err := slf.doUpdate(nil, keyVals, whereQuery, wherePars...)
 
@@ -167,10 +181,21 @@ func (slf *Repo[T]) TxUpdate(logc *clog.Instance, tx abs.DbTx, keyVals map[strin
 	return err
 }
 
+func (slf *Repo[T]) Fetch(logc *clog.Instance, condition string, args ...interface{}) (*T, error) {
+	whereQuery := getWhereQuery(condition, args...)
+	endQuery := strings.TrimSpace(getEndQuery(args...) + " LIMIT 1")
+	return slf.GetData(logc, whereQuery, endQuery, getPars(args...)...)
+}
+
 func (slf *Repo[T]) GetBy(logc *clog.Instance, condition, end string, pars ...interface{}) (*T, error) {
 	whereQuery := f9.Ternary(condition == "", "", "WHERE "+condition)
 	endQuery := strings.TrimSpace(end + " LIMIT 1")
 	return slf.GetData(logc, whereQuery, endQuery, pars...)
+}
+
+func (slf *Repo[T]) Fetches(logc *clog.Instance, condition string, args ...interface{}) ([]T, error) {
+	whereQuery := getWhereQuery(condition, args...)
+	return slf.GetDatas(logc, whereQuery, getEndQuery(args...), getPars(args...)...)
 }
 
 func (slf *Repo[T]) GetsBy(logc *clog.Instance, condition, end string, pars ...interface{}) ([]T, error) {

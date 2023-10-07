@@ -13,7 +13,7 @@ import (
 
 func New() *Instance {
 	return &Instance{
-		UID:     p9.Util.GetID25(),
+		UID:     p9.Util.GetXID25(),
 		StartAt: f9.TimeNow(),
 	}
 }

@@ -39,9 +39,23 @@ type FuseContext interface {
 	SetCLog(logc *clog.Instance)
 	GetCLog() *clog.Instance
 
+	GetResCode() (int, string)
+	GetResObject() interface{}
+	SetResponse(code int, subCode string, obj interface{}) error
+	SR200OK(subCode string, obj interface{}) error
+	SR400BadRequest(subCode string, obj interface{}) error
+	SR401Unauthorized(subCode string, obj interface{}) error
+	SR403Forbidden(subCode string, obj interface{}) error
+	SR404NotFound(subCode string, obj interface{}) error
+	SR406NotAcceptable(subCode string, obj interface{}) error
+	SR428PreconditionRequired(subCode string, obj interface{}) error
+	SR500InternalServerError(subCode string, obj interface{}) error
+
 	RString(logc *clog.Instance, code int, data string) error
 	RJson(logc *clog.Instance, code int, data interface{}, opt ...FuseOpt) error
 	RJsonRaw(logc *clog.Instance, code int, data []byte) error
+
+	RXXX(logc *clog.Instance, code int, status string, data interface{}, opt ...FuseOpt) error
 	R200OK(logc *clog.Instance, data interface{}, opt ...FuseOpt) error
 	R400BadRequest(logc *clog.Instance, message string, opt ...FuseOpt) error
 	R401Unauthorized(logc *clog.Instance, message string, opt ...FuseOpt) error
@@ -63,18 +77,21 @@ type FuseContextRequest interface {
 }
 
 type FuseOpt struct {
-	code        int
-	Status      string
-	Message     string
-	Address     string
-	Error       error
-	MetaData    interface{}
-	Data        interface{}
-	NewMeta     map[string]interface{}
-	NewHeader   map[string]interface{}
-	LogMessage  string
-	LogData     string
-	LogDepthAdd int
+	code               int
+	SubCode            string
+	Status             string
+	Message            string
+	Address            string
+	Error              error
+	MetaData           interface{}
+	Data               interface{}
+	NewMeta            map[string]interface{}
+	NewHeader          map[string]interface{}
+	LogMessage         string
+	LogData            string
+	LogDepthAdd        int
+	JsonCustomOutput   bool
+	StringCustomOutput bool
 }
 
 type FuseRouter interface {
@@ -110,6 +127,7 @@ type FuseResponse struct {
 
 type FuseResponseMeta struct {
 	Code    int         `json:"code"`
+	SubCode string      `json:"subcode,omitempty"`
 	Status  string      `json:"status,omitempty"`
 	Message string      `json:"message,omitempty"`
 	Address string      `json:"address,omitempty"`
@@ -142,6 +160,10 @@ type srFuseContext struct {
 	authY     interface{}
 	authZ     interface{}
 	isAuthSet bool
+
+	resCode    int
+	resSubCode string
+	resObject  interface{}
 
 	logc              *clog.Instance
 	sendResponse      bool
