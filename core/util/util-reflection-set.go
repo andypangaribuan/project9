@@ -24,19 +24,26 @@ func (slf *srUtil) ReflectionSet(obj interface{}, bind map[string]interface{}) e
 	objVal = objVal.Elem()
 	objType := objVal.Type()
 
-	for i := 0; i < objType.NumField(); i++ {
-		rs := objType.Field(i)
-		rf := objVal.Field(i)
-		fieldName := rs.Name
+	if objVal.Kind() != reflect.Struct && objVal.Kind() == reflect.Ptr {
+		objVal = objVal.Elem()
+		objType = objVal.Type()
+	}
 
-		if bindValue, ok := bind[fieldName]; ok {
-			if !rf.IsValid() {
-				return fmt.Errorf("invalid field: %v", fieldName)
-			}
+	if objVal.Kind() == reflect.Struct {
+		for i := 0; i < objType.NumField(); i++ {
+			rs := objType.Field(i)
+			rf := objVal.Field(i)
+			fieldName := rs.Name
 
-			err := slf.reflectionSet(rs, rf, bindValue)
-			if err != nil {
-				return err
+			if bindValue, ok := bind[fieldName]; ok {
+				if !rf.IsValid() {
+					return fmt.Errorf("invalid field: %v", fieldName)
+				}
+
+				err := slf.reflectionSet(rs, rf, bindValue)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -53,13 +60,20 @@ func (slf *srUtil) ReflectionGet(obj interface{}, fieldName string) (interface{}
 	objVal = objVal.Elem()
 	objType := objVal.Type()
 
-	for i := 0; i < objType.NumField(); i++ {
-		rs := objType.Field(i)
-		rf := objVal.Field(i)
+	if objVal.Kind() != reflect.Struct && objVal.Kind() == reflect.Ptr {
+		objVal = objVal.Elem()
+		objType = objVal.Type()
+	}
 
-		if rs.Name == fieldName {
-			if rf.IsValid() {
-				return rf.Interface(), nil
+	if objVal.Kind() == reflect.Struct {
+		for i := 0; i < objType.NumField(); i++ {
+			rs := objType.Field(i)
+			rf := objVal.Field(i)
+
+			if rs.Name == fieldName {
+				if rf.IsValid() {
+					return rf.Interface(), nil
+				}
 			}
 		}
 	}

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/andypangaribuan/project9/p9"
-	"github.com/gojektech/heimdall/httpclient"
+	"github.com/gojek/heimdall/v7/httpclient"
 )
 
 func (slf *srHttpClient) Do(request *http.Request) (*http.Response, error) {

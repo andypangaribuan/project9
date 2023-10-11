@@ -249,6 +249,11 @@ func (slf *srAppEnv) IsProd() bool {
 	return val == "prod" || val == "production"
 }
 
+func (slf *srAppEnv) IsPreProd() bool {
+	val := slf.value()
+	return val == "pre-prod" || val == "pre-production"
+}
+
 func (slf *srAppEnv) IsStg() bool {
 	val := slf.value()
 	return val == "stg" || val == "staging"
@@ -262,4 +267,8 @@ func (slf *srAppEnv) IsDev() bool {
 func (slf *srAppEnv) IsSandbox() bool {
 	val := slf.value()
 	return val == "sbx" || val == "sandbox"
+}
+
+func (slf *srAppEnv) IsPPS() bool {
+	return slf.IsProd() || slf.IsPreProd() || slf.IsSandbox()
 }

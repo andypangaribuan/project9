@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (slf *srHttp) Get(url string, header map[string]interface{}, params map[string]interface{}, skipSecurityChecking bool, timeout *time.Duration) ([]byte, int, error) {
+func (slf *srHttp) Get(url string, header map[string]interface{}, params map[string]interface{}, skipSecurityChecking bool, timeout *time.Duration) (result []byte, code int, err error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, -1, err

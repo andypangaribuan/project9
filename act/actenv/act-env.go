@@ -7,7 +7,9 @@ package actenv
 
 type AppEnv interface {
 	IsProd() bool
+	IsPreProd() bool
 	IsStg() bool
 	IsDev() bool
 	IsSandbox() bool
+	IsPPS() bool
 }

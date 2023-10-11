@@ -19,7 +19,7 @@ import (
 
 	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/p9"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/matoous/go-nanoid/v2"
 )
 
@@ -158,11 +158,11 @@ func (slf *srUtil) CreateJwtTokenWithPassword(subject, id string, expiresAt, iss
 }
 
 func (*srUtil) createJwtToken(key *rsa.PrivateKey, subject, id string, expiresAt, issuedAt, notBefore time.Time) (string, error) {
-	claims := jwt.StandardClaims{
-		ExpiresAt: expiresAt.Unix(),
-		Id:        id,
-		IssuedAt:  issuedAt.Unix(),
-		NotBefore: notBefore.Unix(),
+	claims := jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(expiresAt),
+		ID:        id,
+		IssuedAt:  jwt.NewNumericDate(issuedAt),
+		NotBefore: jwt.NewNumericDate(notBefore),
 		Subject:   subject,
 	}
 
@@ -170,18 +170,22 @@ func (*srUtil) createJwtToken(key *rsa.PrivateKey, subject, id string, expiresAt
 	return token.SignedString(key)
 }
 
-func (*srUtil) GetJwtClaims(token string, publicKey []byte) (*jwt.StandardClaims, bool, error) {
+func (*srUtil) GetJwtClaims(token string, publicKey []byte) (*jwt.RegisteredClaims, bool, error) {
 	if len(token) > 7 && token[:7] == "Bearer " {
 		token = token[7:]
 	}
 
-	claims := &jwt.StandardClaims{}
+	claims := &jwt.RegisteredClaims{}
 
 	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return jwt.ParseRSAPublicKeyFromPEM(publicKey)
 	})
 
-	if err, ok := err.(*jwt.ValidationError); ok {
+	// if err, ok := err.(*jwt.ValidationError); ok {
+	// 	return claims, true, err
+	// }
+
+	if err != nil {
 		return claims, true, err
 	}
 

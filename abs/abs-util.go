@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/andypangaribuan/project9/act/actenv"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Util interface {
@@ -30,7 +30,7 @@ type Util interface {
 	BuildJwtTokenWithPassword(privateKey []byte, password string, claims jwt.Claims) (string, error)
 	CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte) (string, error)
 	CreateJwtTokenWithPassword(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte, password string) (string, error)
-	GetJwtClaims(token string, publicKey []byte) (*jwt.StandardClaims, bool, error)
+	GetJwtClaims(token string, publicKey []byte) (*jwt.RegisteredClaims, bool, error)
 	Base64Encode(data []byte) string
 	Base64Decode(value string) ([]byte, error)
 	GetExecutionInfo(depth int) (execFunc string, execPath string)

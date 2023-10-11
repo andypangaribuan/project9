@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (slf *srHttp) Post(url string, header map[string]interface{}, payload map[string]interface{}, skipSecurityChecking bool, timeout *time.Duration) ([]byte, int, error) {
+func (slf *srHttp) Post(url string, header map[string]interface{}, payload map[string]interface{}, skipSecurityChecking bool, timeout *time.Duration) (result []byte, code int, err error) {
 	payloadData := make([]byte, 0)
 
 	if len(payload) > 0 {
@@ -34,7 +34,7 @@ func (slf *srHttp) Post(url string, header map[string]interface{}, payload map[s
 	return slf.PostData(url, header, payloadData, skipSecurityChecking, timeout)
 }
 
-func (slf *srHttp) PostData(url string, header map[string]interface{}, data []byte, skipSecurityChecking bool, timeout *time.Duration) ([]byte, int, error) {
+func (slf *srHttp) PostData(url string, header map[string]interface{}, data []byte, skipSecurityChecking bool, timeout *time.Duration) (result []byte, code int, err error) {
 	var payload *bytes.Buffer
 	if len(data) > 0 {
 		payload = bytes.NewBuffer(data)

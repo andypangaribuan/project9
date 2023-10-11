@@ -197,7 +197,7 @@ func (slf *srFuseContext) Parser(logc *clog.Instance, header, body interface{}) 
 		default:
 			v, err := p9.Util.ReflectionGet(header, "RequestHeader")
 			if err == nil && v != nil {
-				if h, ok := v.(model.RequestHeader); ok {
+				if h, ok := v.(model.RequestHeader); ok && h.RFTimeRaw != "" {
 					tm, err := time.Parse(time.RFC3339, h.RFTimeRaw)
 					if err != nil {
 						rfc3339 := "2006-01-02 15:04:05Z07:00"
