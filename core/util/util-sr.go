@@ -19,6 +19,14 @@ type srAppEnv struct {
 }
 
 type srMutex struct {
+	sr   *srUtil
 	mux  lock.Mutex
 	name string
+}
+
+type srNMutex struct {
+	sr   *srUtil
+	mux  lock.Mutex
+	max  int
+	keys map[string]interface{}
 }

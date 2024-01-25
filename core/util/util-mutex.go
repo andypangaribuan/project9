@@ -9,18 +9,15 @@ package util
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/andypangaribuan/project9/abs"
 	"github.com/viney-shih/go-lock"
 )
 
-const min int64 = 10
-const max int64 = 500
-
-func (*srUtil) NewMutex(name string) abs.UtilMutex {
+func (slf *srUtil) NewMutex(name string) abs.UtilMutex {
 	return &srMutex{
+		sr:   slf,
 		mux:  lock.NewChanMutex(),
 		name: name,
 	}
@@ -30,8 +27,8 @@ func (slf *srMutex) Sleep(duration ...time.Duration) {
 	if len(duration) > 0 {
 		time.Sleep(duration[0])
 	} else {
-		x := rand.Int63n(max-min) + min
-		time.Sleep(time.Microsecond * time.Duration(x))
+		duration := slf.sr.GetRandomDuration(1, 500, time.Microsecond)
+		time.Sleep(duration)
 	}
 }
 

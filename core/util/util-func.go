@@ -119,6 +119,11 @@ func (*srUtil) GetRandomAlphabetNumber(length int) string {
 	return val
 }
 
+func (*srUtil) GetRandomDuration(min int, max int, base time.Duration) time.Duration {
+	x := rand.Int63n(int64(max)-int64(min)) + int64(min)
+	return base * time.Duration(x)
+}
+
 func (slf *srUtil) BuildJwtToken(privateKey []byte, claims jwt.Claims) (string, error) {
 	key, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
 	if err != nil {

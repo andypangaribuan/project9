@@ -26,6 +26,7 @@ type Util interface {
 	GetRandomAlphabetLower(length int) string
 	GetRandomAlphabetUpper(length int) string
 	GetRandomAlphabetNumber(length int) string
+	GetRandomDuration(min int, max int, base time.Duration) time.Duration
 	BuildJwtToken(privateKey []byte, claims jwt.Claims) (string, error)
 	BuildJwtTokenWithPassword(privateKey []byte, password string, claims jwt.Claims) (string, error)
 	CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte) (string, error)
@@ -45,7 +46,9 @@ type Util interface {
 	ReflectionGet(obj interface{}, fieldName string) (interface{}, error)
 
 	ConcurrentProcess(total, max int, fn func(index int))
+	UniqueConcurrentProcess(total, max int, key func(index int) *string, fn func(index int))
 	NewMutex(name string) UtilMutex
+	NewNMutex(max int) UtilNMutex
 }
 
 type UtilEnv interface {
@@ -84,4 +87,9 @@ type UtilMutex interface {
 	Exec(timeout *time.Duration, fn func()) (executed bool, panicErr error)
 	FExec(timeoutLock *time.Duration, timeoutFunc time.Duration, fn func()) (executed bool, isTimeout bool, panicErr error)
 	Func(timeout time.Duration, fn func()) (isTimeout bool, panicErr error)
+}
+
+type UtilNMutex interface {
+	Lock(key string, totalTry ...int) (locked bool)
+	Unlock(key string)
 }

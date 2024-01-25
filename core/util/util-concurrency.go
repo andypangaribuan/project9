@@ -53,7 +53,6 @@ func (slf *srConcurrency) start() {
 	for {
 		time.Sleep(time.Millisecond * 10)
 		if slf.active == 0 {
-			println("n: ", n)
 			break
 		}
 	}

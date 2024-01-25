@@ -95,6 +95,7 @@ type FuseOpt struct {
 }
 
 type FuseRouter interface {
+	Unrouted(handler func(ctx FuseContext, method, path, url string) error)
 	Single(path string, handlers ...func(sc FuseContext) error)
 	Group(endpoints map[string][]func(sc FuseContext) error)
 }

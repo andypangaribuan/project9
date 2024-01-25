@@ -7,10 +7,39 @@
 package server
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+func (slf *srFuseRouter) Unrouted(handler func(ctx FuseContext, method, path, url string) error) {
+	slf.fiberApp.Use(func(c *fiber.Ctx) error {
+		err := c.Next()
+
+		var fe *fiber.Error
+		if errors.As(err, &fe) && fe.Code == 404 {
+			url := c.OriginalURL()
+			path := c.Path()
+			method := ""
+			if c.Route() != nil {
+				method = c.Route().Method
+			}
+
+			if fe.Message == fmt.Sprintf("Cannot %v %v", method, path) {
+				ctx := &srFuseContext{fiberCtx: c, path: path, sendResponse: true}
+				ctx.reqCtx = &srFuseContextRequest{
+					fuseCtx: ctx,
+				}
+
+				return handler(ctx, method, path, url)
+			}
+		}
+
+		return err
+	})
+}
 
 func (slf *srFuseRouter) Single(path string, handlers ...func(sc FuseContext) error) {
 	if len(handlers) < 1 && len(handlers) > 2 {
