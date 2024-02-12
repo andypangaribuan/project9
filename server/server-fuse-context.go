@@ -464,6 +464,10 @@ func (slf *srFuseContext) RJsonRaw(logc *clog.Instance, code int, data []byte) e
 	return slf.sendRawB(logc, code, f9.ToJsonRaw(data))
 }
 
+func (slf *srFuseContext) Redirect(logc *clog.Instance, code int, url string) error {
+	return slf.sendRawA(logc, code, url)
+}
+
 func (slf *srFuseContext) RXXX(logc *clog.Instance, code int, status string, data interface{}, opt ...FuseOpt) error {
 	fo := FuseOpt{
 		code:   code,
@@ -643,6 +647,10 @@ func (slf *srFuseContext) sendRawA(logc *clog.Instance, code int, data string) e
 	switch {
 	case slf.fiberCtx != nil:
 		saveLog(code, data)
+		codeOne := fmt.Sprintf("%v", code)[:1]
+		if codeOne == "3" {
+			return slf.fiberCtx.Redirect(data, code)
+		}
 		return slf.fiberCtx.Status(code).SendString(data)
 
 	case slf.grpcCtx != nil:

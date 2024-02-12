@@ -55,6 +55,7 @@ type FuseContext interface {
 	RJson(logc *clog.Instance, code int, data interface{}, opt ...FuseOpt) error
 	RJsonRaw(logc *clog.Instance, code int, data []byte) error
 
+	Redirect(logc *clog.Instance, code int, url string) error
 	RXXX(logc *clog.Instance, code int, status string, data interface{}, opt ...FuseOpt) error
 	R200OK(logc *clog.Instance, data interface{}, opt ...FuseOpt) error
 	R400BadRequest(logc *clog.Instance, message string, opt ...FuseOpt) error
