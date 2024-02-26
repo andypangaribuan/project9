@@ -11,13 +11,14 @@ import (
 )
 
 type Instance struct {
-	UID             string
-	SvcParent       string
-	UserId          *string
-	PartnerId       *string
-	XID             *string
-	EndpointVersion string
-	StartAt         time.Time
+	UID                 string
+	SvcParent           string
+	UserId              *string
+	PartnerId           *string
+	XID                 *string
+	EndpointVersion     string
+	StartAt             time.Time
+	ReqBodySaveExcluded []string
 }
 
 type SendServiceModel struct {

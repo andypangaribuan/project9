@@ -75,3 +75,23 @@ func GetMapStructPbValue(m map[string]interface{}) map[string]*structpb.Value {
 
 	return dictio
 }
+
+func GetValueFromKey[K comparable, V any](defaultValue V, kvs map[K]V, key K) V {
+	val, ok := kvs[key]
+	if !ok {
+		return defaultValue
+	}
+	return val
+}
+
+func PtrGetValueFromKey[K comparable, V any](defaultValue V, kvs map[K]V, key *K) V {
+	if key == nil {
+		return defaultValue
+	}
+
+	val, ok := kvs[*key]
+	if !ok {
+		return defaultValue
+	}
+	return val
+}

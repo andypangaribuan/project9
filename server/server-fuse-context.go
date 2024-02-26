@@ -609,7 +609,7 @@ func (slf *srFuseContext) sendRawA(logc *clog.Instance, code int, data string) e
 			ExecPath:   &execPath,
 			Message:    message,
 			ReqHeader:  reqHeader,
-			ReqBody:    reqBody,
+			ReqBody:    slf.removeExcludedFieldReqBody(logc, reqBody),
 			ReqParam:   reqParam,
 			ResData:    resData,
 			ResCode:    &resCode,
@@ -708,7 +708,7 @@ func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface
 			ExecPath:   &execPath,
 			Message:    message,
 			ReqHeader:  reqHeader,
-			ReqBody:    reqBody,
+			ReqBody:    slf.removeExcludedFieldReqBody(logc, reqBody),
 			ReqParam:   reqParam,
 			ResData:    resData,
 			ResCode:    &resCode,
@@ -875,7 +875,7 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 			ExecPath:   &execPath,
 			Message:    message,
 			ReqHeader:  reqHeader,
-			ReqBody:    reqBody,
+			ReqBody:    slf.removeExcludedFieldReqBody(logc, reqBody),
 			ReqParam:   reqParam,
 			ResData:    resData,
 			ResCode:    &resCode,
@@ -1028,6 +1028,44 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 
 func (slf *srFuseContext) grpcSend(err error) (*grf.Response, error) {
 	return slf.grpcCtx.response, err
+}
+
+func (slf *srFuseContext) removeExcludedFieldReqBody(logc *clog.Instance, jsonReqBody *string) *string {
+	if logc != nil && len(logc.ReqBodySaveExcluded) > 0 && jsonReqBody != nil && len(*jsonReqBody) > 0 {
+		out := make(map[string]interface{}, 0)
+		err := p9.Json.Decode(*jsonReqBody, &out)
+		if err == nil {
+			haveDeleted := false
+
+			for _, field := range logc.ReqBodySaveExcluded {
+				data := out[field]
+				if data != nil {
+					switch val := data.(type) {
+					case *string:
+						if len(*val) > 0 {
+							haveDeleted = true
+							delete(out, field)
+						}
+
+					case string:
+						if len(val) > 0 {
+							haveDeleted = true
+							delete(out, field)
+						}
+					}
+				}
+			}
+
+			if haveDeleted {
+				jsonBody, err := p9.Json.Encode(out)
+				if err == nil {
+					return &jsonBody
+				}
+			}
+		}
+	}
+
+	return jsonReqBody
 }
 
 //endregion
