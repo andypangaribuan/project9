@@ -10,6 +10,7 @@ import (
 	"errors"
 	"log"
 	"reflect"
+	"runtime/debug"
 
 	"github.com/andypangaribuan/project9/f9"
 )
@@ -17,7 +18,8 @@ import (
 func Compare(v1 interface{}, operation string, v2 interface{}) bool {
 	v, err := SCompare(v1, operation, v2)
 	if err != nil {
-		log.Fatalf("error: %+v\n", err)
+		debug.PrintStack()
+		log.Panicf("error: %+v\nv1: %v, op: %v, v2: %v\n", err, v1, operation, v2)
 	}
 
 	return v

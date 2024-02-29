@@ -9,6 +9,7 @@ package fc
 import (
 	"errors"
 	"log"
+	"runtime/debug"
 
 	"github.com/shopspring/decimal"
 )
@@ -17,7 +18,10 @@ import (
 func Cal(val ...interface{}) FCT {
 	fcv, err := SCal(val...)
 	if err != nil {
-		log.Fatalf("error: %+v\n", err)
+		debug.PrintStack()
+		objects := []interface{}{err}
+		objects = append(objects, val...)
+		log.Panicf("error: %+v\nval: %v", objects...)
 	}
 
 	return fcv

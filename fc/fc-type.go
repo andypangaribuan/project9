@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
@@ -27,7 +28,8 @@ type FCT struct {
 func New(val interface{}) FCT {
 	fv, err := SNew(val)
 	if err != nil {
-		log.Fatalf("error: %+v\n", err)
+		debug.PrintStack()
+		log.Panicf("error: %+v\nval: %v\n", err, val)
 	}
 
 	return fv
@@ -188,7 +190,8 @@ func (slf FCT) Floor(places ...int) FCT {
 				div = fmt.Sprintf("%v0", div)
 				v, ok := new(big.Int).SetString(div, 10)
 				if !ok {
-					log.Fatalf("error when converting to big.int, value: %v\n", div)
+					debug.PrintStack()
+					log.Panicf("error when converting to big.int, value: %v\n", div)
 				}
 
 				thousandDivDecimal = v
@@ -265,7 +268,8 @@ func (slf FCT) Ceil(places ...int) FCT {
 				div = fmt.Sprintf("%v0", div)
 				v, ok := new(big.Int).SetString(div, 10)
 				if !ok {
-					log.Fatalf("error when converting to big.int, value: %v\n", div)
+					debug.PrintStack()
+					log.Panicf("error when converting to big.int, value: %v\n", div)
 				}
 
 				thousandDivDecimal = v
