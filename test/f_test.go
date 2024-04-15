@@ -60,9 +60,10 @@ func TestXID(t *testing.T) {
 func TestCIDLv1(t *testing.T) {
 	// total: 52 item
 	var (
-		rl = rune('a')
-		ru = rune('A')
-		ch = make([]string, 0)
+		tmStart = f9.TimeNow()
+		rl      = rune('a')
+		ru      = rune('A')
+		ch      = make([]string, 0)
 	)
 
 	for i := 0; i < 26; i++ {
@@ -75,19 +76,24 @@ func TestCIDLv1(t *testing.T) {
 		)
 	}
 
+	tmFinish := f9.TimeNow()
 	checkUnique(ch)
 
 	for i, v := range ch {
 		fmt.Printf("%v: %v\n", i+1, v)
 	}
+
+	ms := tmFinish.Sub(tmStart).Milliseconds()
+	fmt.Printf("sub ms: %v\n", ms)
 }
 
 func TestCIDLv2(t *testing.T) {
 	// total: 2.704 item
 	var (
-		rl = rune('a')
-		ru = rune('A')
-		ch = make([]string, 0)
+		tmStart = f9.TimeNow()
+		rl      = rune('a')
+		ru      = rune('A')
+		ch      = make([]string, 0)
 	)
 
 	for i := 0; i < 26; i++ {
@@ -107,23 +113,27 @@ func TestCIDLv2(t *testing.T) {
 		}
 	}
 
+	tmFinish := f9.TimeNow()
 	checkUnique(ch)
 
 	for i, v := range ch {
 		fmt.Printf("%v: %v\n", i+1, v)
 	}
+
+	ms := tmFinish.Sub(tmStart).Milliseconds()
+	fmt.Printf("sub ms: %v\n", ms)
 }
 
 func TestCIDLv3(t *testing.T) {
 	// total: 140.608 item
-	// sub ms: 10
+	// sub ms: 11
 	var (
-		rl = rune('a')
-		ru = rune('A')
-		ch = make([]string, 0)
+		tmStart = f9.TimeNow()
+		rl      = rune('a')
+		ru      = rune('A')
+		ch      = make([]string, 0)
 	)
 
-	tmStart := f9.TimeNow()
 	for i := 0; i < 26; i++ {
 		l1 := string(rl + int32(i))
 		u1 := string(ru + int32(i))
@@ -149,8 +159,8 @@ func TestCIDLv3(t *testing.T) {
 			}
 		}
 	}
-	tmFinish := f9.TimeNow()
 
+	tmFinish := f9.TimeNow()
 	checkUnique(ch)
 	for i, v := range ch {
 		fmt.Printf("%v: %v\n", i+1, v)
@@ -162,10 +172,12 @@ func TestCIDLv3(t *testing.T) {
 
 func TestCIDLv4(t *testing.T) {
 	// total: 7.311.616 item
+	// sub ms: 1101
 	var (
-		rl = rune('a')
-		ru = rune('A')
-		ch = make([]string, 0)
+		tmStart = f9.TimeNow()
+		rl      = rune('a')
+		ru      = rune('A')
+		ch      = make([]string, 0)
 	)
 
 	for i := 0; i < 26; i++ {
@@ -207,11 +219,16 @@ func TestCIDLv4(t *testing.T) {
 		}
 	}
 
+	tmFinish := f9.TimeNow()
 	checkUnique(ch)
 
-	for i, v := range ch {
-		fmt.Printf("%v: %v\n", i+1, v)
-	}
+	// for i, v := range ch {
+	// 	fmt.Printf("%v: %v\n", i+1, v)
+	// }
+
+	fmt.Printf("length: %v\n", len(ch))
+	ms := tmFinish.Sub(tmStart).Milliseconds()
+	fmt.Printf("sub ms: %v\n", ms)
 }
 
 func TestCIDN1(t *testing.T) {
@@ -227,8 +244,9 @@ func TestCIDN1(t *testing.T) {
 func TestCIDN2(t *testing.T) {
 	// total: 3.844 item
 	var (
-		cn = getCN()
-		ch = make([]string, 0)
+		tmStart = f9.TimeNow()
+		cn      = getCN()
+		ch      = make([]string, 0)
 	)
 
 	for _, v1 := range cn {
@@ -237,15 +255,20 @@ func TestCIDN2(t *testing.T) {
 		}
 	}
 
+	tmFinish := f9.TimeNow()
 	checkUnique(ch)
+
 	for i, v := range ch {
 		fmt.Printf("%v: %v\n", i+1, v)
 	}
+
+	ms := tmFinish.Sub(tmStart).Milliseconds()
+	fmt.Printf("sub ms: %v\n", ms)
 }
 
 func TestCIDN3(t *testing.T) {
 	// total: 238.328 item
-	// sub ms: 22
+	// sub ms: 25
 	var (
 		cn = getCN()
 		ch = make([]string, 0)
@@ -272,13 +295,13 @@ func TestCIDN3(t *testing.T) {
 
 func TestCIDN4(t *testing.T) {
 	// total: 14.776.336 item
-	// sub ms: 2006
+	// sub ms: 2117
 	var (
-		cn = getCN()
-		ch = make([]string, 0)
+		tmStart = f9.TimeNow()
+		cn      = getCN()
+		ch      = make([]string, 0)
 	)
 
-	tmStart := f9.TimeNow()
 	for _, v1 := range cn {
 		for _, v2 := range cn {
 			for _, v3 := range cn {
@@ -288,13 +311,14 @@ func TestCIDN4(t *testing.T) {
 			}
 		}
 	}
+
 	tmFinish := f9.TimeNow()
-
 	checkUnique(ch)
-	for i, v := range ch {
-		fmt.Printf("%v: %v\n", i+1, v)
-	}
 
+	// for i, v := range ch {
+	// 	fmt.Printf("%v: %v\n", i+1, v)
+	// }
+	fmt.Printf("length: %v\n", len(ch))
 	ms := tmFinish.Sub(tmStart).Milliseconds()
 	fmt.Printf("sub ms: %v\n", ms)
 }
