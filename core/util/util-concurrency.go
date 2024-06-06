@@ -18,10 +18,10 @@ type srConcurrency struct {
 	max    int
 	total  int
 	active int
-	fn     func(index int)
+	fn     func(index int, activeProcess int)
 }
 
-func (*srUtil) ConcurrentProcess(total, max int, fn func(index int)) {
+func (*srUtil) ConcurrentProcess(total, max int, fn func(index int, activeProcess int)) {
 	c := &srConcurrency{
 		active: 0,
 		total:  total,
@@ -45,9 +45,9 @@ func (slf *srConcurrency) start() {
 		}
 
 		n++
-		slf.addActive(1)
+		activeProcess := slf.addActive(1)
 		idx := f9.Ptr(i)
-		go slf.execute(*idx)
+		go slf.execute(*idx, activeProcess)
 	}
 
 	for {
@@ -58,13 +58,14 @@ func (slf *srConcurrency) start() {
 	}
 }
 
-func (slf *srConcurrency) execute(index int) {
-	slf.fn(index)
+func (slf *srConcurrency) execute(index int, activeProcess int) {
+	slf.fn(index, activeProcess)
 	slf.addActive(-1)
 }
 
-func (slf *srConcurrency) addActive(add int) {
+func (slf *srConcurrency) addActive(add int) int {
 	slf.mx.Lock()
 	defer slf.mx.Unlock()
 	slf.active += add
+	return slf.active
 }
