@@ -45,7 +45,7 @@ type Util interface {
 	ReflectionSet(obj interface{}, bind map[string]interface{}) error
 	ReflectionGet(obj interface{}, fieldName string) (interface{}, error)
 
-	ConcurrentProcess(total, max int, fn func(index int))
+	ConcurrentProcess(total, max int, fn func(index int, activeProcess int))
 	UniqueConcurrentProcess(total, max int, key func(index int) *string, fn func(index int))
 	NewMutex(name string) UtilMutex
 	NewNMutex(max int) UtilNMutex
