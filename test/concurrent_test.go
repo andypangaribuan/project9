@@ -16,22 +16,33 @@ import (
 )
 
 func TestUniqueConcurrentProcess(t *testing.T) {
+	type model struct {
+		id  string
+		key string
+	}
+
 	var (
-		trx   = p9.Util.NewNMutex(4)
-		ls    = []string{"1", "2", "3", "1", "4"}
+		trx = p9.Util.NewNMutex(4)
+		ls  = []model{
+			{id: "a", key: "1"},
+			{id: "b", key: "2"},
+			{id: "c", key: "3"},
+			{id: "d", key: "1"},
+			{id: "e", key: "5"},
+		}
 		total = len(ls)
 		max   = 4
 		key   = func(index int) *string {
-			id := ls[index]
-			locked := trx.Lock(id, 3)
-			return f9.Ternary(locked, &id, nil)
+			m := ls[index]
+			locked := trx.Lock(m.key, 3)
+			return f9.Ternary(locked, &m.key, nil)
 		}
 		fn = func(index int) {
-			id := ls[index]
-			log.Println("start:", id)
-			defer func ()  {
-				trx.Unlock(id)
-				log.Println("done:", id)
+			m := ls[index]
+			log.Println("start:", m.id, m.key)
+			defer func() {
+				trx.Unlock(m.key)
+				log.Println("done:", m.id, m.key)
 			}()
 
 			time.Sleep(time.Second * 3)
