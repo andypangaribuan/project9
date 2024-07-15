@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/andypangaribuan/project9/f9"
+	// "github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/p9"
 )
 
@@ -22,7 +22,7 @@ func TestUniqueConcurrentProcess(t *testing.T) {
 	}
 
 	var (
-		trx = p9.Util.NewNMutex(4)
+		// trx = p9.Util.NewNMutex(4)
 		ls  = []model{
 			{id: "a", key: "1"},
 			{id: "b", key: "2"},
@@ -31,17 +31,18 @@ func TestUniqueConcurrentProcess(t *testing.T) {
 			{id: "e", key: "5"},
 		}
 		total = len(ls)
-		max   = 4
+		max   = 5
 		key   = func(index int) *string {
 			m := ls[index]
-			locked := trx.Lock(m.key, 3)
-			return f9.Ternary(locked, &m.key, nil)
+			// locked := trx.Lock(m.key, 3)
+			// return f9.Ternary(locked, &m.key, nil)
+			return &m.key
 		}
 		fn = func(index int) {
 			m := ls[index]
 			log.Println("start:", m.id, m.key)
 			defer func() {
-				trx.Unlock(m.key)
+				// trx.Unlock(m.key)
 				log.Println("done:", m.id, m.key)
 			}()
 
