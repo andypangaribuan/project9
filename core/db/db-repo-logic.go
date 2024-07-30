@@ -153,7 +153,7 @@ func (slf *Repo[T]) goGetDatas(tx abs.DbTx, whereQuery string, endQuery string, 
 			dbe.Host += _dbe.Host
 		}
 
-		if err != nil || len(models) > 0 {
+		if !slf.canRetry(rw_force, err, len(models)) {
 			break
 		}
 	}
@@ -239,7 +239,7 @@ func (slf *Repo[T]) doSelect(tx abs.DbTx, query string, pars ...interface{}) (*s
 			dbe.Host += _dbe.Host
 		}
 
-		if err != nil || len(models) > 0 {
+		if !slf.canRetry(rw_force, err, len(models)) {
 			break
 		}
 	}
@@ -314,7 +314,7 @@ func (slf *Repo[T]) doCount(tx abs.DbTx, whereQuery, endQuery string, wherePars 
 			dbe.Host += _dbe.Host
 		}
 
-		if err != nil || count > 0 {
+		if !slf.canRetry(rw_force, err, count) {
 			break
 		}
 	}
@@ -384,7 +384,12 @@ func (slf *Repo[T]) doSum(tx abs.DbTx, column, whereQuery, endQuery string, wher
 			dbe.Host += _dbe.Host
 		}
 
-		if err != nil || fc.Compare(sum, ">", 0) {
+		tempLength := 0
+		if fc.Compare(sum, ">", 0) {
+			tempLength = 1
+		}
+
+		if !slf.canRetry(rw_force, err, tempLength) {
 			break
 		}
 	}
@@ -473,7 +478,12 @@ func (slf *Repo[T]) doRawFCT(tx abs.DbTx, query string, pars ...interface{}) (*s
 			dbe.Host += _dbe.Host
 		}
 
-		if err != nil || fc.Compare(val, ">", 0) {
+		tempLength := 0
+		if fc.Compare(val, ">", 0) {
+			tempLength = 1
+		}
+
+		if !slf.canRetry(rw_force, err, tempLength) {
 			break
 		}
 	}
@@ -555,6 +565,22 @@ func (slf *Repo[T]) doExecute(tx abs.DbTx, sqlQuery string, sqlPars ...interface
 
 	dbHost, err := slf.DbInstance.Execute(sql.query, sql.pars...)
 	return sql, dbHost, err
+}
+
+func (slf *Repo[T]) canRetry(rw_force bool, err error, itemLength int) bool {
+	if rw_force {
+		return false
+	}
+
+	if err != nil && strings.Contains(err.Error(), "canceling statement due to conflict with recovery") {
+		return true
+	}
+
+	if err == nil && itemLength == 0 {
+		return true
+	}
+
+	return false
 }
 
 func sendDbq(logc clog.Instance, sqlQuery string, sqlPars []interface{}, execFunc, execPath string, startAt time.Time, dbe *model.DbExec, err error) {

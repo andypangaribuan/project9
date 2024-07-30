@@ -9,6 +9,7 @@ import (
 	"errors"
 	"log"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -57,6 +58,18 @@ func (slf *pqInstance) getROInstance(rw_force ...bool) (*srConnection, *sqlx.DB,
 	}
 
 	return slf.connRO, instance, dbHost, err
+}
+
+func (slf *pqInstance) canRetry(rw_force bool, err error) bool {
+	if rw_force {
+		return false
+	}
+
+	if err != nil && strings.Contains(err.Error(), "canceling statement due to conflict with recovery") {
+		return true
+	}
+
+	return false
 }
 
 func (slf *pqInstance) Ping() error {
@@ -135,7 +148,7 @@ func (slf *pqInstance) Select(out interface{}, sqlQuery string, sqlPars ...inter
 		)
 
 		unsafe, dbHost, err = slf.DirectSelect(rw_force, out, sqlQuery, sqlPars...)
-		if err != nil {
+		if err != nil && !slf.canRetry(rw_force, err) {
 			return err
 		}
 
