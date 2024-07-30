@@ -572,8 +572,11 @@ func (slf *Repo[T]) canRetry(rw_force bool, err error, itemLength int) bool {
 		return false
 	}
 
-	if err != nil && strings.Contains(err.Error(), "canceling statement due to conflict with recovery") {
-		return true
+	if err != nil {
+		if strings.Contains(err.Error(), "canceling statement due to conflict with recovery") ||
+			strings.Contains(err.Error(), "unexpected message 'E'; expected ReadyForQuery") {
+			return true
+		}
 	}
 
 	if err == nil && itemLength == 0 {
