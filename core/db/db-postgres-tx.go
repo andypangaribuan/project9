@@ -11,6 +11,8 @@ import (
 	"log"
 	"math/rand"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 const min int64 = 10
@@ -27,6 +29,11 @@ func (slf *pqInstanceTx) Commit() (err error) {
 
 	err = slf.tx.Commit()
 	slf.isCommit = err == nil
+
+	if err != nil {
+		err = errors.WithStack(err)
+	}
+
 	return
 }
 
@@ -71,6 +78,10 @@ func (slf *pqInstanceTx) Rollback() (err error) {
 	}
 
 	slf.isRollback = err == nil
+	if err != nil {
+		err = errors.WithStack(err)
+	}
+
 	return
 }
 

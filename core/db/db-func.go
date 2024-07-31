@@ -15,6 +15,7 @@ import (
 	"github.com/andypangaribuan/project9/f9"
 	"github.com/andypangaribuan/project9/model"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 func (*srDb) NewPostgresInstance(host string, port int, dbName, username, password string, schema *string, config *model.DbConfig, autoRebind, unsafeCompatibility bool, applicationName string, printSql bool, printUnsafeError bool) abs.DbPostgresInstance {
@@ -88,6 +89,10 @@ func getConnection(conn *srConnection) (*sqlx.DB, string, error) {
 		err = instance.Ping()
 	}
 
+	if err != nil {
+		err = errors.WithStack(err)
+	}
+
 	return instance, conn.host, err
 }
 
@@ -118,22 +123,32 @@ func execute(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interf
 		case *pqInstanceTx:
 			stmt, err := v.tx.Prepare(sqlQuery)
 			if err != nil {
+				err = errors.WithStack(err)
 				return nil, conn.host, err
 			}
 			defer stmt.Close()
 
 			res, err := stmt.Exec(sqlPars...)
+			if err != nil {
+				err = errors.WithStack(err)
+			}
+
 			return res, conn.host, err
 		}
 	}
 
 	stmt, err := conn.instance.Prepare(sqlQuery)
 	if err != nil {
+		err = errors.WithStack(err)
 		return nil, conn.host, err
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(sqlPars...)
+	if err != nil {
+		err = errors.WithStack(err)
+	}
+
 	return res, conn.host, err
 }
 
@@ -147,6 +162,7 @@ func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...int
 		case *pqInstanceTx:
 			stmt, err := v.tx.Prepare(sqlQuery)
 			if err != nil {
+				err = errors.WithStack(err)
 				return nil, conn.host, err
 			}
 			defer stmt.Close()
@@ -154,6 +170,7 @@ func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...int
 			var id *int64
 			err = stmt.QueryRow(sqlPars...).Scan(&id)
 			if err != nil {
+				err = errors.WithStack(err)
 				return nil, conn.host, err
 			}
 
@@ -163,6 +180,7 @@ func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...int
 
 	stmt, err := conn.instance.Prepare(sqlQuery)
 	if err != nil {
+		err = errors.WithStack(err)
 		return nil, conn.host, err
 	}
 	defer stmt.Close()
@@ -170,6 +188,7 @@ func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...int
 	var id *int64
 	err = stmt.QueryRow(sqlPars...).Scan(&id)
 	if err != nil {
+		err = errors.WithStack(err)
 		return nil, conn.host, err
 	}
 

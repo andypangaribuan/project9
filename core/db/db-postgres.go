@@ -6,7 +6,7 @@
 package db
 
 import (
-	"errors"
+	"fmt"
 	"log"
 	"reflect"
 	"strings"
@@ -19,6 +19,7 @@ import (
 	"github.com/andypangaribuan/project9/p9"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 var locking sync.Mutex
@@ -81,6 +82,10 @@ func (slf *pqInstance) Ping() error {
 		err = instance.Ping()
 	}
 
+	if err != nil {
+		err = errors.WithStack(err)
+	}
+
 	return err
 }
 
@@ -88,6 +93,10 @@ func (slf *pqInstance) PingRead() error {
 	_, instance, _, err := slf.getROInstance()
 	if err == nil {
 		err = instance.Ping()
+	}
+
+	if err != nil {
+		err = errors.WithStack(err)
 	}
 
 	return err
@@ -116,7 +125,6 @@ func (slf *pqInstance) ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int
 	startTime := f9.TimeNow()
 	rid, dbHost, err := executeRID(conn, nil, query, pars...)
 	printSql(conn, startTime, query, pars...)
-
 	return rid, dbHost, err
 }
 
@@ -190,19 +198,27 @@ func (slf *pqInstance) DirectSelect(rw_force bool, out interface{}, sqlQuery str
 	startTime := f9.TimeNow()
 	err = instance.Select(out, query, pars...)
 	printSql(conn, startTime, query, pars...)
+
 	if err != nil {
+		err = errors.WithStack(err)
+
 		if conn.unsafeCompatibility {
 			msg := err.Error()
-			// TODO: implement LogTrace
+			trace := fmt.Sprintf("%+v", err)
+
 			unsafe := model.DbUnsafeSelectError{
 				LogType:    "error",
 				SqlQuery:   query,
 				SqlPars:    pars,
 				LogMessage: &msg,
-				LogTrace:   nil,
+				LogTrace:   &trace,
 			}
 
 			err = instance.Unsafe().Select(out, query, pars...)
+			if err != nil {
+				err = errors.WithStack(err)
+			}
+
 			return &unsafe, dbHost, err
 		}
 	}
@@ -218,19 +234,27 @@ func (slf *pqInstance) TxSelect(tx abs.DbTx, out interface{}, sqlQuery string, s
 			startTime := f9.TimeNow()
 			err := v.tx.Select(out, query, pars...)
 			printSql(slf.connRW, startTime, query, pars...)
+
 			if err != nil {
+				err = errors.WithStack(err)
+
 				if slf.connRW.unsafeCompatibility {
 					msg := err.Error()
-					// TODO: implement LogTrace
+					trace := fmt.Sprintf("%+v", err)
+
 					unsafe := model.DbUnsafeSelectError{
 						LogType:    "error",
 						SqlQuery:   query,
 						SqlPars:    pars,
 						LogMessage: &msg,
-						LogTrace:   nil,
+						LogTrace:   &trace,
 					}
 
 					err = v.tx.Unsafe().Select(out, query, pars...)
+					if err != nil {
+						err = errors.WithStack(err)
+					}
+
 					return &unsafe, tx.Host(), err
 				}
 			}
@@ -252,6 +276,11 @@ func (slf *pqInstance) Get(rw_force bool, out interface{}, sqlQuery string, sqlP
 	startTime := f9.TimeNow()
 	err = instance.Get(out, query, pars...)
 	printSql(conn, startTime, query, pars...)
+
+	if err != nil {
+		err = errors.WithStack(err)
+	}
+
 	return dbHost, err
 }
 
@@ -263,6 +292,11 @@ func (slf *pqInstance) TxGet(tx abs.DbTx, out interface{}, sqlQuery string, sqlP
 			startTime := f9.TimeNow()
 			err := v.tx.Get(out, query, pars...)
 			printSql(slf.connRW, startTime, query, pars...)
+
+			if err != nil {
+				err = errors.WithStack(err)
+			}
+
 			return tx.Host(), err
 		}
 	}
@@ -282,6 +316,7 @@ func (slf *pqInstance) NewTransaction() (abs.DbTx, string, error) {
 
 	tx, err := conn.instance.Beginx()
 	if err != nil {
+		err = errors.WithStack(err)
 		return ins, dbHost, err
 	}
 
