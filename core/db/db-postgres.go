@@ -25,11 +25,13 @@ import (
 var locking sync.Mutex
 var lockingConnRead sync.Mutex
 
-func (slf *pqInstance) getRWInstance() (*srConnection, *sqlx.DB, string, error) {
+const renewMaxCount = 3
+
+func (slf *pqInstance) getRWInstance(renew bool) (*srConnection, *sqlx.DB, string, error) {
 	locking.Lock()
 	defer locking.Unlock()
 
-	if slf.connRW.instance != nil {
+	if slf.connRW.instance != nil && !renew {
 		return slf.connRW, slf.connRW.instance, slf.connRW.host, nil
 	}
 
@@ -41,15 +43,15 @@ func (slf *pqInstance) getRWInstance() (*srConnection, *sqlx.DB, string, error) 
 	return slf.connRW, instance, dbHost, err
 }
 
-func (slf *pqInstance) getROInstance(rw_force ...bool) (*srConnection, *sqlx.DB, string, error) {
+func (slf *pqInstance) getROInstance(renew bool, rw_force ...bool) (*srConnection, *sqlx.DB, string, error) {
 	if slf.connRO == nil || (len(rw_force) > 0 && rw_force[0]) {
-		return slf.getRWInstance()
+		return slf.getRWInstance(renew)
 	}
 
 	lockingConnRead.Lock()
 	defer lockingConnRead.Unlock()
 
-	if slf.connRO.instance != nil {
+	if slf.connRO.instance != nil && !renew {
 		return slf.connRO, slf.connRO.instance, slf.connRO.host, nil
 	}
 
@@ -77,54 +79,145 @@ func (slf *pqInstance) canRetry(rw_force bool, err error) bool {
 }
 
 func (slf *pqInstance) Ping() error {
-	_, instance, _, err := slf.getRWInstance()
-	if err == nil {
-		err = instance.Ping()
-	}
+	var (
+		err        error
+		renew      = false
+		renewCount = 0
+		instance   *sqlx.DB
+	)
 
-	if err != nil {
-		err = errors.WithStack(err)
+	for {
+		renewCount++
+		if renewCount > renewMaxCount {
+			break
+		}
+
+		_, instance, _, err = slf.getRWInstance(renew)
+		if err == nil {
+			err = instance.Ping()
+		}
+
+		if err != nil {
+			renew = slf.renewConnection(err)
+			err = errors.WithStack(err)
+		}
+
+		if err == nil || !renew {
+			break
+		}
 	}
 
 	return err
 }
 
 func (slf *pqInstance) PingRead() error {
-	_, instance, _, err := slf.getROInstance()
-	if err == nil {
-		err = instance.Ping()
-	}
+	var (
+		err        error
+		renew      = false
+		renewCount = 0
+		instance   *sqlx.DB
+	)
 
-	if err != nil {
-		err = errors.WithStack(err)
+	for {
+		renewCount++
+		if renewCount > renewMaxCount {
+			break
+		}
+
+		_, instance, _, err = slf.getROInstance(renew)
+		if err == nil {
+			err = instance.Ping()
+		}
+
+		if err != nil {
+			renew = slf.renewConnection(err)
+			err = errors.WithStack(err)
+		}
+
+		if err == nil || !renew {
+			break
+		}
 	}
 
 	return err
 }
 
 func (slf *pqInstance) Execute(sqlQuery string, sqlPars ...interface{}) (string, error) {
-	conn, _, dbHost, err := slf.getRWInstance()
-	if err != nil {
-		return dbHost, err
+	var (
+		err        error
+		renew      = false
+		renewCount = 0
+		conn       *srConnection
+		dbHost     string
+	)
+
+	for {
+		renewCount++
+		if renewCount > renewMaxCount {
+			break
+		}
+
+		conn, _, dbHost, err = slf.getRWInstance(renew)
+		if err != nil {
+			renew = slf.renewConnection(err)
+			if renew {
+				continue
+			}
+
+			return dbHost, err
+		}
+
+		query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
+		startTime := f9.TimeNow()
+		_, dbHost, err = execute(conn, nil, query, pars...)
+		printSql(conn, startTime, query, pars...)
+
+		renew = slf.renewConnection(err)
+		if err == nil || !renew {
+			break
+		}
 	}
 
-	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
-	startTime := f9.TimeNow()
-	_, dbHost, err = execute(conn, nil, query, pars...)
-	printSql(conn, startTime, query, pars...)
 	return dbHost, err
 }
 
 func (slf *pqInstance) ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int64, string, error) {
-	conn, _, dbHost, err := slf.getRWInstance()
-	if err != nil {
-		return nil, dbHost, err
+	var (
+		err        error
+		renew      = false
+		renewCount = 0
+		conn       *srConnection
+		dbHost     string
+		rid        *int64
+	)
+
+	for {
+		renewCount++
+		if renewCount > renewMaxCount {
+			break
+		}
+
+		conn, _, dbHost, err = slf.getRWInstance(renew)
+		if err != nil {
+			renew = slf.renewConnection(err)
+			if renew {
+				continue
+			}
+
+			return nil, dbHost, err
+		}
+
+		query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
+		startTime := f9.TimeNow()
+		rid, dbHost, err = executeRID(conn, nil, query, pars...)
+		printSql(conn, startTime, query, pars...)
+
+		renew = slf.renewConnection(err)
+		if err == nil || !renew {
+			break
+		}
 	}
 
-	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
-	startTime := f9.TimeNow()
-	rid, dbHost, err := executeRID(conn, nil, query, pars...)
-	printSql(conn, startTime, query, pars...)
 	return rid, dbHost, err
 }
 
@@ -189,37 +282,72 @@ func (slf *pqInstance) Select(out interface{}, sqlQuery string, sqlPars ...inter
 }
 
 func (slf *pqInstance) DirectSelect(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error) {
-	conn, instance, dbHost, err := slf.getROInstance(rw_force)
-	if err != nil {
-		return nil, dbHost, err
-	}
+	var (
+		err        error
+		renew      = false
+		renewCount = 0
+		conn       *srConnection
+		instance   *sqlx.DB
+		dbHost     string
+	)
 
-	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
-	startTime := f9.TimeNow()
-	err = instance.Select(out, query, pars...)
-	printSql(conn, startTime, query, pars...)
+	for {
+		renewCount++
+		if renewCount > renewMaxCount {
+			break
+		}
 
-	if err != nil {
-		err = errors.WithStack(err)
-
-		if conn.unsafeCompatibility {
-			msg := err.Error()
-			trace := fmt.Sprintf("%+v", err)
-
-			unsafe := model.DbUnsafeSelectError{
-				LogType:    "error",
-				SqlQuery:   query,
-				SqlPars:    pars,
-				LogMessage: &msg,
-				LogTrace:   &trace,
+		conn, instance, dbHost, err = slf.getROInstance(renew, rw_force)
+		if err != nil {
+			renew = slf.renewConnection(err)
+			if renew {
+				continue
 			}
 
-			err = instance.Unsafe().Select(out, query, pars...)
-			if err != nil {
-				err = errors.WithStack(err)
+			return nil, dbHost, err
+		}
+
+		query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
+		startTime := f9.TimeNow()
+		err = instance.Select(out, query, pars...)
+		printSql(conn, startTime, query, pars...)
+
+		if err == nil {
+			break
+		} else {
+			renew = slf.renewConnection(err)
+			err = errors.WithStack(err)
+
+			if conn.unsafeCompatibility {
+				var (
+					msg    = err.Error()
+					trace  = fmt.Sprintf("%+v", err)
+					unsafe = model.DbUnsafeSelectError{
+						LogType:    "error",
+						SqlQuery:   query,
+						SqlPars:    pars,
+						LogMessage: &msg,
+						LogTrace:   &trace,
+					}
+				)
+
+				err = instance.Unsafe().Select(out, query, pars...)
+				if err != nil {
+					renew = slf.renewConnection(err)
+					err = errors.WithStack(err)
+					if renew {
+						continue
+					}
+				}
+
+				return &unsafe, dbHost, err
 			}
 
-			return &unsafe, dbHost, err
+			if renew {
+				continue
+			} else {
+				break
+			}
 		}
 	}
 
@@ -267,18 +395,45 @@ func (slf *pqInstance) TxSelect(tx abs.DbTx, out interface{}, sqlQuery string, s
 }
 
 func (slf *pqInstance) Get(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error) {
-	conn, instance, dbHost, err := slf.getROInstance(rw_force)
-	if err != nil {
-		return dbHost, err
-	}
+	var (
+		err        error
+		renew      = false
+		renewCount = 0
+		conn       *srConnection
+		instance   *sqlx.DB
+		dbHost     string
+	)
 
-	query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
-	startTime := f9.TimeNow()
-	err = instance.Get(out, query, pars...)
-	printSql(conn, startTime, query, pars...)
+	for {
+		renewCount++
+		if renewCount > renewMaxCount {
+			break
+		}
 
-	if err != nil {
-		err = errors.WithStack(err)
+		conn, instance, dbHost, err = slf.getROInstance(renew, rw_force)
+		if err != nil {
+			renew = slf.renewConnection(err)
+			if renew {
+				continue
+			}
+
+			return dbHost, err
+		}
+
+		query, pars := normalizeSqlQueryParams(conn, sqlQuery, sqlPars)
+		startTime := f9.TimeNow()
+		err = instance.Get(out, query, pars...)
+		printSql(conn, startTime, query, pars...)
+
+		if err == nil {
+			break
+		} else {
+			renew = slf.renewConnection(err)
+			err = errors.WithStack(err)
+			if !renew {
+				break
+			}
+		}
 	}
 
 	return dbHost, err
@@ -304,26 +459,53 @@ func (slf *pqInstance) TxGet(tx abs.DbTx, out interface{}, sqlQuery string, sqlP
 }
 
 func (slf *pqInstance) NewTransaction() (abs.DbTx, string, error) {
-	conn, _, dbHost, err := slf.getRWInstance()
-	if err != nil {
-		return nil, dbHost, err
+	var (
+		err        error
+		renew      = false
+		renewCount = 0
+		conn       *srConnection
+		dbHost     string
+		ins        *pqInstanceTx
+	)
+
+	for {
+		renewCount++
+		if renewCount > renewMaxCount {
+			break
+		}
+
+		conn, _, dbHost, err = slf.getRWInstance(renew)
+		if err != nil {
+			renew = slf.renewConnection(err)
+			if renew {
+				continue
+			}
+
+			return nil, dbHost, err
+		}
+
+		ins = &pqInstanceTx{
+			isCommit:   false,
+			isRollback: false,
+		}
+
+		tx, err := conn.instance.Beginx()
+		if err != nil {
+			renew = slf.renewConnection(err)
+			err = errors.WithStack(err)
+			if renew {
+				continue
+			}
+
+			return ins, dbHost, err
+		}
+
+		ins.instance = slf
+		ins.tx = tx
+		break
 	}
 
-	ins := &pqInstanceTx{
-		isCommit:   false,
-		isRollback: false,
-	}
-
-	tx, err := conn.instance.Beginx()
-	if err != nil {
-		err = errors.WithStack(err)
-		return ins, dbHost, err
-	}
-
-	ins.instance = slf
-	ins.tx = tx
-
-	return ins, dbHost, nil
+	return ins, dbHost, err
 }
 
 func (slf *pqInstance) EmptyTransaction() (abs.DbTx, string) {
@@ -334,6 +516,18 @@ func (slf *pqInstance) EmptyTransaction() (abs.DbTx, string) {
 	}
 
 	return ins, slf.connRW.host
+}
+
+func (slf *pqInstance) renewConnection(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if strings.Contains(err.Error(), "driver: bad connection") {
+		return true
+	}
+
+	return false
 }
 
 func (slf *pqInstance) OnUnsafe(unsafe *model.DbUnsafeSelectError) {
