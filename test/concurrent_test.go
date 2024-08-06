@@ -23,7 +23,7 @@ func TestUniqueConcurrentProcess(t *testing.T) {
 
 	var (
 		// trx = p9.Util.NewNMutex(4)
-		ls  = []model{
+		ls = []model{
 			{id: "a", key: "1"},
 			{id: "b", key: "2"},
 			{id: "c", key: "3"},

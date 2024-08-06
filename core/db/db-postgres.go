@@ -523,7 +523,8 @@ func (slf *pqInstance) renewConnection(err error) bool {
 		return false
 	}
 
-	if strings.Contains(err.Error(), "driver: bad connection") {
+	if strings.Contains(err.Error(), "driver: bad connection") ||
+		strings.Contains(err.Error(), "read: connection reset by peer") {
 		return true
 	}
 
