@@ -26,3 +26,4 @@ logc
 wrapperspb
 nsec
 httpclient
+redislock

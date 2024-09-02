@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	cloud.google.com/go/storage v1.33.0
+	github.com/bsm/redislock v0.9.4
 	github.com/gofiber/fiber/v2 v2.49.2
 	github.com/gojek/heimdall/v7 v7.0.2
 	github.com/golang-jwt/jwt/v5 v5.0.0
@@ -13,6 +14,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/matoous/go-nanoid/v2 v2.0.0
 	github.com/pkg/errors v0.9.1
+	github.com/redis/go-redis/v9 v9.6.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/stretchr/testify v1.8.4
@@ -29,7 +31,9 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.2 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/gojek/valkyrie v0.0.0-20190210220504-8f62c1e7ba45 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect

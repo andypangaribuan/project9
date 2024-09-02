@@ -13,7 +13,6 @@ import (
 
 type srInit struct{}
 
-//goland:noinspection ALL
 var (
 	Check  *srCheck
 	Conf   *srConf
@@ -23,6 +22,7 @@ var (
 	Err    *srErr
 	Http   *srHttp
 	Json   *srJson
+	Lock   *srLock
 	Log    *srLog
 	Server *srServer
 	Util   *srUtil
@@ -86,6 +86,11 @@ func (slf *srInit) Http(fnHttp abs.Http) *srInit {
 
 func (slf *srInit) Json(fnJson abs.Json) *srInit {
 	Json = &srJson{fnJson}
+	return slf
+}
+
+func (slf *srInit) Lock(fnLock abs.Lock) *srInit {
+	Lock = &srLock{fnLock}
 	return slf
 }
 

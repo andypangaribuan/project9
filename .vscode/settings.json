@@ -37,7 +37,7 @@
     }
   },
   "fileHeaderComment.template": {
-    "andypangaribuan": [
+    "*": [
       "${commentbegin}",
       "${commentprefix} ${license}",
       "${commentend}"

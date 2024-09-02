@@ -15,6 +15,7 @@ import (
 	"github.com/andypangaribuan/project9/core/err"
 	"github.com/andypangaribuan/project9/core/http"
 	"github.com/andypangaribuan/project9/core/json"
+	"github.com/andypangaribuan/project9/core/lock"
 	"github.com/andypangaribuan/project9/core/log"
 	"github.com/andypangaribuan/project9/core/server"
 	"github.com/andypangaribuan/project9/core/util"
@@ -32,6 +33,7 @@ func Initialize() {
 		Err(err.Create()).
 		Http(http.Create()).
 		Json(json.Create()).
+		Lock(lock.Create()).
 		Log(log.Create()).
 		Server(server.Create()).
 		Util(util.Create())
