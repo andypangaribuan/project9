@@ -52,7 +52,7 @@ func (slf *srLock) Lock(key string) (abs.XLock, error) {
 		}
 
 		if slf.tryFor != nil && time.Since(startedAt) > *slf.tryFor {
-			return nil, errors.WithStack(err)
+			return &srXLock{}, errors.WithStack(err)
 		}
 
 		time.Sleep(time.Millisecond * 10)
