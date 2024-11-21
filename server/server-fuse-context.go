@@ -207,7 +207,7 @@ func (slf *srFuseContext) Parser(logc *clog.Instance, header, body interface{}) 
 					if err == nil {
 						h.RFTime = &tm
 
-						p9.Util.ReflectionSet(header, map[string]interface{}{"RequestHeader": h})
+						_ = p9.Util.ReflectionSet(header, map[string]interface{}{"RequestHeader": h})
 					}
 				}
 			}
