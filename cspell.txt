@@ -27,3 +27,4 @@ wrapperspb
 nsec
 httpclient
 redislock
+sqlx
