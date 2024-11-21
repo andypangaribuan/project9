@@ -145,15 +145,15 @@ func (slf *Repo[T]) goGetDatas(tx abs.DbTx, whereQuery string, endQuery string, 
 	)
 
 	for i := 0; i < loop; i++ {
-		rw_force := i == 1
-		sql, models, _dbe, err = slf.directGoGetDatas(rw_force, tx, whereQuery, endQuery, wherePars...)
+		rwForce := i == 1
+		sql, models, _dbe, err = slf.directGoGetDatas(rwForce, tx, whereQuery, endQuery, wherePars...)
 
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
 			dbe.Host += _dbe.Host
 		}
 
-		if !slf.canRetry(rw_force, err, len(models)) {
+		if !slf.canRetry(rwForce, err, len(models)) {
 			break
 		}
 	}
