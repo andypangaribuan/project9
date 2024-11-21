@@ -34,14 +34,13 @@ func (*srHttp) getInterfaceString(value interface{}) string {
 
 func (slf *srHttp) setHeader(request *http.Request, header map[string]interface{}) {
 	isContentTypeAdded := false
-	if header != nil {
-		for key, val := range header {
-			request.Header.Add(key, slf.getInterfaceString(val))
-			if key == "Content-Type" {
-				isContentTypeAdded = true
-			}
+	for key, val := range header {
+		request.Header.Add(key, slf.getInterfaceString(val))
+		if key == "Content-Type" {
+			isContentTypeAdded = true
 		}
 	}
+
 	if !isContentTypeAdded {
 		request.Header.Set("Content-Type", "application/json")
 	}
