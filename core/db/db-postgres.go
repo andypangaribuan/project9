@@ -43,8 +43,8 @@ func (slf *pqInstance) getRWInstance(renew bool) (*srConnection, *sqlx.DB, strin
 	return slf.connRW, instance, dbHost, err
 }
 
-func (slf *pqInstance) getROInstance(renew bool, rw_force ...bool) (*srConnection, *sqlx.DB, string, error) {
-	if slf.connRO == nil || (len(rw_force) > 0 && rw_force[0]) {
+func (slf *pqInstance) getROInstance(renew bool, rwForce ...bool) (*srConnection, *sqlx.DB, string, error) {
+	if slf.connRO == nil || (len(rwForce) > 0 && rwForce[0]) {
 		return slf.getRWInstance(renew)
 	}
 
@@ -63,8 +63,8 @@ func (slf *pqInstance) getROInstance(renew bool, rw_force ...bool) (*srConnectio
 	return slf.connRO, instance, dbHost, err
 }
 
-func (slf *pqInstance) canRetry(rw_force bool, err error) bool {
-	if rw_force {
+func (slf *pqInstance) canRetry(rwForce bool, err error) bool {
+	if rwForce {
 		return false
 	}
 
@@ -247,12 +247,12 @@ func (slf *pqInstance) Select(out interface{}, sqlQuery string, sqlPars ...inter
 
 	for i := 0; i < loop; i++ {
 		var (
-			rw_force = i == 1
-			dbHost   = ""
+			rwForce = i == 1
+			dbHost  string
 		)
 
-		unsafe, dbHost, err = slf.DirectSelect(rw_force, out, sqlQuery, sqlPars...)
-		if err != nil && !slf.canRetry(rw_force, err) {
+		unsafe, dbHost, err = slf.DirectSelect(rwForce, out, sqlQuery, sqlPars...)
+		if err != nil && !slf.canRetry(rwForce, err) {
 			return err
 		}
 
@@ -281,7 +281,7 @@ func (slf *pqInstance) Select(out interface{}, sqlQuery string, sqlPars ...inter
 	return err
 }
 
-func (slf *pqInstance) DirectSelect(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error) {
+func (slf *pqInstance) DirectSelect(rwForce bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error) {
 	var (
 		err        error
 		renew      = false
@@ -297,7 +297,7 @@ func (slf *pqInstance) DirectSelect(rw_force bool, out interface{}, sqlQuery str
 			break
 		}
 
-		conn, instance, dbHost, err = slf.getROInstance(renew, rw_force)
+		conn, instance, dbHost, err = slf.getROInstance(renew, rwForce)
 		if err != nil {
 			renew = slf.renewConnection(err)
 			if renew {
@@ -394,7 +394,7 @@ func (slf *pqInstance) TxSelect(tx abs.DbTx, out interface{}, sqlQuery string, s
 	return nil, tx.Host(), errors.New("unknown: tx transaction type")
 }
 
-func (slf *pqInstance) Get(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error) {
+func (slf *pqInstance) Get(rwForce bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error) {
 	var (
 		err        error
 		renew      = false
@@ -410,7 +410,7 @@ func (slf *pqInstance) Get(rw_force bool, out interface{}, sqlQuery string, sqlP
 			break
 		}
 
-		conn, instance, dbHost, err = slf.getROInstance(renew, rw_force)
+		conn, instance, dbHost, err = slf.getROInstance(renew, rwForce)
 		if err != nil {
 			renew = slf.renewConnection(err)
 			if renew {

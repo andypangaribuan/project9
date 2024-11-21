@@ -161,7 +161,7 @@ func (slf *Repo[T]) goGetDatas(tx abs.DbTx, whereQuery string, endQuery string, 
 	return sql, models, dbe, err
 }
 
-func (slf *Repo[T]) directGoGetDatas(rw_force bool, tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) (*srRepoSql[T], []T, *model.DbExec, error) {
+func (slf *Repo[T]) directGoGetDatas(rwForce bool, tx abs.DbTx, whereQuery string, endQuery string, wherePars ...interface{}) (*srRepoSql[T], []T, *model.DbExec, error) {
 	var (
 		dbe    = new(model.DbExec)
 		models []T
@@ -198,7 +198,7 @@ func (slf *Repo[T]) directGoGetDatas(rw_force bool, tx abs.DbTx, whereQuery stri
 	if tx != nil {
 		unsafe, dbHost, err = slf.DbInstance.TxSelect(tx, &models, sql.query, sql.pars)
 	} else {
-		unsafe, dbHost, err = slf.DbInstance.DirectSelect(rw_force, &models, sql.query, sql.pars)
+		unsafe, dbHost, err = slf.DbInstance.DirectSelect(rwForce, &models, sql.query, sql.pars)
 	}
 
 	dbe.Host = dbHost
@@ -231,15 +231,15 @@ func (slf *Repo[T]) doSelect(tx abs.DbTx, query string, pars ...interface{}) (*s
 	)
 
 	for i := 0; i < loop; i++ {
-		rw_force := i == 1
-		sql, models, dbe, err = slf.directDoSelect(rw_force, tx, query, pars...)
+		rwForce := i == 1
+		sql, models, dbe, err = slf.directDoSelect(rwForce, tx, query, pars...)
 
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
 			dbe.Host += _dbe.Host
 		}
 
-		if !slf.canRetry(rw_force, err, len(models)) {
+		if !slf.canRetry(rwForce, err, len(models)) {
 			break
 		}
 	}
@@ -247,7 +247,7 @@ func (slf *Repo[T]) doSelect(tx abs.DbTx, query string, pars ...interface{}) (*s
 	return sql, models, dbe, err
 }
 
-func (slf *Repo[T]) directDoSelect(rw_force bool, tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], []T, *model.DbExec, error) {
+func (slf *Repo[T]) directDoSelect(rwForce bool, tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], []T, *model.DbExec, error) {
 	var (
 		dbe    = new(model.DbExec)
 		models []T
@@ -273,7 +273,7 @@ func (slf *Repo[T]) directDoSelect(rw_force bool, tx abs.DbTx, query string, par
 	if tx != nil {
 		unsafe, dbHost, err = slf.DbInstance.TxSelect(tx, &models, sql.query, sql.pars...)
 	} else {
-		unsafe, dbHost, err = slf.DbInstance.DirectSelect(rw_force, &models, sql.query, sql.pars...)
+		unsafe, dbHost, err = slf.DbInstance.DirectSelect(rwForce, &models, sql.query, sql.pars...)
 	}
 
 	dbe.Host = dbHost
@@ -306,15 +306,15 @@ func (slf *Repo[T]) doCount(tx abs.DbTx, whereQuery, endQuery string, wherePars 
 	)
 
 	for i := 0; i < loop; i++ {
-		rw_force := i == 1
-		sql, count, dbe, err = slf.directDoCount(rw_force, tx, whereQuery, endQuery, wherePars...)
+		rwForce := i == 1
+		sql, count, dbe, err = slf.directDoCount(rwForce, tx, whereQuery, endQuery, wherePars...)
 
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
 			dbe.Host += _dbe.Host
 		}
 
-		if !slf.canRetry(rw_force, err, count) {
+		if !slf.canRetry(rwForce, err, count) {
 			break
 		}
 	}
@@ -322,7 +322,7 @@ func (slf *Repo[T]) doCount(tx abs.DbTx, whereQuery, endQuery string, wherePars 
 	return sql, count, dbe, err
 }
 
-func (slf *Repo[T]) directDoCount(rw_force bool, tx abs.DbTx, whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], int, *model.DbExec, error) {
+func (slf *Repo[T]) directDoCount(rwForce bool, tx abs.DbTx, whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], int, *model.DbExec, error) {
 	var (
 		dbe = new(model.DbExec)
 		sql = srRepoSql[T]{}.new(`SELECT COUNT(1) FROM ::tableName`)
@@ -358,7 +358,7 @@ func (slf *Repo[T]) directDoCount(rw_force bool, tx abs.DbTx, whereQuery, endQue
 	if tx != nil {
 		dbHost, err = slf.DbInstance.TxGet(tx, &count, sql.query, sql.pars...)
 	} else {
-		dbHost, err = slf.DbInstance.Get(rw_force, &count, sql.query, sql.pars...)
+		dbHost, err = slf.DbInstance.Get(rwForce, &count, sql.query, sql.pars...)
 	}
 
 	dbe.Host = dbHost
@@ -376,8 +376,8 @@ func (slf *Repo[T]) doSum(tx abs.DbTx, column, whereQuery, endQuery string, wher
 	)
 
 	for i := 0; i < loop; i++ {
-		rw_force := i == 1
-		sql, sum, dbe, err = slf.directDoSum(rw_force, tx, column, whereQuery, endQuery, wherePars...)
+		rwForce := i == 1
+		sql, sum, dbe, err = slf.directDoSum(rwForce, tx, column, whereQuery, endQuery, wherePars...)
 
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
@@ -389,7 +389,7 @@ func (slf *Repo[T]) doSum(tx abs.DbTx, column, whereQuery, endQuery string, wher
 			tempLength = 1
 		}
 
-		if !slf.canRetry(rw_force, err, tempLength) {
+		if !slf.canRetry(rwForce, err, tempLength) {
 			break
 		}
 	}
@@ -397,7 +397,7 @@ func (slf *Repo[T]) doSum(tx abs.DbTx, column, whereQuery, endQuery string, wher
 	return sql, sum, dbe, err
 }
 
-func (slf *Repo[T]) directDoSum(rw_force bool, tx abs.DbTx, column, whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], fc.FCT, *model.DbExec, error) {
+func (slf *Repo[T]) directDoSum(rwForce bool, tx abs.DbTx, column, whereQuery, endQuery string, wherePars ...interface{}) (*srRepoSql[T], fc.FCT, *model.DbExec, error) {
 	var (
 		dbe    = new(model.DbExec)
 		dbHost string
@@ -431,7 +431,7 @@ func (slf *Repo[T]) directDoSum(rw_force bool, tx abs.DbTx, column, whereQuery, 
 	if tx != nil {
 		dbHost, err = slf.DbInstance.TxGet(tx, &sumValue, sql.query, sql.pars...)
 	} else {
-		dbHost, err = slf.DbInstance.Get(rw_force, &sumValue, sql.query, sql.pars...)
+		dbHost, err = slf.DbInstance.Get(rwForce, &sumValue, sql.query, sql.pars...)
 	}
 
 	dbe.Host = dbHost
@@ -470,8 +470,8 @@ func (slf *Repo[T]) doRawFCT(tx abs.DbTx, query string, pars ...interface{}) (*s
 	)
 
 	for i := 0; i < loop; i++ {
-		rw_force := i == 1
-		sql, val, dbe, err = slf.directDoRawFCT(rw_force, tx, query, pars...)
+		rwForce := i == 1
+		sql, val, dbe, err = slf.directDoRawFCT(rwForce, tx, query, pars...)
 
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
@@ -483,7 +483,7 @@ func (slf *Repo[T]) doRawFCT(tx abs.DbTx, query string, pars ...interface{}) (*s
 			tempLength = 1
 		}
 
-		if !slf.canRetry(rw_force, err, tempLength) {
+		if !slf.canRetry(rwForce, err, tempLength) {
 			break
 		}
 	}
@@ -491,7 +491,7 @@ func (slf *Repo[T]) doRawFCT(tx abs.DbTx, query string, pars ...interface{}) (*s
 	return sql, val, dbe, err
 }
 
-func (slf *Repo[T]) directDoRawFCT(rw_force bool, tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], fc.FCT, *model.DbExec, error) {
+func (slf *Repo[T]) directDoRawFCT(rwForce bool, tx abs.DbTx, query string, pars ...interface{}) (*srRepoSql[T], fc.FCT, *model.DbExec, error) {
 	var (
 		dbe    = new(model.DbExec)
 		dbHost string
@@ -513,7 +513,7 @@ func (slf *Repo[T]) directDoRawFCT(rw_force bool, tx abs.DbTx, query string, par
 	if tx != nil {
 		dbHost, err = slf.DbInstance.TxGet(tx, &val, sql.query, sql.pars...)
 	} else {
-		dbHost, err = slf.DbInstance.Get(rw_force, &val, sql.query, sql.pars...)
+		dbHost, err = slf.DbInstance.Get(rwForce, &val, sql.query, sql.pars...)
 	}
 
 	dbe.Host = dbHost
@@ -567,8 +567,8 @@ func (slf *Repo[T]) doExecute(tx abs.DbTx, sqlQuery string, sqlPars ...interface
 	return sql, dbHost, err
 }
 
-func (slf *Repo[T]) canRetry(rw_force bool, err error, itemLength int) bool {
-	if rw_force {
+func (slf *Repo[T]) canRetry(rwForce bool, err error, itemLength int) bool {
+	if rwForce {
 		return false
 	}
 

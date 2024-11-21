@@ -23,8 +23,8 @@ type DbInstance interface {
 	Execute(sqlQuery string, sqlPars ...interface{}) (string, error)
 	ExecuteRID(sqlQuery string, sqlPars ...interface{}) (*int64, string, error)
 	Select(out interface{}, sqlQuery string, sqlPars ...interface{}) error
-	DirectSelect(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error)
-	Get(rw_force bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error)
+	DirectSelect(rwForce bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (*model.DbUnsafeSelectError, string, error)
+	Get(rwForce bool, out interface{}, sqlQuery string, sqlPars ...interface{}) (string, error)
 
 	NewTransaction() (DbTx, string, error)
 	EmptyTransaction() (DbTx, string)
