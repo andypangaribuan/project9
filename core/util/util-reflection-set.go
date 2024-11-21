@@ -106,7 +106,7 @@ func (slf *srUtil) reflectionPrivateSet(rs reflect.StructField, rv reflect.Value
 	}
 
 	if unicode.IsUpper(first) {
-		return errors.New(fmt.Sprintf("cannot set the field: %v", rs.Name))
+		return fmt.Errorf("cannot set the field: %v", rs.Name)
 	}
 
 	ptr := unsafe.Pointer(rv.UnsafeAddr())
@@ -120,7 +120,7 @@ func (slf *srUtil) reflectionPrivateSet(rs reflect.StructField, rv reflect.Value
 
 func (*srUtil) reflectionSetError(fieldName string, err error) error {
 	if err != nil {
-		return errors.New(fmt.Sprintf("%v\nfield name: %v", err, fieldName))
+		return fmt.Errorf("%v\nfield name: %v", err, fieldName)
 	}
 	return err
 }
