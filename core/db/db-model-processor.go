@@ -72,13 +72,61 @@ func getPars(args ...interface{}) []interface{} {
 	pars := make([]interface{}, 0)
 
 	for _, arg := range args {
-		switch arg.(type) {
-		case FetchOpt, *FetchOpt:
-			continue
+		switch v := arg.(type) {
+		case FetchOpt:
+			if v.ForceRW {
+				pars = append(pars, srFetchOpt{
+					rwForce: true,
+				})
+			}
+
+		case *FetchOpt:
+			if v.ForceRW {
+				pars = append(pars, srFetchOpt{
+					rwForce: true,
+				})
+			}
+
 		default:
 			pars = append(pars, arg)
 		}
 	}
 
 	return pars
+}
+
+func parsAndOthers(args ...interface{}) (bool, []interface{}) {
+	var (
+		rwForce = false
+		pars    = make([]interface{}, 0)
+	)
+
+	for _, arg := range args {
+		switch v := arg.(type) {
+		case FetchOpt:
+			if v.ForceRW {
+				rwForce = v.ForceRW
+			}
+
+		case *FetchOpt:
+			if v.ForceRW {
+				rwForce = v.ForceRW
+			}
+
+		case srFetchOpt:
+			if v.rwForce {
+				rwForce = v.rwForce
+			}
+
+		case *srFetchOpt:
+			if v.rwForce {
+				rwForce = v.rwForce
+			}
+
+		default:
+			pars = append(pars, arg)
+		}
+	}
+
+	return rwForce, pars
 }
