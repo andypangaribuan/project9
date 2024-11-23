@@ -9,6 +9,11 @@ package db
 type FetchOpt struct {
 	EndQuery               string
 	WithoutDeletedAtIsNull bool
+	ForceRW                bool
+}
+
+type srFetchOpt struct {
+	rwForce bool
 }
 
 type Update struct {
