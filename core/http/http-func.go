@@ -7,7 +7,7 @@ package http
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -75,7 +75,7 @@ func (slf *srHttp) execute(request *http.Request, skipSecurityChecking bool, tim
 		return nil, -1, err
 	}
 
-	responseBody, err := ioutil.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, -1, err
 	}
