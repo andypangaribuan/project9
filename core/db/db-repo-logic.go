@@ -144,17 +144,26 @@ func (slf *Repo[T]) goGetDatas(tx abs.DbTx, whereQuery string, endQuery string, 
 		err    error
 	)
 
-	for i := 0; i < loop; i++ {
-		rwForce := i == 1
+	rwForce, wherePars := parsAndOthers(wherePars...)
+	if rwForce {
 		sql, models, _dbe, err = slf.directGoGetDatas(rwForce, tx, whereQuery, endQuery, wherePars...)
-
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
 			dbe.Host += _dbe.Host
 		}
+	} else {
+		for i := 0; i < loop; i++ {
+			rwForce := i == 1
+			sql, models, _dbe, err = slf.directGoGetDatas(rwForce, tx, whereQuery, endQuery, wherePars...)
 
-		if !slf.canRetry(rwForce, err, len(models)) {
-			break
+			if _dbe.Host != "" {
+				dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
+				dbe.Host += _dbe.Host
+			}
+
+			if !slf.canRetry(rwForce, err, len(models)) {
+				break
+			}
 		}
 	}
 
@@ -230,17 +239,26 @@ func (slf *Repo[T]) doSelect(tx abs.DbTx, query string, pars ...interface{}) (*s
 		err    error
 	)
 
-	for i := 0; i < loop; i++ {
-		rwForce := i == 1
+	rwForce, pars := parsAndOthers(pars...)
+	if rwForce {
 		sql, models, dbe, err = slf.directDoSelect(rwForce, tx, query, pars...)
-
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
 			dbe.Host += _dbe.Host
 		}
+	} else {
+		for i := 0; i < loop; i++ {
+			rwForce := i == 1
+			sql, models, dbe, err = slf.directDoSelect(rwForce, tx, query, pars...)
 
-		if !slf.canRetry(rwForce, err, len(models)) {
-			break
+			if _dbe.Host != "" {
+				dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
+				dbe.Host += _dbe.Host
+			}
+
+			if !slf.canRetry(rwForce, err, len(models)) {
+				break
+			}
 		}
 	}
 
@@ -305,17 +323,26 @@ func (slf *Repo[T]) doCount(tx abs.DbTx, whereQuery, endQuery string, wherePars 
 		err   error
 	)
 
-	for i := 0; i < loop; i++ {
-		rwForce := i == 1
+	rwForce, wherePars := parsAndOthers(wherePars...)
+	if rwForce {
 		sql, count, dbe, err = slf.directDoCount(rwForce, tx, whereQuery, endQuery, wherePars...)
-
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
 			dbe.Host += _dbe.Host
 		}
+	} else {
+		for i := 0; i < loop; i++ {
+			rwForce := i == 1
+			sql, count, dbe, err = slf.directDoCount(rwForce, tx, whereQuery, endQuery, wherePars...)
 
-		if !slf.canRetry(rwForce, err, count) {
-			break
+			if _dbe.Host != "" {
+				dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
+				dbe.Host += _dbe.Host
+			}
+
+			if !slf.canRetry(rwForce, err, count) {
+				break
+			}
 		}
 	}
 
@@ -375,22 +402,31 @@ func (slf *Repo[T]) doSum(tx abs.DbTx, column, whereQuery, endQuery string, wher
 		err  error
 	)
 
-	for i := 0; i < loop; i++ {
-		rwForce := i == 1
+	rwForce, wherePars := parsAndOthers(wherePars...)
+	if rwForce {
 		sql, sum, dbe, err = slf.directDoSum(rwForce, tx, column, whereQuery, endQuery, wherePars...)
-
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
 			dbe.Host += _dbe.Host
 		}
+	} else {
+		for i := 0; i < loop; i++ {
+			rwForce := i == 1
+			sql, sum, dbe, err = slf.directDoSum(rwForce, tx, column, whereQuery, endQuery, wherePars...)
 
-		tempLength := 0
-		if fc.Compare(sum, ">", 0) {
-			tempLength = 1
-		}
+			if _dbe.Host != "" {
+				dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
+				dbe.Host += _dbe.Host
+			}
 
-		if !slf.canRetry(rwForce, err, tempLength) {
-			break
+			tempLength := 0
+			if fc.Compare(sum, ">", 0) {
+				tempLength = 1
+			}
+
+			if !slf.canRetry(rwForce, err, tempLength) {
+				break
+			}
 		}
 	}
 
@@ -469,22 +505,31 @@ func (slf *Repo[T]) doRawFCT(tx abs.DbTx, query string, pars ...interface{}) (*s
 		err  error
 	)
 
-	for i := 0; i < loop; i++ {
-		rwForce := i == 1
+	rwForce, pars := parsAndOthers(pars...)
+	if rwForce {
 		sql, val, dbe, err = slf.directDoRawFCT(rwForce, tx, query, pars...)
-
 		if _dbe.Host != "" {
 			dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
 			dbe.Host += _dbe.Host
 		}
+	} else {
+		for i := 0; i < loop; i++ {
+			rwForce := i == 1
+			sql, val, dbe, err = slf.directDoRawFCT(rwForce, tx, query, pars...)
 
-		tempLength := 0
-		if fc.Compare(val, ">", 0) {
-			tempLength = 1
-		}
+			if _dbe.Host != "" {
+				dbe.Host += f9.Ternary(dbe.Host == "", "", ", ")
+				dbe.Host += _dbe.Host
+			}
 
-		if !slf.canRetry(rwForce, err, tempLength) {
-			break
+			tempLength := 0
+			if fc.Compare(val, ">", 0) {
+				tempLength = 1
+			}
+
+			if !slf.canRetry(rwForce, err, tempLength) {
+				break
+			}
 		}
 	}
 
