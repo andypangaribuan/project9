@@ -81,7 +81,7 @@ func getPars(args ...interface{}) []interface{} {
 			}
 
 		case *FetchOpt:
-			if v.ForceRW {
+			if v != nil && v.ForceRW {
 				pars = append(pars, srFetchOpt{
 					rwForce: true,
 				})
@@ -109,7 +109,7 @@ func parsAndOthers(args ...interface{}) (bool, []interface{}) {
 			}
 
 		case *FetchOpt:
-			if v.ForceRW {
+			if v != nil && v.ForceRW {
 				rwForce = v.ForceRW
 			}
 
@@ -119,7 +119,7 @@ func parsAndOthers(args ...interface{}) (bool, []interface{}) {
 			}
 
 		case *srFetchOpt:
-			if v.rwForce {
+			if v != nil && v.rwForce {
 				rwForce = v.rwForce
 			}
 
