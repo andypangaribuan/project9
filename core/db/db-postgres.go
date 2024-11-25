@@ -251,6 +251,13 @@ func (slf *pqInstance) Select(out interface{}, sqlQuery string, sqlPars ...inter
 			dbHost  string
 		)
 
+		if !rwForce {
+			rwForce, sqlPars = parsAndOthers(sqlPars...)
+			if rwForce {
+				i = loop
+			}
+		}
+
 		unsafe, dbHost, err = slf.DirectSelect(rwForce, out, sqlQuery, sqlPars...)
 		if err != nil && !slf.canRetry(rwForce, err) {
 			return err
