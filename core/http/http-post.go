@@ -130,7 +130,10 @@ func doHttpRequest(method string, url string, header map[string]string, body io.
 	if err != nil {
 		return nil, -1, err
 	}
-	defer res.Body.Close()
+
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
 	resData, err := io.ReadAll(res.Body)
 	return resData, res.StatusCode, err

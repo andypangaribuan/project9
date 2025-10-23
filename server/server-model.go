@@ -73,7 +73,7 @@ type FuseContext interface {
 
 type FuseContextRequest interface {
 	Body() []byte
-	Header() map[string]string
+	Header() map[string][]string
 	SetHeader(key, value string)
 }
 

@@ -57,7 +57,7 @@ func makeType(t reflect.Type, processor reTagProcessor, any bool) (*result, erro
 			return &result{t: t, changed: false}, nil
 		}
 
-		return &result{t: reflect.PtrTo(res.t), changed: true}, nil
+		return &result{t: reflect.PointerTo(res.t), changed: true}, nil
 
 	case reflect.Array:
 		res, err := getType(t.Elem(), processor, any)

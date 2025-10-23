@@ -79,7 +79,7 @@ func (*srUtil) GetRandom(length int, value string) (string, error) {
 }
 
 func (*srUtil) GetRandomNumber(min, max int) int {
-	rand.Seed(time.Now().UnixNano())
+	// rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
 }
 
@@ -143,6 +143,71 @@ func (slf *srUtil) BuildJwtTokenWithPassword(privateKey []byte, password string,
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	return token.SignedString(key)
 }
+
+// func (slf *srUtil) BuildJwtTokenWithPassword(privateKey []byte, password string, claims jwt.Claims) (string, error) {
+// 	block, _ := pem.Decode(privateKey)
+// 	if block == nil {
+// 		return "", errors.New("invalid PEM: no block found")
+// 	}
+
+// 	var rsaKey *rsa.PrivateKey
+
+// 	switch block.Type {
+// 	case "ENCRYPTED PRIVATE KEY":
+// 		if password == "" {
+// 			return "", errors.New("password required for encrypted PKCS#8 key")
+// 		}
+// 		// Modern encrypted PKCS#8 (PBES2). No deprecated APIs used.
+// 		keyAny, err := pkcs8.ParsePKCS8PrivateKey(block.Bytes, []byte(password))
+// 		if err != nil {
+// 			return "", fmt.Errorf("parse encrypted PKCS#8: %w", err)
+// 		}
+// 		k, ok := keyAny.(*rsa.PrivateKey)
+// 		if !ok {
+// 			return "", errors.New("encrypted key is not RSA")
+// 		}
+// 		rsaKey = k
+
+// 	case "PRIVATE KEY":
+// 		// Unencrypted PKCS#8
+// 		keyAny, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+// 		if err != nil {
+// 			return "", fmt.Errorf("parse PKCS#8: %w", err)
+// 		}
+// 		k, ok := keyAny.(*rsa.PrivateKey)
+// 		if !ok {
+// 			return "", errors.New("PKCS#8 key is not RSA")
+// 		}
+// 		rsaKey = k
+
+// 	case "RSA PRIVATE KEY":
+// 		// Unencrypted PKCS#1
+// 		k, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+// 		if err != nil {
+// 			return "", fmt.Errorf("parse PKCS#1: %w", err)
+// 		}
+// 		rsaKey = k
+
+// 	default:
+// 		// Reject legacy PEM encryption (insecure by design) and other types.
+// 		if block.Headers["Proc-Type"] == "4,ENCRYPTED" {
+// 			return "", errors.New(
+// 				"legacy PEM encryption detected (Proc-Type: 4,ENCRYPTED) — unsupported; "+
+// 					"convert to encrypted PKCS#8 (PBES2), e.g.: "+
+// 					`openssl pkcs8 -topk8 -v2 aes-256-cbc -iter 600000 -in old.pem -out new.pem`,
+// 			)
+// 		}
+// 		return "", fmt.Errorf("unsupported PEM type: %q", block.Type)
+// 	}
+
+// 	// Sign JWT (RS256)
+// 	tok := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+// 	signed, err := tok.SignedString(rsaKey)
+// 	if err != nil {
+// 		return "", fmt.Errorf("sign jwt: %w", err)
+// 	}
+// 	return signed, nil
+// }
 
 func (slf *srUtil) CreateJwtToken(subject, id string, expiresAt, issuedAt, notBefore time.Time, privateKey []byte) (string, error) {
 	key, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)

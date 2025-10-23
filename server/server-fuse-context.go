@@ -39,8 +39,14 @@ func (slf *srFuseContext) getHeader() map[string]string {
 
 		switch {
 		case slf.fiberCtx != nil:
-			for k, v := range slf.fiberCtx.GetReqHeaders() {
-				header[strings.ToLower(k)] = v
+			// for k, v := range slf.fiberCtx.GetReqHeaders() {
+			// 	header[strings.ToLower(k)] = v
+			// }
+
+			for key, ls := range slf.fiberCtx.GetReqHeaders() {
+				if len(ls) > 0 {
+					header[strings.ToLower(key)] = ls[0]
+				}
 			}
 
 		case slf.grpcCtx != nil:
@@ -103,7 +109,7 @@ func (slf *srFuseContextRequest) Body() []byte {
 	return slf.fuseCtx.fiberCtx.Body()
 }
 
-func (slf *srFuseContextRequest) Header() map[string]string {
+func (slf *srFuseContextRequest) Header() map[string][]string {
 	return slf.fuseCtx.fiberCtx.GetReqHeaders()
 }
 
@@ -582,12 +588,12 @@ func (slf *srFuseContext) sendRawA(logc *clog.Instance, code int, data string) e
 		)
 
 		resCodeOne := fmt.Sprintf("%v", resCode)[:1]
-		switch {
-		case resCodeOne == "2":
+		switch resCodeOne {
+		case "2":
 			severity = clog.Info
-		case resCodeOne == "4":
+		case "4":
 			severity = clog.Warning
-		case resCodeOne == "5":
+		case "5":
 			severity = clog.Error
 		}
 
@@ -627,11 +633,7 @@ func (slf *srFuseContext) sendRawA(logc *clog.Instance, code int, data string) e
 			depth := 3
 			execFunc, execPath := p9.Util.GetExecutionInfo(depth)
 
-			for {
-				if !strings.Contains(execPath, "/project9/server/server-fuse-context.go") {
-					break
-				}
-
+			for strings.Contains(execPath, "/project9/server/server-fuse-context.go") {
 				depth++
 				execFunc, execPath = p9.Util.GetExecutionInfo(depth)
 			}
@@ -681,12 +683,12 @@ func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface
 		)
 
 		resCodeOne := fmt.Sprintf("%v", resCode)[:1]
-		switch {
-		case resCodeOne == "2":
+		switch resCodeOne {
+		case "2":
 			severity = clog.Info
-		case resCodeOne == "4":
+		case "4":
 			severity = clog.Warning
-		case resCodeOne == "5":
+		case "5":
 			severity = clog.Error
 		}
 
@@ -734,11 +736,7 @@ func (slf *srFuseContext) sendRawB(logc *clog.Instance, code int, data interface
 
 			execFunc, execPath := p9.Util.GetExecutionInfo(depth)
 
-			for {
-				if !strings.Contains(execPath, "/project9/server/server-fuse-context.go") {
-					break
-				}
-
+			for strings.Contains(execPath, "/project9/server/server-fuse-context.go") {
 				depth++
 				execFunc, execPath = p9.Util.GetExecutionInfo(depth)
 			}
@@ -821,12 +819,12 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 		)
 
 		resCodeOne := fmt.Sprintf("%v", resCode)[:1]
-		switch {
-		case resCodeOne == "2":
+		switch resCodeOne {
+		case "2":
 			severity = clog.Info
-		case resCodeOne == "4":
+		case "4":
 			severity = clog.Warning
-		case resCodeOne == "5":
+		case "5":
 			severity = clog.Error
 		}
 
@@ -893,11 +891,7 @@ func (slf *srFuseContext) send(logc *clog.Instance, fo FuseOpt, opt ...FuseOpt) 
 			depth := 4
 			execFunc, execPath := p9.Util.GetExecutionInfo(depth)
 
-			for {
-				if !strings.Contains(execPath, "/project9/server/server-fuse-context.go") {
-					break
-				}
-
+			for strings.Contains(execPath, "/project9/server/server-fuse-context.go") {
 				depth++
 				execFunc, execPath = p9.Util.GetExecutionInfo(depth)
 			}

@@ -85,7 +85,8 @@ func (slf *srConnectFuseGRPC) buildConnection() error {
 		return nil
 	}
 
-	conn, err := grpc.Dial(slf.address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// conn, err := grpc.Dial(slf.address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(slf.address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	} else {

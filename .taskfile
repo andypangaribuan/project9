@@ -37,6 +37,11 @@ function run {
   staticcheck ./...
 }
 
+#: clean go module cache
+function clean-cache {
+  go clean -modcache
+}
+
 #: space
 
 # ___ do not change ___

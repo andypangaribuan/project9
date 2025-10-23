@@ -126,7 +126,10 @@ func execute(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interf
 				err = errors.WithStack(err)
 				return nil, conn.host, err
 			}
-			defer stmt.Close()
+
+			defer func() {
+				_ = stmt.Close()
+			}()
 
 			res, err := stmt.Exec(sqlPars...)
 			if err != nil {
@@ -142,7 +145,10 @@ func execute(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...interf
 		err = errors.WithStack(err)
 		return nil, conn.host, err
 	}
-	defer stmt.Close()
+
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	res, err := stmt.Exec(sqlPars...)
 	if err != nil {
@@ -165,7 +171,10 @@ func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...int
 				err = errors.WithStack(err)
 				return nil, conn.host, err
 			}
-			defer stmt.Close()
+
+			defer func() {
+				_ = stmt.Close()
+			}()
 
 			var id *int64
 			err = stmt.QueryRow(sqlPars...).Scan(&id)
@@ -183,7 +192,10 @@ func executeRID(conn *srConnection, tx abs.DbTx, sqlQuery string, sqlPars ...int
 		err = errors.WithStack(err)
 		return nil, conn.host, err
 	}
-	defer stmt.Close()
+
+	defer func() {
+		_ = stmt.Close()
+	}()
 
 	var id *int64
 	err = stmt.QueryRow(sqlPars...).Scan(&id)

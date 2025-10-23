@@ -37,7 +37,7 @@ var replacer = [][]string{
 
 func (*srTime) ToStr(tm time.Time, format string) string {
 	for _, arr := range replacer {
-		format = strings.Replace(format, arr[0], arr[1], -1)
+		format = strings.ReplaceAll(format, arr[0], arr[1])
 	}
 	return tm.Format(format)
 }
@@ -72,7 +72,7 @@ func (*srTime) ToStrRFC3339MicroSecond(tm time.Time) string {
 
 func (*srTime) ToTime(layout string, value string) (time.Time, error) {
 	for _, arr := range replacer {
-		layout = strings.Replace(layout, arr[0], arr[1], -1)
+		layout = strings.ReplaceAll(layout, arr[0], arr[1])
 	}
 	return time.Parse(layout, value)
 }

@@ -18,7 +18,7 @@ import (
 )
 
 func TestRetry(t *testing.T) {
-	var i int = 0
+	i := 0
 
 	f := func() (*string, error) {
 		i++

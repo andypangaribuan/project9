@@ -50,7 +50,9 @@ func (slf *srGCS) Write(destination string, data []byte, timeout ...time.Duratio
 	}
 
 	writer := slf.handler.Object(destination).NewWriter(ctx)
-	defer writer.Close()
+	defer func() {
+		_ = writer.Close()
+	}()
 
 	_, err := io.Copy(writer, bytes.NewReader(data))
 	return err

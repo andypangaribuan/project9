@@ -58,15 +58,19 @@ func (slf *GrpcClient[T]) buildConnection() error {
 	if slf.usingTLS {
 		creds := credentials.NewTLS(&tls.Config{})
 		if slf.usingClientLB {
-			conn, err = grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+			// conn, err = grpc.Dial(address, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+			conn, err = grpc.NewClient(address, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(grpcServiceConfig))
 		} else {
-			conn, err = grpc.Dial(address, grpc.WithTransportCredentials(creds))
+			// conn, err = grpc.Dial(address, grpc.WithTransportCredentials(creds))
+			conn, err = grpc.NewClient(address, grpc.WithTransportCredentials(creds))
 		}
 	} else {
 		if slf.usingClientLB {
-			conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+			// conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultServiceConfig(grpcServiceConfig))
+			conn, err = grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultServiceConfig(grpcServiceConfig))
 		} else {
-			conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			// conn, err = grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			conn, err = grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		}
 	}
 

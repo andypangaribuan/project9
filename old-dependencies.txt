@@ -1,0 +1,3 @@
+
+cloud.google.com/go/storage v1.33.0
+github.com/gofiber/fiber/v2 v2.49.2

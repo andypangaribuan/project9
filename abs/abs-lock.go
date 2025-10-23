@@ -9,7 +9,7 @@ package abs
 import "time"
 
 type Lock interface {
-	Init(address string, tryFor time.Duration, timeout time.Duration)
+	Init(address string, tryFor time.Duration, timeout time.Duration, engine ...string)
 	Lock(key string) (XLock, error)
 }
 

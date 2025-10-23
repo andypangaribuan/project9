@@ -126,7 +126,9 @@ func isPortUse(port int) bool {
 	}
 
 	if conn != nil {
-		defer conn.Close()
+		defer func() {
+			_ = conn.Close()
+		}()
 		return true
 	}
 

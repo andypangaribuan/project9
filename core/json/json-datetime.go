@@ -102,11 +102,12 @@ func (extension *customTimeExtension) UpdateStructDescriptor(structDescriptor *j
 		var typeErr error
 		var isPtr bool
 		typeName := binding.Field.Type().String()
-		if typeName == "time.Time" {
+		switch typeName {
+		case "time.Time":
 			isPtr = false
-		} else if typeName == "*time.Time" {
+		case "*time.Time":
 			isPtr = true
-		} else {
+		default:
 			continue
 		}
 

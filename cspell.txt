@@ -28,3 +28,4 @@ nsec
 httpclient
 redislock
 sqlx
+etcdclientv3
