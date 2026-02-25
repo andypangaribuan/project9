@@ -89,7 +89,7 @@ func TestEtcdDisLockLoop(t *testing.T) {
 			log.Printf("try to lock, key: %v\n", key)
 			lock, err := p9.Lock.Lock(key)
 			if err != nil {
-				log.Printf("cannot get the lock, error: %v\n", err)
+				log.Printf("cannot get the lock, key: %v, error: %v\n", key, err)
 				return
 			}
 
