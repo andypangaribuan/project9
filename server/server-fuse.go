@@ -107,11 +107,13 @@ func Fuse2(restfulPort, grpcPort int, autoRecover bool, withErr bool, routes fun
 			}
 
 			time.Sleep(time.Millisecond * 10)
+			gracefulShutdown()
 			p9.Server.StartGRPC(grpcPort, autoRecover, register, 3)
 		}()
 	}
 
 	if restfulPort != -1 {
+		gracefulShutdown()
 		log.Fatal(fuseFiberApp.Listen(fmt.Sprintf(":%v", restfulPort)))
 	}
 }

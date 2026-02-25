@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Copyright (c) 2025.
+# Created by Andy Pangaribuan. All Rights Reserved.
+# This product is protected by copyright and distributed under
+# licenses restricting copying, distribution and decompilation.
+
+. ~/.base-taskfile
+
+export $(grep -v '^#' ./.env | xargs)
+
+
+
+#: run distributed lock etcd
+function dist-lock-etcd {
+  go test -v -count=1 -timeout 5m github.com/andypangaribuan/project9/test \
+    -run ^TestEtcdDisLock$
+}
+
+
+#: run distributed lock etcd - error mode
+function dist-lock-etcd-error {
+  go test -v -count=1 -timeout 5m github.com/andypangaribuan/project9/test \
+    -run ^TestEtcdDisLockError$
+}
+
+
+
+#: space
+___ "$@"
